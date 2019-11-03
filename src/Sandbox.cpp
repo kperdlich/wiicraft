@@ -17,7 +17,14 @@
  *
 ***/
 
+#include "renderer.h"
+#include "colorrgba.h"
+
 int main(int argc, char** argv)
 {    
-    return 0;
+    renderer::Renderer renderer(true);
+    while(true)
+    {
+        renderer.DisplayBuffer();
+    }
 }

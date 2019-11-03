@@ -2,3 +2,11 @@
 Makefile
 WoxelCraft.cpp
 src/Sandbox.cpp
+src/colorrgba.cpp
+src/colorrgba.h
+src/gxdisplaylist.cpp
+src/gxdisplaylist.h
+src/gxrenderer.cpp
+src/renderdata.h
+src/renderer.h
+src/wiidefines.h

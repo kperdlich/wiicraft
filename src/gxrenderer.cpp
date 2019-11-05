@@ -1,4 +1,3 @@
-#include <memory>
 #include "renderer.h"
 #include "wiidefines.h"
 
@@ -80,6 +79,7 @@ void renderer::Renderer::SetClearColor(const renderer::ColorRGBA &clearColor)
     GX_SetCopyClear(gxClearColor, GX_MAX_Z24);
 }
 
+
 void renderer::Renderer::DisplayBuffer()
 {
     GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
@@ -94,4 +94,32 @@ void renderer::Renderer::DisplayBuffer()
     {
         VIDEO_WaitVSync();
     }
+}
+
+void renderer::Renderer::SetCamera(std::shared_ptr<renderer::Camera> camera)
+{
+    mCamera = camera;
+    Mtx mtx;
+    if (mCamera->IsPerspective())
+    {
+        guFrustum(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
+                  mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
+        GX_LoadProjectionMtx(mtx, GX_PERSPECTIVE);
+    }
+    else
+    {
+        guOrtho(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
+                mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
+        GX_LoadProjectionMtx(mtx, GX_ORTHOGRAPHIC);
+    }
+}
+
+uint32_t renderer::Renderer::GetWidth() const
+{
+    return mRenderData->mWidth;
+}
+
+uint32_t renderer::Renderer::GetHeight() const
+{
+    return mRenderData->mHeight;
 }

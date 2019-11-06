@@ -7,6 +7,13 @@
 
 namespace renderer {
 
+enum class CullMode : char {
+    None = 0,
+    Front = 1,
+    Back = 2,
+    All = 3
+};
+
 class Renderer {
 public:
     explicit Renderer(bool useVSync);
@@ -19,6 +26,11 @@ public:
     void SetClearColor(const ColorRGBA& clearColor);
     void DisplayBuffer();
     void SetCamera(std::shared_ptr<Camera> camera);
+
+    void SetZModeEnabled(bool isEnabled);
+    void SetCullMode(const CullMode& mode);
+
+    void DummyRender();
 
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;

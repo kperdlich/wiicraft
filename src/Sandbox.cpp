@@ -21,20 +21,28 @@
 #include "clock.h"
 #include "colorrgba.h"
 #include "camera.h"
+#include "vector3f.h"
+#include "vertexformat.h"
 
 int main(int argc, char** argv)
-{    
+{
     renderer::Renderer renderer(true);
     std::shared_ptr<renderer::Camera> camera =
-            std::shared_ptr<renderer::Camera>(new renderer::Camera({.0f, .0f, .1f}, {.0f, 1.0f, .0f}, {.0f, .0f, .0f}, false));
-    camera->SetFrustrum(.1f, 200.0f, 70.0f, renderer.GetWidth() / renderer.GetHeight());
+            std::make_shared<renderer::Camera>(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, false);
+    camera->SetFrustrum(0, renderer.GetHeight(), 0, renderer.GetWidth(), 0, 100.0f);
     renderer.SetCamera(camera);
+    renderer.SetZModeEnabled(true);
+    renderer.SetClearColor(renderer::ColorRGBA::RED);
+    renderer::VertexFormat vertexFormat(GX_VTXFMT0);
+    vertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    vertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
+    vertexFormat.Bind();
     utils::Clock clock;
     clock.Start();
     const renderer::ColorRGBA* color = &renderer::ColorRGBA::RED;
     while(true)
     {        
-        if (clock.ElapsedMilliseconds() >= 1000 * 2)
+        /*if (clock.ElapsedMilliseconds() >= 1000 * 2)
         {
             if (color == &renderer::ColorRGBA::RED)
             {
@@ -46,7 +54,8 @@ int main(int argc, char** argv)
             }
             renderer.SetClearColor(*color);
             clock.Start();
-        }
+        }*/
+        renderer.DummyRender();
         renderer.DisplayBuffer();
     }
 }

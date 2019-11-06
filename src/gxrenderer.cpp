@@ -114,6 +114,70 @@ void renderer::Renderer::SetCamera(std::shared_ptr<renderer::Camera> camera)
     }
 }
 
+void renderer::Renderer::SetZModeEnabled(bool isEnabled)
+{
+    if (isEnabled)
+    {
+        GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+    }
+    else
+    {
+        GX_SetZMode(GX_FALSE, GX_LEQUAL, GX_FALSE);
+    }
+}
+
+void renderer::Renderer::SetCullMode(const CullMode& mode)
+{
+    switch (mode)
+    {
+        case CullMode::All:
+            GX_SetCullMode(GX_CULL_ALL);
+            break;
+        case CullMode::None:
+            GX_SetCullMode(GX_CULL_NONE);
+            break;
+        case CullMode::Front:
+            GX_SetCullMode(GX_CULL_FRONT);
+            break;
+        case CullMode::Back:
+            GX_SetCullMode(GX_CULL_BACK);
+            break;
+    }
+}
+
+void renderer::Renderer::DummyRender()
+{
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+
+    // GX_ClearVtxDesc();
+
+
+    GX_SetNumTexGens(0);
+    GX_SetNumTevStages(1);
+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL,
+        GX_COLOR0A0);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+
+    GX_SetNumChans(1);
+
+    Mtx mtx;
+    guMtxIdentity(mtx);
+    // guMtxTransApply(mtx, mtx, 0, 0, 0);
+    GX_LoadPosMtxImm(mtx, GX_PNMTX0);
+    GX_Begin(GX_TRIANGLES, GX_VTXFMT0, 3);
+            GX_Position3f32(100, 300, 0);
+            GX_Color4u8(255, 255, 255, 255);
+
+            GX_Position3f32(200, 200, 0);
+            GX_Color4u8(255, 255, 255, 255);
+
+            GX_Position3f32(300, 300, 0);
+            GX_Color4u8(0, 255, 255, 255);
+    GX_End();
+
+
+}
+
 uint32_t renderer::Renderer::GetWidth() const
 {
     return mRenderData->mWidth;

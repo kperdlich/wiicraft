@@ -17,9 +17,9 @@ renderer::DisplayList::~DisplayList()
 void renderer::DisplayList::Render()
 {
     if (mBufferSize > 0)
-	{
+    {
         GX_CallDispList(mDispList, mBufferSize);
-	}
+    }
 }
 
 

@@ -14,6 +14,7 @@ enum class CullMode : char {
     All = 3
 };
 
+
 class Renderer {
 public:
     explicit Renderer(bool useVSync);
@@ -30,13 +31,19 @@ public:
     void SetZModeEnabled(bool isEnabled);
     void SetCullMode(const CullMode& mode);
 
-    void DummyRender();
-
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
+
+    inline std::shared_ptr<Camera> GetCamera() const;
 
 private:
     std::unique_ptr<RenderData> mRenderData;
     std::shared_ptr<Camera> mCamera;
 };
+
+inline std::shared_ptr<Camera> Renderer::GetCamera() const
+{
+    return mCamera;
+}
+
 };

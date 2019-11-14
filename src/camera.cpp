@@ -58,9 +58,15 @@ math::Matrix4x4 renderer::Camera::GetProjectionMatrix4x4() const
 
 math::Matrix3x4 renderer::Camera::GetViewMatrix3x4() const
 {
-    return math::Matrix3x4(
+    float mtx[3][4];
+    guVector pos = {mPosition.X(), mPosition.Y(), mPosition.Z()};
+    guVector camUp = {mUp.X(), mUp.Y(), mUp.Z()};
+    guVector lookAt = {mLookAt.X(), mLookAt.Y(), mLookAt.Z()};
+    guLookAt(mtx, &pos, &camUp, &lookAt);
+    return math::Matrix3x4(mtx);
+    /*return math::Matrix3x4(
                 mRight.X(), mRight.Y(), mRight.Z(), -mRight.Dot(mPosition),
                 mUp.X(), mUp.Y(), mUp.Z(), -mUp.Dot(mPosition),
-                mLookAt.X(), mLookAt.Y(), mLookAt.Z(), -mLookAt.Dot(mPosition));
+                mLookAt.X(), mLookAt.Y(), mLookAt.Z(), -mLookAt.Dot(mPosition));*/
 
 }

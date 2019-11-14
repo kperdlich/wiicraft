@@ -31,6 +31,21 @@ math::Matrix3x4 math::Matrix3x4::operator *(const math::Matrix3x4 &other)
     return mtx;
 }
 
+void math::Matrix3x4::Scale(float x, float y, float z)
+{
+    guMtxScale(mMtx34, x, y, z);
+}
+
+void math::Matrix3x4::Translate(float x, float y, float z)
+{
+    guMtxTrans(mMtx34, x, y, z);
+}
+
+void math::Matrix3x4::Rotate(const char axis, float degree)
+{
+    guMtxRotDeg(mMtx34, axis, degree);
+}
+
 void math::Matrix3x4::SetIdentity()
 {
     guMtxIdentity(mMtx34);

@@ -16,12 +16,15 @@ public:
     Matrix3x4& operator = (const Matrix3x4&) = default;
     Matrix3x4(Matrix3x4&&) = default;
     Matrix3x4& operator = (Matrix3x4&&) = default;
-
     Matrix3x4 operator * (const Matrix3x4& other);
+
+    void Scale(float x, float y, float z);
+    void Translate(float x, float y, float z);
+    void Rotate(const char axis, float degree);
 
     void SetIdentity();
     void SetZero();
-private:
+public:
     float mMtx34[3][4];
 };
 }

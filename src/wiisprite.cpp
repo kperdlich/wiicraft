@@ -4,10 +4,10 @@
 
 
 renderer::Sprite::Sprite(const Image2D& image)
-    : mPosX(0), mPosY(0), mScaleX(1.0f), mScaleY(1.0f), mRotationDeg(0.0f)
+    : mPosX(0), mPosY(0), mPosZ(0), mScaleX(1.0f), mScaleY(1.0f), mRotationDeg(0.0f)
 {
     mWidth = (uint32_t) image.Width();
-    mHeight = (uint32_t) image.Height();
+    mHeight = (uint32_t) image.Height();       
 
     GX_InitTexObj(&mTexObj, (void*) image.Data(), (uint16_t) mWidth, (uint16_t) mHeight, GX_TF_RGBA8, GX_REPEAT, GX_REPEAT, GX_FALSE);
     GX_InitTexObjLOD(&mTexObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);

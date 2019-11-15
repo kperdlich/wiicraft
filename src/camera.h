@@ -20,7 +20,6 @@ public:
     void SetFrustrum(float minDist, float maxDist, float fov, float aspectRatio);
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
 
-    math::Matrix4x4 GetProjectionMatrix4x4() const;
     math::Matrix3x4 GetViewMatrix3x4() const;
 
     inline void SetPerspective(bool isPerspective);
@@ -32,11 +31,13 @@ public:
     inline float GetFrustrumLeft() const;
     inline float GetFrustrumRight() const;
 
+    void Translate(float x, float y, float z);
+    void Rotate(const char axis, float degree);
+
+    inline const math::Vector3f& Position() const;
+
 private:
-    math::Vector3f mPosition;
-    math::Vector3f mUp;
-    math::Vector3f mLookAt;
-    math::Vector3f mRight;
+    math::Matrix3x4 mViewMatrix;
     float mFrustrumNear, mFrustrumFar, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight;
     bool mIsPerspective;
 };

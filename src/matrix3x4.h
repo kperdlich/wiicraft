@@ -3,7 +3,8 @@
 namespace math {
 // The elements of the 3x4 matrix are stored in
 // row-major order.
-class Matrix3x4 {
+class Matrix3x4
+{
 public:
     Matrix3x4() = default;
     explicit Matrix3x4(bool zero);

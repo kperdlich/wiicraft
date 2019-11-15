@@ -28,6 +28,9 @@ public:
     inline float PosY() const;
     inline void SetPosY(const float posY);
 
+    inline float PosZ() const;
+    inline void SetPosZ(const float posZ);
+
     inline float ScaleX() const;
     inline void SetScaleX(const float scaleX);
 
@@ -37,9 +40,12 @@ public:
     inline float RotationDeg() const;
     inline void SetRotationDeg(const float rotation);
 
+    inline void Translate(const float x, const float y, const float z);
+    inline void Rotate(const float degree);
+
 private:
     GXTexObj mTexObj;
-    float mPosX, mPosY;
+    float mPosX, mPosY, mPosZ;
     float mScaleX, mScaleY;
     float mRotationDeg;
     uint32_t mWidth, mHeight;
@@ -68,6 +74,16 @@ inline void Sprite::SetScaleY(const float scaleY)
 inline float Sprite::PosY() const
 {
     return mPosY;
+}
+
+inline float Sprite::PosZ() const
+{
+    return mPosZ;
+}
+
+inline void Sprite::SetPosZ(const float posZ)
+{
+    mPosZ = posZ;
 }
 
 inline void Sprite::SetPosY(const float posY)
@@ -103,6 +119,18 @@ inline float Sprite::RotationDeg() const
 inline void Sprite::SetRotationDeg(const float degree)
 {
     mRotationDeg = degree;
+}
+
+inline void renderer::Sprite::Translate(const float x, const float y, const float z)
+{
+    mPosX += x;
+    mPosY += y;
+    mPosZ += z;
+}
+
+inline void renderer::Sprite::Rotate(const float degree)
+{
+    mRotationDeg += degree;
 }
 
 }

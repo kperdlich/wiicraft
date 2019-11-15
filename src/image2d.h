@@ -4,12 +4,14 @@
 
 namespace renderer {
 
-enum class ImageFormat : char {
+enum class ImageFormat : char
+{
     PNG = 0,
     TPL = 1
 };
 
-class Image2D {
+class Image2D
+{
 public:
     explicit Image2D(const unsigned char *data);
     ~Image2D();

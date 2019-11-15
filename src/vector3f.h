@@ -18,6 +18,10 @@ public:
     inline float Y() const;
     inline float Z() const;
 
+    inline void SetX(float value);
+    inline void SetY(float value);
+    inline void SetZ(float value);
+
     void Normalize();
     float Dot(const Vector3f other) const;
     Vector3f Cross(const Vector3f other) const;
@@ -40,6 +44,21 @@ inline float Vector3f::Y() const
 inline float Vector3f::Z() const
 {
     return mVec.mZ;
+}
+
+inline void Vector3f::SetX(float value)
+{
+    mVec.mX = value;
+}
+
+inline void Vector3f::SetY(float value)
+{
+    mVec.mY = value;
+}
+
+inline void Vector3f::SetZ(float value)
+{
+    mVec.mZ = value;
 }
 
 }

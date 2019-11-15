@@ -33,17 +33,20 @@ math::Matrix3x4 math::Matrix3x4::operator *(const math::Matrix3x4 &other)
 
 void math::Matrix3x4::Scale(float x, float y, float z)
 {
-    guMtxScale(mMtx34, x, y, z);
+    guMtxScaleApply(mMtx34, mMtx34, x, y, z);
 }
 
 void math::Matrix3x4::Translate(float x, float y, float z)
 {
-    guMtxTrans(mMtx34, x, y, z);
+    guMtxTransApply(mMtx34, mMtx34, x, y, z);
 }
 
 void math::Matrix3x4::Rotate(const char axis, float degree)
 {
-    guMtxRotDeg(mMtx34, axis, degree);
+    Mtx mtx;
+    guMtxIdentity(mtx);
+    guMtxRotDeg(mtx, axis, degree);
+    guMtxConcat(mtx, mMtx34, mMtx34);
 }
 
 void math::Matrix3x4::SetIdentity()

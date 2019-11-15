@@ -5,7 +5,6 @@ assets/LoadingBackground.png
 src/Sandbox.cpp
 src/Sandbox.cpp
 src/camera.cpp
-src/camera.cpp
 src/camera.h
 src/camera.h
 src/clock.h
@@ -39,6 +38,7 @@ src/vertexformat.cpp
 src/vertexformat.cpp
 src/vertexformat.h
 src/vertexformat.h
+src/wiicamera.cpp
 src/wiidefines.h
 src/wiidefines.h
 src/wiiimage2d.cpp

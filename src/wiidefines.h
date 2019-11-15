@@ -10,4 +10,9 @@
 #include <malloc.h>
 #include <cstring>
 #include <stdint.h>
+#include <stdlib.h>
+#include <malloc.h>
+#include <string.h>
+#include <assert.h>
+#include <pngu.h>
 

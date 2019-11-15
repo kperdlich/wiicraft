@@ -24,8 +24,10 @@
 #include "vector3f.h"
 #include "vertexformat.h"
 #include "image2d.h"
+#include "wiitexture2d.h"
 #include "wiisprite.h"
 #include "ClassicBackgroundSprite_png.h"
+#include "Wood_tpl.h"
 #include "Cursor_png.h"
 #include <assert.h>
 
@@ -55,7 +57,7 @@ int main(int argc, char** argv)
     renderer.SetCullMode(renderer::CullMode::Back);
     renderer::VertexFormat vertexFormat(GX_VTXFMT0);
     vertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
-    vertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
+    vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
     //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8}); // DrawDummyColorTriangle
     //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32}); // DrawDummySprite
 
@@ -72,6 +74,9 @@ int main(int argc, char** argv)
 
     renderer::Image2D backgroundImage(ClassicBackgroundSprite_png);
     renderer::Image2D cursorImage(Cursor_png);
+    renderer::Image2D woodImage(Wood_tpl, Wood_tpl_size);
+    renderer::Texture2D texture(woodImage);
+
     /*renderer::Sprite cursorSprite(cursorImage);
     cursorSprite.SetPosX(100.0f);
     cursorSprite.SetPosY(100.0f);
@@ -101,6 +106,7 @@ int main(int argc, char** argv)
         DrawDummySprite(cursorSprite, renderer, true);
         backgroundSprite.Bind(renderer, 0);
         DrawDummySprite(backgroundSprite, renderer, false);*/
+        texture.Bind(renderer, 0);
         DrawDummy3DTexturedCube(clock, renderer, translation, rotation);
         renderer.DisplayBuffer();
     }
@@ -119,13 +125,13 @@ void DrawDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, 
     scale.SetIdentity();
 
     if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
-        renderer.GetCamera()->Rotate('Y', -.4f);
+        rotation.Rotate('Y', -.4f);
     if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-        renderer.GetCamera()->Rotate('Y', .4f);
+        rotation.Rotate('Y', .4f);
     if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
-        translation.Translate(0.0f, .0f, -.1f);
+        rotation.Rotate('X', -.4f);
     if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
-        translation.Translate(0.0f, .0f, .1f);
+        rotation.Rotate('X', .4f);
     math::Matrix3x4 viewMatrix = renderer.GetCamera()->GetViewMatrix3x4();
 
     modelView = viewMatrix * (translation * rotation * scale);
@@ -149,85 +155,108 @@ void DrawDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, 
     GX_Begin(GX_QUADS, GX_VTXFMT0, 24);
         // front side
         GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
-        GX_Color1u32(0x000000FF);
+        GX_TexCoord2f32(0.0f, 0.0f);
 
         GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
-        GX_Color1u32(0x000000FF);
+        GX_TexCoord2f32(1.0f, 0.0f);
+
 
         GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
-        GX_Color1u32(0x000000FF);
+        GX_TexCoord2f32(1.0f, 1.0f);
+
 
         GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
-        GX_Color1u32(0x000000FF);
+        GX_TexCoord2f32(0.0f, 1.0f);
+
 
         // back side
         GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
-        GX_Color1u32(0x0000FFFF);
+        GX_TexCoord2f32(0.0f, 0.0f);
+
 
         GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
-        GX_Color1u32(0x0000FFFF);
+        GX_TexCoord2f32(1.0f, 0.0f);
+
 
         GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
-        GX_Color1u32(0x0000FFFF);
+        GX_TexCoord2f32(1.0f, 1.0f);
+
 
         GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
-        GX_Color1u32(0x0000FFFF);
+        GX_TexCoord2f32(0.0f, 1.0f);
+
 
 
         // right side
         GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
-        GX_Color1u32(0x00FFFFFF);
+        GX_TexCoord2f32(0.0f, 0.0f);
+
 
         GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
-        GX_Color1u32(0x00FFFFFF);
+        GX_TexCoord2f32(1.0f, 0.0f);
+
 
         GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
-        GX_Color1u32(0x00FFFFFF);
+        GX_TexCoord2f32(1.0f, 1.0f);
+
 
         GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
-        GX_Color1u32(0x00FFFFFF);
+        GX_TexCoord2f32(0.0f, 1.0f);
+
 
 
         // left side
         GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
-        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f, 0.0f);
+
 
         GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
-        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f, 0.0f);
+
 
         GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
-        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(1.0f, 1.0f);
+
 
         GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
-        GX_Color1u32(0xFFFFFFFF);
+        GX_TexCoord2f32(0.0f, 1.0f);
+
 
 
         // top side
         GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
-        GX_Color1u32(0xFFF00FFF);
+        GX_TexCoord2f32(0.0f, 0.0f);
+
 
         GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
-        GX_Color1u32(0xFFF00FFF);
+        GX_TexCoord2f32(1.0f, 0.0f);
+
 
         GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
-        GX_Color1u32(0xFFF00FFF);
+        GX_TexCoord2f32(1.0f, 1.0f);
+
 
         GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
-        GX_Color1u32(0xFFF00FFF);
+        GX_TexCoord2f32(0.0f, 1.0f);
+
 
 
         // bottom side
         GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
-        GX_Color1u32(0x00FF00FF);
+        GX_TexCoord2f32(0.0f, 0.0f);
+
 
         GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
-        GX_Color1u32(0x00FF00FF);
+        GX_TexCoord2f32(1.0f, 0.0f);
+
 
         GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
-        GX_Color1u32(0x00FF00FF);
+        GX_TexCoord2f32(1.0f, 1.0f);
+
 
         GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
-        GX_Color1u32(0x00FF00FF);
+        GX_TexCoord2f32(0.0f, 1.0f);
+
     GX_End();
 }
 

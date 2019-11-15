@@ -1,9 +1,10 @@
 #include "image2d.h"
-#include <stdlib.h>
-#include <assert.h>
-#include <pngu.h>
+#include "tplloader.h"
+#include "wiidefines.h"
 
-renderer::Image2D::Image2D(const unsigned char *data)
+constexpr uint8_t BytesPerPixelRGBA8 = 4;
+
+renderer::Image2D::Image2D(const unsigned char *data, size_t imageSize)
     : mData(nullptr)
 {
     assert(data != nullptr);
@@ -15,10 +16,22 @@ renderer::Image2D::Image2D(const unsigned char *data)
         IMGCTX context = PNGU_SelectImageFromBuffer(data);
         PNGU_GetImageProperties(context, &pngProps);
         mData = PNGU_DecodeTo4x4RGBA8(context, pngProps.imgWidth, pngProps.imgHeight, &mWidth, &mHeight, nullptr);
+        mDataSize = BytesPerPixelRGBA8 * pngProps.imgWidth * pngProps.imgHeight;
         assert(static_cast<int>(pngProps.imgWidth) == mWidth);
         assert(static_cast<int>(pngProps.imgHeight) == mHeight);
         assert(mData != nullptr);
         PNGU_ReleaseImageContext(context);
+        DCFlushRange(mData, mDataSize);
+    }
+    else if (IsTPLTexture(data))
+    {
+        assert(imageSize > 0);
+        mFormat = ImageFormat::TPL;
+        mDataSize = imageSize;
+        mData = (unsigned char*) memalign(32, mDataSize);
+        memcpy(mData, (void*)data, mDataSize);
+        const size_t tplDataSize = GetTPLTextureSize(imageSize);
+        DCFlushRange(mData, tplDataSize);
     }
     else
     {

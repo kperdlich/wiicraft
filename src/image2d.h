@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
 namespace renderer {
 
@@ -13,7 +14,7 @@ enum class ImageFormat : char
 class Image2D
 {
 public:
-    explicit Image2D(const unsigned char *data);
+    explicit Image2D(const unsigned char *data, size_t imageSize = 0);
     ~Image2D();
     Image2D(const Image2D&) = delete;
     Image2D(Image2D&&) = delete;
@@ -32,6 +33,7 @@ private:
     int mHeight;
     ImageFormat mFormat;
     unsigned char* mData;
+    size_t mDataSize;
 };
 
 inline int Image2D::Width() const

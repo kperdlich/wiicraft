@@ -20,6 +20,8 @@ src/gxdisplaylist.h
 src/gxrenderer.cpp
 src/gxrenderer.cpp
 src/image2d.h
+src/indexbuffer.cpp
+src/indexbuffer.h
 src/mathhelper.h
 src/mathhelper.h
 src/matrix3x4.h
@@ -32,8 +34,11 @@ src/renderdata.h
 src/renderdata.h
 src/renderer.h
 src/renderer.h
+src/tplloader.cpp
+src/tplloader.h
 src/vector3f.h
 src/vector3f.h
+src/vertexbuffer.h
 src/vertexformat.cpp
 src/vertexformat.cpp
 src/vertexformat.h
@@ -46,5 +51,8 @@ src/wiimatrix3x4.cpp
 src/wiimatrix3x4.cpp
 src/wiisprite.cpp
 src/wiisprite.h
+src/wiitexture2d.cpp
+src/wiitexture2d.h
 src/wiivector3f.cpp
 src/wiivector3f.cpp
+src/wiivertexbuffer.cpp

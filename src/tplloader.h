@@ -7,18 +7,21 @@ namespace renderer {
 
 class Image2D;
 
-struct TPL_Header {
+struct TPL_Header
+{
     uint32_t	magic;
     uint32_t	texCount;
     uint32_t	headerSize;
 };
 
-struct TPL_Addr {
+struct TPL_Addr
+{
     uint32_t	textureOffs;
     uint32_t	tlutOffs;
 };
 
-struct TPL_Texture {
+struct TPL_Texture
+{
     uint16_t	height;
     uint16_t	width;
     uint32_t	format;

@@ -26,12 +26,14 @@
 #include "image2d.h"
 #include "wiitexture2d.h"
 #include "wiisprite.h"
+#include "indexbuffer.h"
 #include "ClassicBackgroundSprite_png.h"
 #include "Wood_tpl.h"
 #include "Cursor_png.h"
 #include <assert.h>
 
-void DrawDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
+void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
+void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
 void DrawDummySprite(renderer::Sprite&, renderer::Renderer &renderer, bool cursor);
 
@@ -56,8 +58,10 @@ int main(int argc, char** argv)
     renderer.SetClearColor(renderer::ColorRGBA::RED);
     renderer.SetCullMode(renderer::CullMode::Back);
     renderer::VertexFormat vertexFormat(GX_VTXFMT0);
-    vertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
-    vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+    vertexFormat.AddAttribute({GX_INDEX16, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    vertexFormat.AddAttribute({GX_INDEX16, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+    //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
     //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8}); // DrawDummyColorTriangle
     //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32}); // DrawDummySprite
 
@@ -93,6 +97,42 @@ int main(int argc, char** argv)
     rotation.SetIdentity();
     translation.Translate(0.0f, 0.0f, -5.0f);
 
+
+    math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
+    float blockSize = 1.0f;
+    guVector vertices[8] = {
+                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() + blockSize },// v1
+                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() + blockSize }, //v2
+                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() + blockSize }, //v3
+                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() + blockSize }, // v4
+                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() - blockSize }, //v5
+                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() - blockSize }, // v6
+                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() - blockSize }, // v7
+                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() - blockSize } // v8
+                   };
+
+
+    float modelPos[] = {
+                        vertices[0].x, vertices[0].y, vertices[0].z,
+                        vertices[1].x, vertices[1].y, vertices[1].z,
+                        vertices[2].x, vertices[2].y, vertices[2].z,
+                        vertices[3].x, vertices[3].y, vertices[3].z,
+
+                        vertices[4].x, vertices[4].y, vertices[4].z,
+                        vertices[5].x, vertices[5].y, vertices[5].z,
+                        vertices[6].x, vertices[6].y, vertices[6].z,
+                        vertices[7].x, vertices[7].y, vertices[7].z
+                       };
+
+    float modelTex[] = {0.0f, 0.0f,
+                       1.0f, 0.0f,
+                       0.0f, 1.0f,
+                       1.0f, 1.0f};
+
+
+    GX_SetArray(GX_VA_POS, modelPos, 3 * sizeof(float));
+    GX_SetArray(GX_VA_TEX0, modelTex, 2 * sizeof(float));
+
     while(true)
     {        
 
@@ -107,18 +147,85 @@ int main(int argc, char** argv)
         backgroundSprite.Bind(renderer, 0);
         DrawDummySprite(backgroundSprite, renderer, false);*/
         texture.Bind(renderer, 0);
-        DrawDummy3DTexturedCube(clock, renderer, translation, rotation);
+        //DrawFixedDummy3DTexturedCube(clock, renderer, translation, rotation);
+        DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation);
         renderer.DisplayBuffer();
     }
 }
 
-void DrawDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation)
+
+void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation)
+{
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GX_SetColorUpdate(GX_TRUE);
+
+    math::Matrix3x4 modelView;
+    math::Matrix3x4 scale;
+    scale.SetIdentity();
+
+    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
+        rotation.Rotate('Y', -.4f);
+    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
+        rotation.Rotate('Y', .4f);
+    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
+        rotation.Rotate('X', -.4f);
+    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
+        rotation.Rotate('X', .4f);
+    math::Matrix3x4 viewMatrix = renderer.GetCamera()->GetViewMatrix3x4();
+
+    modelView = viewMatrix * (translation * rotation * scale);
+
+    renderer::IndexBuffer indexBuffer = {
+                              0, 0,
+                              3, 1,
+                              2, 3,
+                              1, 2,
+
+                              5, 0,
+                              4, 1,
+                              7, 3,
+                              6, 3,
+
+                              3,0,
+                              5,1,
+                              6,3,
+                              2,2,
+
+                              4,0,
+                              0,1,
+                              1,3,
+                              7,2,
+
+                              4,0,
+                              5,1,
+                              3,3,
+                              0,2,
+
+                              6,0,
+                              7,1,
+                              1,3,
+                              2,2
+    };
+
+    GX_LoadPosMtxImm(modelView.mMtx34, GX_PNMTX0);
+    GX_Begin(GX_QUADS, GX_VTXFMT0, 24);
+    for (uint32_t i = 0; i < 48; i+=2)
+    {
+        GX_Position1x16(indexBuffer[i]);
+        GX_TexCoord1x16(indexBuffer[i+1]);
+    }
+    GX_End();
+}
+
+
+
+void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation)
 {
 
     GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GX_SetColorUpdate(GX_TRUE);
-
 
     math::Matrix3x4 modelView;
     math::Matrix3x4 scale;
@@ -150,6 +257,7 @@ void DrawDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, 
                     { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() - blockSize }, // v7
                     { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() - blockSize } // v8
                    };
+
 
 
     GX_Begin(GX_QUADS, GX_VTXFMT0, 24);

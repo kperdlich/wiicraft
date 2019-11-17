@@ -1,4 +1,4 @@
-#include "gxdisplaylist.h"
+#include "wiidisplaylist.h"
 
 renderer::DisplayList::DisplayList(const size_t bufferSize)
     : mBufferSize(0)

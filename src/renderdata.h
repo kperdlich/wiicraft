@@ -9,7 +9,6 @@ class RenderData
 {
 public:
     static constexpr uint32_t DEFAULT_FIFO_SIZE = 256*1024;
-    friend class Renderer;
 
     RenderData() = default;
     ~RenderData()= default;
@@ -18,9 +17,9 @@ public:
     RenderData(RenderData&&) = delete;
     RenderData& operator = (RenderData&&) = delete;
 
-    inline void SetVertexFormat(VertexArray *vertexFormat);
+    inline void SetVertexArray(VertexArray *vertexFormat);
 
-private:
+public:
     bool mUseVSync;
     uint8_t mFrameBufferIndex;
     void* mFrameBuffers[2];
@@ -29,12 +28,14 @@ private:
     uint32_t mWidth;
     uint32_t mHeight;
     GXColor mClearColor;
-    VertexArray* mVertexFormat;
+    VertexArray* mVertexArray;
+
+    FreeTypeGX* mFreeType;
 };
 
-inline void RenderData::SetVertexFormat(VertexArray* vertexFormat)
+inline void RenderData::SetVertexArray(VertexArray* vertexArray)
 {
-    mVertexFormat = vertexFormat;
+    mVertexArray = vertexArray;
 }
 
 }

@@ -1,9 +1,11 @@
 #include "renderer.h"
+#include "renderdata.h"
+#include "freetypegx.h"
 #include "wiidefines.h"
 
 renderer::Renderer::Renderer(bool useVSync)
 {
-    mRenderData = std::make_unique<RenderData>();
+    mRenderData = new RenderData();
     mRenderData->mUseVSync = useVSync;
     mRenderData->mFrameBufferIndex = 0;
 
@@ -51,10 +53,13 @@ renderer::Renderer::Renderer(bool useVSync)
         GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
     }
 
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GX_SetAlphaUpdate(GX_TRUE);
+
     // TODO does not really belong here
     GX_SetNumChans(1);
     GX_SetNumTexGens(1);
-    GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 
@@ -75,6 +80,14 @@ renderer::Renderer::Renderer(bool useVSync)
 
     mRenderData->mWidth = mRenderData->mRmode->fbWidth;
     mRenderData->mHeight = mRenderData->mRmode->efbHeight;
+
+    mRenderData->mFreeType = new FreeTypeGX(GX_TF_RGBA8, GX_VTXFMT1);
+}
+
+renderer::Renderer::~Renderer()
+{
+    delete mRenderData->mFreeType;
+    delete mRenderData;
 }
 
 void renderer::Renderer::SetClearColor(const renderer::ColorRGBA &clearColor)
@@ -96,6 +109,7 @@ void renderer::Renderer::DisplayBuffer()
     GX_CopyDisp(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex], GX_TRUE);
 
     GX_DrawDone();
+    GX_InvalidateTexAll();
     VIDEO_SetNextFramebuffer(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex]);
     VIDEO_Flush();
     if (mRenderData->mUseVSync)
@@ -104,18 +118,19 @@ void renderer::Renderer::DisplayBuffer()
     }
 }
 
-void renderer::Renderer::SetCamera(std::shared_ptr<renderer::Camera> camera)
+void renderer::Renderer::SetCamera(renderer::Camera* camera)
 {
+    assert(camera != nullptr);
     mCamera = camera;
-    Mtx mtx;
+    Mtx44 mtx;
     if (mCamera->IsPerspective())
-    {
+    {        
         guFrustum(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
                   mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
         GX_LoadProjectionMtx(mtx, GX_PERSPECTIVE);
     }
     else
-    {
+    {        
         guOrtho(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
                 mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
         GX_LoadProjectionMtx(mtx, GX_ORTHOGRAPHIC);
@@ -151,6 +166,21 @@ void renderer::Renderer::SetCullMode(const CullMode& mode)
             GX_SetCullMode(GX_CULL_BACK);
             break;
     }
+}
+
+void renderer::Renderer::LoadModelViewMatrix(const math::Matrix3x4 &modelView, const uint8_t matrixIndex)
+{
+    GX_LoadPosMtxImm(const_cast<math::Matrix3x4&>(modelView).mMtx34, matrixIndex);
+}
+
+void renderer::Renderer::LoadFont(const uint8_t *fontData, const int32_t size, const uint32_t fontSize)
+{
+    mRenderData->mFreeType->loadFont(fontData, size, fontSize, false);
+}
+
+void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color)
+{
+    mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_CENTER);
 }
 
 uint32_t renderer::Renderer::GetWidth() const

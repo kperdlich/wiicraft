@@ -26,13 +26,13 @@ public:
 
     ImageFormat Format() const;
 
-    const unsigned char* Data() const;
+    const uint8_t *Data() const;
 
 private:
     int mWidth;
     int mHeight;
     ImageFormat mFormat;
-    unsigned char* mData;
+    uint8_t* mData;
     size_t mDataSize;
 };
 
@@ -51,7 +51,7 @@ inline ImageFormat Image2D::Format() const
     return mFormat;
 }
 
-inline const unsigned char* Image2D::Data() const
+inline const uint8_t* Image2D::Data() const
 {
     return mData;
 }

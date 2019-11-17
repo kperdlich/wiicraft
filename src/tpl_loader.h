@@ -38,8 +38,9 @@ struct TPL_Texture
 };
 
 
-TPL_Texture* GetTPLTexture(unsigned char *data);
-bool IsTPLTexture(const unsigned char *data);
+TPL_Header* GetTPLHeader(uint8_t *data);
+TPL_Texture* GetTPLTexture(uint8_t *data);
+bool IsTPLTexture(const uint8_t *data);
 size_t GetTPLTextureSize(const size_t imageSize);
 
 

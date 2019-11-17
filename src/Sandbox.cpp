@@ -27,9 +27,15 @@
 #include "wiitexture2d.h"
 #include "wiisprite.h"
 #include "indexbuffer.h"
+#include "vertexbuffer.h"
+#include "vertexarray.h"
+#include "vertexformat.h"
+#include "wiidisplaylist.h"
+#include <array>
 #include "ClassicBackgroundSprite_png.h"
-#include "Wood_tpl.h"
+#include "Minecraft_ttf.h"
 #include "Cursor_png.h"
+#include "Wood_tpl.h"
 #include <assert.h>
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
@@ -48,28 +54,16 @@ static WPADData* s_wpadData = nullptr;
 int main(int argc, char** argv)
 {
     renderer::Renderer renderer(false);
-    std::shared_ptr<renderer::Camera> camera =
-            std::make_shared<renderer::Camera>(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, true);
-    //camera->SetFrustrum(0, renderer.GetHeight(), 0, renderer.GetWidth(), 0, 100.0f);
-    camera->SetFrustrum(0.1f, 200.0f, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight());
-    //camera->Rotate('Y', 180.0f);
-    renderer.SetCamera(camera);
     renderer.SetZModeEnabled(true);
     renderer.SetClearColor(renderer::ColorRGBA::RED);
-    renderer.SetCullMode(renderer::CullMode::Back);
-    renderer::VertexFormat vertexFormat(GX_VTXFMT0);
-    vertexFormat.AddAttribute({GX_INDEX16, GX_VA_POS, GX_POS_XYZ, GX_F32});
-    vertexFormat.AddAttribute({GX_INDEX16, GX_VA_TEX0, GX_TEX_ST, GX_F32});
-    //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
-    //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
-    //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8}); // DrawDummyColorTriangle
-    //vertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32}); // DrawDummySprite
+    renderer.SetCullMode(renderer::CullMode::None);
 
-    /*Mtx mtx;
-    guPerspective(mtx, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight(), 0.1f, 200.0f);
-    GX_LoadProjectionMtx(mtx, GX_PERSPECTIVE);*/
+    renderer::Camera perspectiveCamera(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, true);
+    perspectiveCamera.SetFrustrum(0.1f, 200.0f, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight());
 
-    vertexFormat.Bind();
+    renderer::Camera orthographicCamera(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, false);
+    orthographicCamera.SetFrustrum(0, renderer.GetHeight(), 0, renderer.GetWidth(), 0, 100.0f);
+
     utils::Clock clock;
     clock.Start();
 
@@ -81,7 +75,7 @@ int main(int argc, char** argv)
     renderer::Image2D woodImage(Wood_tpl, Wood_tpl_size);
     renderer::Texture2D texture(woodImage);
 
-    /*renderer::Sprite cursorSprite(cursorImage);
+    renderer::Sprite cursorSprite(cursorImage);
     cursorSprite.SetPosX(100.0f);
     cursorSprite.SetPosY(100.0f);
     cursorSprite.SetRotationDeg(180.0f);
@@ -90,7 +84,7 @@ int main(int argc, char** argv)
     renderer::Sprite backgroundSprite(backgroundImage);
     backgroundSprite.SetPosX(renderer.GetWidth() * 0.5f);
     backgroundSprite.SetPosY(renderer.GetHeight() * 0.5f);
-    backgroundSprite.SetPosZ(-2.0f);*/
+    backgroundSprite.SetPosZ(-2.0f);
 
     math::Matrix3x4 translation, rotation;
     translation.SetIdentity();
@@ -112,43 +106,86 @@ int main(int argc, char** argv)
                    };
 
 
-    float modelPos[] = {
-                        vertices[0].x, vertices[0].y, vertices[0].z,
-                        vertices[1].x, vertices[1].y, vertices[1].z,
-                        vertices[2].x, vertices[2].y, vertices[2].z,
-                        vertices[3].x, vertices[3].y, vertices[3].z,
+    std::vector<float> pos = {
+        vertices[0].x, vertices[0].y, vertices[0].z,
+        vertices[1].x, vertices[1].y, vertices[1].z,
+        vertices[2].x, vertices[2].y, vertices[2].z,
+        vertices[3].x, vertices[3].y, vertices[3].z,
 
-                        vertices[4].x, vertices[4].y, vertices[4].z,
-                        vertices[5].x, vertices[5].y, vertices[5].z,
-                        vertices[6].x, vertices[6].y, vertices[6].z,
-                        vertices[7].x, vertices[7].y, vertices[7].z
-                       };
+        vertices[4].x, vertices[4].y, vertices[4].z,
+        vertices[5].x, vertices[5].y, vertices[5].z,
+        vertices[6].x, vertices[6].y, vertices[6].z,
+        vertices[7].x, vertices[7].y, vertices[7].z
+       };
 
-    float modelTex[] = {0.0f, 0.0f,
-                       1.0f, 0.0f,
-                       0.0f, 1.0f,
-                       1.0f, 1.0f};
+    std::vector<float> tex = {
+        0.0, 0.0,
+        1.0, 0.0,
+        0.0, 1.0,
+        1.0, 1.0f
+    };
 
+    renderer::VertexBuffer modelPos(pos, 3 * sizeof(float));
+    renderer::VertexBuffer modelTex(tex, 2 * sizeof(float));
 
-    GX_SetArray(GX_VA_POS, modelPos, 3 * sizeof(float));
-    GX_SetArray(GX_VA_TEX0, modelTex, 2 * sizeof(float));
+    renderer::VertexFormat cubeFormat(GX_VTXFMT0);
+    cubeFormat.AddAttribute({GX_INDEX16, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    cubeFormat.AddAttribute({GX_INDEX16, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+
+    renderer::VertexArray vertexArray(&cubeFormat);
+    vertexArray.AddVertexBuffer(GX_VA_POS, &modelPos);
+    vertexArray.AddVertexBuffer(GX_VA_TEX0, &modelTex);
+
+    renderer::VertexFormat spriteFormat(GX_VTXFMT0);
+    spriteFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    spriteFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+
+    renderer::VertexFormat fontFormat(GX_VTXFMT1);
+    fontFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XY, GX_S16});
+    fontFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
+    fontFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+
+    renderer.LoadFont(Minecraft_ttf, Minecraft_ttf_size, 64);
 
     while(true)
-    {        
+    {
 
         WPAD_ScanPads();
         s_wpadData = WPAD_Data(WPAD_CHAN_0);
         s_wpadButton.ButtonUp = WPAD_ButtonsUp(WPAD_CHAN_0);
         s_wpadButton.ButtonDown = WPAD_ButtonsDown(WPAD_CHAN_0);
         s_wpadButton.ButtonHeld = WPAD_ButtonsHeld(WPAD_CHAN_0);
-        //DrawDummyColorTriangle(clock);
-        /*cursorSprite.Bind(renderer, 0);
-        DrawDummySprite(cursorSprite, renderer, true);
-        backgroundSprite.Bind(renderer, 0);
-        DrawDummySprite(backgroundSprite, renderer, false);*/
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_HOME)
+            break;
+
+        math::Matrix3x4 modelView;
+        math::Matrix3x4 scale;
+        scale.SetIdentity();
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
+            rotation.Rotate('Y', -.4f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
+            rotation.Rotate('Y', .4f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
+            rotation.Rotate('X', -.4f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
+            rotation.Rotate('X', .4f);
+
+        renderer.SetCamera(&perspectiveCamera);
+        vertexArray.Bind(renderer);
         texture.Bind(renderer, 0);
-        //DrawFixedDummy3DTexturedCube(clock, renderer, translation, rotation);
         DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation);
+
+        renderer.SetCamera(&orthographicCamera);
+        spriteFormat.Bind();
+        cursorSprite.Bind(renderer, 0);
+        DrawDummySprite(cursorSprite, renderer, true);
+
+        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
+        fontFormat.Bind();
+        renderer.DrawText(320, 275, L"Hello World", renderer::ColorRGBA::GREEN);
+
         renderer.DisplayBuffer();
     }
 }
@@ -156,9 +193,9 @@ int main(int argc, char** argv)
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation)
 {
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    /*GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);
+    GX_SetColorUpdate(GX_TRUE);*/
 
     math::Matrix3x4 modelView;
     math::Matrix3x4 scale;
@@ -208,7 +245,7 @@ void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& ren
                               2,2
     };
 
-    GX_LoadPosMtxImm(modelView.mMtx34, GX_PNMTX0);
+    renderer.LoadModelViewMatrix(modelView);
     GX_Begin(GX_QUADS, GX_VTXFMT0, 24);
     for (uint32_t i = 0; i < 48; i+=2)
     {
@@ -394,7 +431,6 @@ void DrawDummySprite(renderer::Sprite& sprite, renderer::Renderer& renderer, boo
     scale.SetIdentity();
     rotation.SetIdentity();
     model.SetIdentity();
-    modelView.SetIdentity();
 
     scale.Scale(sprite.ScaleX(), sprite.ScaleY(), 0.0f);
     translation.Translate(sprite.PosX(), sprite.PosY(), sprite.PosZ());

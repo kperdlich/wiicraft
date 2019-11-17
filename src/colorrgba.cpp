@@ -14,7 +14,7 @@ renderer::ColorRGBA::ColorRGBA()
     mChannels[3] = 0;
 }
 
-renderer::ColorRGBA::ColorRGBA(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha)
+renderer::ColorRGBA::ColorRGBA(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)
 {
     mChannels[0] = red;
     mChannels[1] = green;

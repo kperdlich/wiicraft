@@ -5,6 +5,8 @@ renderer::VertexFormat::VertexFormat(uint32_t formatIndex) : mFormatIndex(format
 
 void renderer::VertexFormat::Bind()
 {
+    GX_ClearVtxDesc();
+
     for (const auto& attribute : mAttributes)
     {
         GX_SetVtxDesc(attribute.Attribute, attribute.DataInputType);

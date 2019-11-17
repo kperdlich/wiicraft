@@ -6,8 +6,7 @@ namespace math {
 class Matrix3x4
 {
 public:
-    Matrix3x4() = default;
-    explicit Matrix3x4(bool zero);
+    explicit Matrix3x4(bool zero = false);
     Matrix3x4(float m34[3][4]);
     Matrix3x4(float m00, float m01, float m02, float m03,
             float m10, float m11, float m12, float m13,
@@ -25,6 +24,9 @@ public:
 
     void SetIdentity();
     void SetZero();
+
+    static Matrix3x4 Identity();
+
 public:
     float mMtx34[3][4];
 };

@@ -1,6 +1,6 @@
 #include "wiitexture2d.h"
 #include "image2d.h"
-#include "tplloader.h"
+#include "tpl_loader.h"
 #include <assert.h>
 
 renderer::Texture2D::Texture2D(const Image2D& image)

@@ -1,21 +1,23 @@
 #pragma once
 
+#include "stdint.h"
+
 namespace renderer {
 class ColorRGBA
 {
 public:
     ColorRGBA();
-    ColorRGBA(unsigned char red, unsigned char green, unsigned char blue, unsigned char alpha);
+    ColorRGBA(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha);
     ~ColorRGBA() = default;
     ColorRGBA(const ColorRGBA&) = default;
     ColorRGBA& operator = (const ColorRGBA&) = default;
     ColorRGBA(ColorRGBA&&) = default;
     ColorRGBA& operator = (ColorRGBA&&) = default;
 
-    inline unsigned char Red() const;
-    inline unsigned char Green() const;
-    inline unsigned char Blue() const;
-    inline unsigned char Alpha() const;
+    inline uint8_t Red() const;
+    inline uint8_t Green() const;
+    inline uint8_t Blue() const;
+    inline uint8_t Alpha() const;
 
     static const ColorRGBA RED;
     static const ColorRGBA GREEN;
@@ -24,25 +26,25 @@ public:
     static const ColorRGBA WHITE;
 
 private:
-    unsigned char mChannels[4];
+    uint8_t mChannels[4];
 };
 
-inline unsigned char ColorRGBA::Red() const
+inline uint8_t ColorRGBA::Red() const
 {
     return mChannels[0];
 }
 
-inline unsigned char ColorRGBA::Green() const
+inline uint8_t ColorRGBA::Green() const
 {
     return mChannels[1];
 }
 
-inline unsigned char ColorRGBA::Blue() const
+inline uint8_t ColorRGBA::Blue() const
 {
     return mChannels[2];
 }
 
-inline unsigned char ColorRGBA::Alpha() const
+inline uint8_t ColorRGBA::Alpha() const
 {
     return mChannels[3];
 

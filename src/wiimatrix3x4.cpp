@@ -65,3 +65,10 @@ void math::Matrix3x4::SetZero()
     }
 }
 
+math::Matrix3x4 math::Matrix3x4::Identity()
+{
+    Matrix3x4 mtx;
+    mtx.SetIdentity();
+    return mtx;
+}
+

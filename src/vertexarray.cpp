@@ -1,6 +1,7 @@
 #include <assert.h>
 #include "wiidefines.h"
 #include "renderer.h"
+#include "renderdata.h"
 #include "vertexarray.h"
 
 renderer::VertexArray::VertexArray(VertexFormat *vertexFormat)
@@ -24,7 +25,7 @@ void renderer::VertexArray::Bind(renderer::Renderer &renderer)
         GX_SetArray(vertexBuffer.first, vertexBuffer.second->GetBuffer(), vertexBuffer.second->GetStride());
     }
 
-    renderer.GetRenderData().SetVertexFormat(this);
+    renderer.GetRenderData()->SetVertexArray(this);
 }
 
 

@@ -22,7 +22,6 @@ public:
 
     math::Matrix3x4 GetViewMatrix3x4() const;
 
-    inline void SetPerspective(bool isPerspective);
     inline bool IsPerspective() const;
     inline float GetFrustrumNear() const;
     inline float GetFrustrumFar() const;
@@ -41,11 +40,6 @@ private:
     float mFrustrumNear, mFrustrumFar, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight;
     bool mIsPerspective;
 };
-
-inline void Camera::SetPerspective(bool isPerspective)
-{
-    mIsPerspective = isPerspective;
-}
 
 inline bool Camera::IsPerspective() const
 {

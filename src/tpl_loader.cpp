@@ -1,7 +1,7 @@
-#include "tplloader.h"
+#include "tpl_loader.h"
 #include "image2d.h"
 
-bool renderer::IsTPLTexture(const unsigned char *data)
+bool renderer::IsTPLTexture(const uint8_t *data)
 {
     if (!data)
     {
@@ -11,7 +11,7 @@ bool renderer::IsTPLTexture(const unsigned char *data)
     return (pHeader && pHeader->magic == 0x20af30);
 }
 
-renderer::TPL_Texture* renderer::GetTPLTexture(unsigned char *data)
+renderer::TPL_Texture* renderer::GetTPLTexture(uint8_t *data)
 {
     if (!data)
     {
@@ -23,4 +23,13 @@ renderer::TPL_Texture* renderer::GetTPLTexture(unsigned char *data)
 size_t renderer::GetTPLTextureSize(const size_t imageSize)
 {
     return imageSize - sizeof(TPL_Header) - sizeof(TPL_Addr) - sizeof(TPL_Texture);
+}
+
+renderer::TPL_Header* renderer::GetTPLHeader(uint8_t *data)
+{
+    if (!data)
+    {
+        return nullptr;
+    }
+    return reinterpret_cast<TPL_Header*>(data);
 }

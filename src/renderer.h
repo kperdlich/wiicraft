@@ -2,23 +2,24 @@
 
 #include <memory>
 #include "colorrgba.h"
-#include "renderdata.h"
 #include "camera.h"
 
 namespace renderer {
 
-enum class CullMode : char {
+enum class CullMode : uint8_t {
     None = 0,
     Front = 1,
     Back = 2,
     All = 3
 };
 
+class RenderData;
+class TTFFont;
 
 class Renderer {
 public:
     explicit Renderer(bool useVSync);
-    ~Renderer() = default;
+    ~Renderer();
     Renderer(const Renderer&) = delete;
     Renderer& operator = (const Renderer&) = delete;
     Renderer(Renderer&&) = delete;
@@ -26,24 +27,36 @@ public:
 
     void SetClearColor(const ColorRGBA& clearColor);
     void DisplayBuffer();
-    void SetCamera(std::shared_ptr<Camera> camera);
+    void SetCamera(Camera *camera);
 
     void SetZModeEnabled(bool isEnabled);
     void SetCullMode(const CullMode& mode);
 
+    void LoadModelViewMatrix(const math::Matrix3x4& modelView, const uint8_t matrixIndex = 0);
+    void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);
+
+    void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color);
+
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
 
-    inline std::shared_ptr<Camera> GetCamera() const;
+    inline Camera* GetCamera() const;
+
+    inline RenderData* GetRenderData();
 
 private:
-    std::unique_ptr<RenderData> mRenderData;
-    std::shared_ptr<Camera> mCamera;
+    RenderData* mRenderData;
+    Camera* mCamera;
 };
 
-inline std::shared_ptr<Camera> Renderer::GetCamera() const
+inline Camera *Renderer::GetCamera() const
 {
     return mCamera;
+}
+
+inline RenderData* Renderer::GetRenderData()
+{
+    return mRenderData;
 }
 
 };

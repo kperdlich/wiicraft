@@ -1,11 +1,15 @@
+#include <iostream>
+#include <malloc.h>
 #include "vertexbuffer.h"
 #include "wiidefines.h"
 
-renderer::VertexBuffer::VertexBuffer(size_t size)
-    : mBufferSize(size)
+renderer::VertexBuffer::VertexBuffer(float* elements, uint32_t elementCount, uint8_t stride)
+    : mStride(stride)
 {
-    mBuffer = (char*) memalign(32, mBufferSize);
-
+    mBufferSize = elementCount * sizeof(float);
+    mBuffer = (uint8_t*) memalign(32, mBufferSize);
+    memcpy(mBuffer, elements, mBufferSize);
+    DCFlushRange(mBuffer, mBufferSize);
 }
 
 renderer::VertexBuffer::~VertexBuffer()

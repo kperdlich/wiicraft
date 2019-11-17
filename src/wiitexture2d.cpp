@@ -17,7 +17,7 @@ renderer::Texture2D::Texture2D(const Image2D& image)
         case ImageFormat::TPL:
         {
             const TPL_Texture* tplTexture = GetTPLTexture(const_cast<unsigned char*>(image.Data()));
-            GX_InitTexObj(&mTexObj, (char*) image.Data() + tplTexture->dataOffs, tplTexture->width, tplTexture->width,
+            GX_InitTexObj(&mTexObj, (void*) (image.Data() + tplTexture->dataOffs), tplTexture->width, tplTexture->width,
                           tplTexture->format, tplTexture->wrap_s, tplTexture->wrap_t, GX_FALSE);
             if (tplTexture->maxLod)
             {

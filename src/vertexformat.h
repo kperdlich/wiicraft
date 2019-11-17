@@ -2,6 +2,7 @@
 
 #include "vector"
 #include "stdint.h"
+#include <stddef.h>
 
 namespace renderer {
 
@@ -24,9 +25,16 @@ public:
     void Bind();
     void AddAttribute(const VertexFormatAttribute& attribute);
 
+    inline size_t VertexAttributeCount() const;
+
 private:
     std::vector<VertexFormatAttribute> mAttributes;
     uint32_t mFormatIndex;
 };
+
+size_t VertexFormat::VertexAttributeCount() const
+{
+    return mAttributes.size();
+}
 
 }

@@ -1,6 +1,8 @@
 #pragma once
 
+#include <memory>
 #include "wiidefines.h"
+#include "vertexarray.h"
 
 namespace renderer {
 class RenderData
@@ -16,6 +18,8 @@ public:
     RenderData(RenderData&&) = delete;
     RenderData& operator = (RenderData&&) = delete;
 
+    inline void SetVertexFormat(VertexArray *vertexFormat);
+
 private:
     bool mUseVSync;
     uint8_t mFrameBufferIndex;
@@ -25,5 +29,12 @@ private:
     uint32_t mWidth;
     uint32_t mHeight;
     GXColor mClearColor;
+    VertexArray* mVertexFormat;
 };
+
+inline void RenderData::SetVertexFormat(VertexArray* vertexFormat)
+{
+    mVertexFormat = vertexFormat;
+}
+
 }

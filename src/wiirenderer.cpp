@@ -1,7 +1,9 @@
 #include "renderer.h"
-#include "renderdata.h"
+#include "mesh.h"
 #include "freetypegx.h"
 #include "wiidefines.h"
+#include "wiisprite.h"
+#include "renderdata.h"
 
 renderer::Renderer::Renderer(bool useVSync)
 {
@@ -82,6 +84,15 @@ renderer::Renderer::Renderer(bool useVSync)
     mRenderData->mHeight = mRenderData->mRmode->efbHeight;
 
     mRenderData->mFreeType = new FreeTypeGX(GX_TF_RGBA8, GX_VTXFMT1);
+
+    mRenderData->mDefaultFontVertexFormat.SetFormatIndex(GX_VTXFMT1);
+    mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XY, GX_S16});
+    mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
+    mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+
+    mRenderData->mDefaultSpriteVertexFormat.SetFormatIndex(GX_VTXFMT0);
+    mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
 }
 
 renderer::Renderer::~Renderer()
@@ -179,8 +190,83 @@ void renderer::Renderer::LoadFont(const uint8_t *fontData, const int32_t size, c
 }
 
 void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color)
-{
+{    
+    mRenderData->mDefaultFontVertexFormat.Bind();
     mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_CENTER);
+}
+
+void renderer::Renderer::Draw(Mesh &mesh)
+{
+    mesh.GetVertexArray()->Bind();
+    if (mesh.HasTexture())
+    {
+        mesh.GetTexture()->Bind(0);
+    }
+
+    const std::shared_ptr<const IndexBuffer> indexBuffer = mesh.GetIndexBuffer();
+    const VertexBufferMap& vertexBuffers = mesh.GetVertexArray()->GetVertexBufferMap();
+    const uint16_t vertices = static_cast<uint16_t>(indexBuffer->GetElementCount() / vertexBuffers.size());
+    const uint16_t indexCount = static_cast<uint16_t>(indexBuffer->GetElementCount());
+
+    GX_Begin(mesh.GetPrimitiveType(), mesh.GetVertexFormatIndex(), vertices);
+    for (uint16_t i = 0; i < indexCount;)
+    {
+        for (const auto& vertexAttribute : vertexBuffers)
+        {
+            const uint16_t index = indexBuffer->GetIndexAt(i++);
+
+            switch (vertexAttribute.first)
+            {
+                case GX_VA_POS:
+                    GX_Position1x16(index);
+                    break;
+                case GX_VA_CLR0:
+                case GX_VA_CLR1:
+                    GX_Color1x16(index);
+                    break;
+                case GX_VA_TEX0:
+                case GX_VA_TEX1:
+                case GX_VA_TEX2:
+                case GX_VA_TEX3:
+                case GX_VA_TEX4:
+                case GX_VA_TEX5:
+                case GX_VA_TEX6:
+                case GX_VA_TEX7:
+                    GX_TexCoord1x16(index);
+                    break;
+                case GX_VA_NRM:
+                    GX_Normal1x16(index);
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+        }
+    }
+    GX_End();
+}
+
+void renderer::Renderer::Draw(renderer::Sprite &sprite)
+{
+    mRenderData->mDefaultSpriteVertexFormat.Bind();
+    sprite.Bind(0);
+
+    const float width = sprite.Width() * .5f;
+    const float height = sprite.Height() * .5f;
+
+    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+        GX_Position3f32(-width, -height, 0);
+        GX_TexCoord2f32(0, 0);
+
+        GX_Position3f32(width, -height, 0);
+        GX_TexCoord2f32(1, 0);
+
+        GX_Position3f32(width, height, 0);
+        GX_TexCoord2f32(1, 1);
+
+        GX_Position3f32(-width, height, 0);
+        GX_TexCoord2f32(0, 1);
+    GX_End();
 }
 
 uint32_t renderer::Renderer::GetWidth() const

@@ -8,16 +8,17 @@ namespace renderer {
 class Image2D;
 class Renderer;
 
-class Sprite {
+class Sprite
+{
+    friend class Renderer;
+
 public:
     explicit Sprite(const Image2D& image);
     ~Sprite() = default;
     Sprite(const Sprite&) = delete;
     Sprite(Sprite&&) = delete;
     void operator=(const Sprite&) = delete;
-    void operator=(Sprite&&) = delete;
-
-    void Bind(Renderer& renderer, const uint8_t unit);
+    void operator=(Sprite&&) = delete;    
 
     inline uint32_t Width() const;
     inline uint32_t Height() const;
@@ -44,6 +45,8 @@ public:
     inline void Rotate(const float degree);
 
 private:
+    void Bind(const uint8_t unit);
+
     GXTexObj mTexObj;
     float mPosX, mPosY, mPosZ;
     float mScaleX, mScaleY;

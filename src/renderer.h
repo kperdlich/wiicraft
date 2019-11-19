@@ -15,6 +15,8 @@ enum class CullMode : uint8_t {
 
 class RenderData;
 class TTFFont;
+class Mesh;
+class Sprite;
 
 class Renderer {
 public:
@@ -36,14 +38,14 @@ public:
     void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);
 
     void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color);
+    void Draw(Mesh& mesh);
+    void Draw(Sprite &sprite);
 
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
 
     inline Camera* GetCamera() const;
-
     inline RenderData* GetRenderData();
-
 private:
     RenderData* mRenderData;
     Camera* mCamera;

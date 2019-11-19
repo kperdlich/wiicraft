@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+#include <assert.h>
 #include <memory>
 #include <stddef.h>
 #include <stdint.h>
@@ -17,16 +18,28 @@ public:
     IndexBuffer& operator=(const IndexBuffer&) = delete;
     IndexBuffer& operator=(IndexBuffer&&) = delete;
 
-    uint16_t operator [](uint32_t index) const;
-
-    inline size_t ElementCount() const;
+    inline uint16_t operator [](uint32_t index) const;
+    inline uint16_t GetIndexAt(uint32_t index) const;
+    inline size_t GetElementCount() const;
 
 private:
     std::unique_ptr<uint16_t[]> mBuffer;
     size_t mElementCount;
 };
 
-inline size_t IndexBuffer::ElementCount() const
+inline uint16_t IndexBuffer::operator [](uint32_t index) const
+{
+    assert(index >= 0 && index < mElementCount);
+    return mBuffer[index];
+}
+
+inline uint16_t IndexBuffer::GetIndexAt(uint32_t index) const
+{
+    assert(index >= 0 && index < mElementCount);
+    return mBuffer[index];
+}
+
+inline size_t IndexBuffer::GetElementCount() const
 {
     return mElementCount;
 }

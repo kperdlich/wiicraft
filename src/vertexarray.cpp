@@ -16,16 +16,14 @@ void renderer::VertexArray::AddVertexBuffer(uint32_t vertexAttribute, VertexBuff
     mVertexBufferMap[vertexAttribute] = vertexBuffer;
 }
 
-void renderer::VertexArray::Bind(renderer::Renderer &renderer)
+void renderer::VertexArray::Bind()
 {
     mVertexFormat->Bind();
 
     for (auto& vertexBuffer : mVertexBufferMap)
-    {
+    {        
         GX_SetArray(vertexBuffer.first, vertexBuffer.second->GetBuffer(), vertexBuffer.second->GetStride());
     }
-
-    renderer.GetRenderData()->SetVertexArray(this);
 }
 
 

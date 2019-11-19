@@ -13,7 +13,7 @@ renderer::Sprite::Sprite(const Image2D& image)
     GX_InitTexObjLOD(&mTexObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
 }
 
-void renderer::Sprite::Bind(renderer::Renderer& renderer, const uint8_t unit)
+void renderer::Sprite::Bind(const uint8_t unit)
 {
     GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
     GX_SetTexCoordGen(GX_TEXCOORD0 + unit, GX_TG_MTX2x4, GX_TG_TEX0 + unit, GX_IDENTITY);

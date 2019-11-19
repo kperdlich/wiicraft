@@ -3,6 +3,7 @@
 #include <memory>
 #include "wiidefines.h"
 #include "vertexarray.h"
+#include "vertexformat.h"
 
 namespace renderer {
 class RenderData
@@ -31,6 +32,9 @@ public:
     VertexArray* mVertexArray;
 
     FreeTypeGX* mFreeType;
+
+    VertexFormat mDefaultSpriteVertexFormat;
+    VertexFormat mDefaultFontVertexFormat;
 };
 
 inline void RenderData::SetVertexArray(VertexArray* vertexArray)

@@ -6,7 +6,8 @@
 
 namespace renderer {
 
-struct VertexFormatAttribute {
+struct VertexFormatAttribute
+{
     uint8_t DataInputType;
     uint8_t Attribute;
     uint8_t ComponentType;
@@ -14,7 +15,10 @@ struct VertexFormatAttribute {
 };
 
 class VertexFormat {
+    friend class VertexArray;
+    friend class Renderer;
 public:
+    VertexFormat() = default;
     explicit VertexFormat(uint32_t formatIndex);
     ~VertexFormat() = default;
     VertexFormat(const VertexFormat&) = delete;
@@ -22,19 +26,32 @@ public:
     VertexFormat& operator=(const VertexFormat&) = delete;
     VertexFormat& operator=(VertexFormat&&) = delete;
 
-    void Bind();
     void AddAttribute(const VertexFormatAttribute& attribute);
 
     inline size_t VertexAttributeCount() const;
+    inline uint8_t GetFormatIndex() const;
+    inline void SetFormatIndex(uint8_t format);
 
 private:
+    void Bind();
+
     std::vector<VertexFormatAttribute> mAttributes;
-    uint32_t mFormatIndex;
+    uint8_t mFormatIndex;
 };
 
-size_t VertexFormat::VertexAttributeCount() const
+inline size_t VertexFormat::VertexAttributeCount() const
 {
     return mAttributes.size();
+}
+
+inline uint8_t VertexFormat::GetFormatIndex() const
+{
+    return mFormatIndex;
+}
+
+inline void VertexFormat::SetFormatIndex(uint8_t format)
+{
+    mFormatIndex = format;
 }
 
 }

@@ -1,8 +1,8 @@
 #pragma once
 
 #include <memory>
+#include "matrix3x4.h"
 #include "colorrgba.h"
-#include "camera.h"
 
 namespace renderer {
 
@@ -16,7 +16,9 @@ enum class CullMode : uint8_t {
 class RenderData;
 class TTFFont;
 class Mesh;
+class StaticMesh;
 class Sprite;
+class Camera;
 
 class Renderer {
 public:
@@ -40,6 +42,7 @@ public:
     void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color);
     void Draw(Mesh& mesh);
     void Draw(Sprite &sprite);
+    void Draw(StaticMesh& mesh);
 
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;

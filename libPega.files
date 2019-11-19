@@ -78,6 +78,8 @@ src/renderer.h
 src/renderer.h
 src/renderer.h
 src/renderer.h
+src/staticmesh.cpp
+src/staticmesh.h
 src/texture2d.h
 src/third-party/Metaphrasis.cpp
 src/third-party/Metaphrasis.h

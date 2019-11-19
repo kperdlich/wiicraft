@@ -31,6 +31,7 @@
 #include "vertexarray.h"
 #include "vertexformat.h"
 #include "mesh.h"
+#include "staticmesh.h"
 #include "wiidisplaylist.h"
 #include <array>
 #include <initializer_list>
@@ -41,7 +42,7 @@
 #include <assert.h>
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
-                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::Mesh &mesh);
+                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
 void DrawDummySprite(renderer::Sprite&, renderer::Renderer &renderer, bool cursor);
@@ -173,7 +174,7 @@ int main(int argc, char** argv)
                                      2,2
                         });
 
-    renderer::Mesh cube(indexBuffer, vertexArray, GX_QUADS);
+    renderer::StaticMesh cube(indexBuffer, vertexArray, GX_QUADS);
     cube.SetTexture(texture);
 
     renderer.LoadFont(Minecraft_ttf, Minecraft_ttf_size, 64);
@@ -219,7 +220,7 @@ int main(int argc, char** argv)
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation,
-                                    renderer::Mesh& mesh)
+                                    renderer::StaticMesh& mesh)
 {
     /*GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);

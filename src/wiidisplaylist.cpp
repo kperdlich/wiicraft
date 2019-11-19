@@ -1,12 +1,14 @@
 #include "wiidisplaylist.h"
 
+renderer::DisplayList::DisplayList()
+    : mDispList(nullptr),
+      mBufferSize(0) {}
+
 renderer::DisplayList::DisplayList(const size_t bufferSize)
-    : mBufferSize(0)
+    : mDispList(nullptr),
+      mBufferSize(0)
 {
-    mDispList = memalign(32, bufferSize);
-    memset(mDispList, 0, bufferSize);
-    DCInvalidateRange(mDispList, bufferSize);
-    GX_BeginDispList(mDispList, bufferSize);
+    Begin(bufferSize);
 }
 
 renderer::DisplayList::~DisplayList()
@@ -22,6 +24,15 @@ void renderer::DisplayList::Render()
     }
 }
 
+void renderer::DisplayList::Begin(const size_t bufferSize)
+{
+    Clear();
+    mDispList = memalign(32, bufferSize);
+    memset(mDispList, 0, bufferSize);
+    DCInvalidateRange(mDispList, bufferSize);
+    GX_BeginDispList(mDispList, bufferSize);
+}
+
 
 void renderer::DisplayList::End()
 {
@@ -32,7 +43,10 @@ void renderer::DisplayList::End()
 
 void renderer::DisplayList::Clear()
 {
-    free(mDispList);
-    mBufferSize = 0;
-    mDispList = nullptr;
+    if (mDispList)
+    {
+        free(mDispList);
+        mBufferSize = 0;
+        mDispList = nullptr;
+    }
 }

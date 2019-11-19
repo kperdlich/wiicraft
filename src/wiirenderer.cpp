@@ -1,5 +1,9 @@
 #include "renderer.h"
+#include "camera.h"
 #include "mesh.h"
+#include "staticmesh.h"
+#include "texture2d.h"
+#include "wiidisplaylist.h"
 #include "freetypegx.h"
 #include "wiidefines.h"
 #include "wiisprite.h"
@@ -266,7 +270,31 @@ void renderer::Renderer::Draw(renderer::Sprite &sprite)
 
         GX_Position3f32(-width, height, 0);
         GX_TexCoord2f32(0, 1);
-    GX_End();
+        GX_End();
+}
+
+void renderer::Renderer::Draw(renderer::StaticMesh& staticMesh)
+{
+    if (staticMesh.IsDirty())
+    {
+        size_t displayListSize = staticMesh.mMesh->GetIndexBuffer()->GetElementCount()
+                * staticMesh.mMesh->GetVertexArray()->GetVertexBufferMap().size() * 2;
+        displayListSize *= 2;
+        staticMesh.mDisplayList->Begin(displayListSize);
+        Draw(*staticMesh.mMesh);
+        staticMesh.mDisplayList->End();
+        staticMesh.mIsDirty = false;
+        staticMesh.mDisplayList->Render();
+    }
+    else
+    {
+        staticMesh.mMesh->GetVertexArray()->Bind();
+        if (staticMesh.mMesh->HasTexture())
+        {
+            staticMesh.mMesh->GetTexture()->Bind(0);
+        }
+        staticMesh.mDisplayList->Render();
+    }
 }
 
 uint32_t renderer::Renderer::GetWidth() const

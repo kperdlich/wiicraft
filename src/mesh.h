@@ -1,13 +1,13 @@
 #pragma once
 
 #include <memory>
-#include <unordered_map>
-#include "texture2d.h"
-#include "indexbuffer.h"
 #include "vertexarray.h"
 
 namespace renderer {
 
+class IndexBuffer;
+class VertexBuffer;
+class Texture2D;
 class Renderer;
 
 class Mesh

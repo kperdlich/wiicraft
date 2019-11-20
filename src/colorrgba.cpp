@@ -8,10 +8,10 @@ const renderer::ColorRGBA renderer::ColorRGBA::BLUE = {0, 0, 255, 255};
 
 renderer::ColorRGBA::ColorRGBA()
 {
-    mChannels[0] = 0;
-    mChannels[1] = 0;
-    mChannels[2] = 0;
-    mChannels[3] = 0;
+    mChannels[0] = 255;
+    mChannels[1] = 255;
+    mChannels[2] = 255;
+    mChannels[3] = 255;
 }
 
 renderer::ColorRGBA::ColorRGBA(uint8_t red, uint8_t green, uint8_t blue, uint8_t alpha)

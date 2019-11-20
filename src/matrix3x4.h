@@ -2,8 +2,10 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include "mathhelper.h"
 
 namespace math {
+
 // The elements of the 3x4 matrix are stored in
 // row-major order.
 class Matrix3x4
@@ -21,14 +23,15 @@ public:
     Matrix3x4& operator = (Matrix3x4&&) = default;
     Matrix3x4 operator * (const Matrix3x4& other);
 
-    inline const float* operator[] (uint8_t index) const;
-
     void Scale(float x, float y, float z);
     void Translate(float x, float y, float z);
     void Rotate(const char axis, float degree);
 
     void SetIdentity();
     void SetZero();
+
+    inline math::Vertex3f GetColum(uint8_t index) const;
+    inline const float* operator[] (uint8_t index) const;
 
     static Matrix3x4 Identity();
 
@@ -40,6 +43,12 @@ inline const float *Matrix3x4::operator[](uint8_t index) const
 {
     assert(index >= 0 && index < 3);
     return mMtx34[index];
+}
+
+inline math::Vertex3f Matrix3x4::GetColum(uint8_t index) const
+{
+    assert(index >= 0 && index <= 3);
+    return {mMtx34[0][index], mMtx34[1][index], mMtx34[2][index]};
 }
 
 }

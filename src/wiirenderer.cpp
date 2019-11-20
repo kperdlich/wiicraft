@@ -126,6 +126,11 @@ void renderer::Renderer::SetClearColor(const renderer::ColorRGBA &clearColor)
     GX_SetCopyClear(gxClearColor, GX_MAX_Z24);
 }
 
+void renderer::Renderer::PreDraw()
+{
+    GX_InvVtxCache();
+}
+
 
 void renderer::Renderer::DisplayBuffer()
 {
@@ -139,9 +144,14 @@ void renderer::Renderer::DisplayBuffer()
     GX_DrawDone();
     GX_InvalidateTexAll();
     VIDEO_SetNextFramebuffer(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex]);
-    VIDEO_Flush();
+    VIDEO_Flush();    
     if (mRenderData->mUseVSync)
     {
+        VIDEO_WaitVSync();
+    }
+    else if (mRenderData->mRmode->viTVMode &VI_NON_INTERLACE)
+    {
+        VIDEO_WaitVSync();
         VIDEO_WaitVSync();
     }
 }
@@ -150,18 +160,14 @@ void renderer::Renderer::SetCamera(renderer::Camera* camera)
 {
     assert(camera != nullptr);
     mCamera = camera;
-    Mtx44 mtx;
+    math::Matrix4x4 mtx = mCamera->GetProjectionMatrix4x4();
     if (mCamera->IsPerspective())
-    {
-        guFrustum(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
-                  mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
-        GX_LoadProjectionMtx(mtx, GX_PERSPECTIVE);
+    {        
+        GX_LoadProjectionMtx(mtx.mMatrix, GX_PERSPECTIVE);
     }
     else
-    {
-        guOrtho(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
-                mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
-        GX_LoadProjectionMtx(mtx, GX_ORTHOGRAPHIC);
+    {        
+        GX_LoadProjectionMtx(mtx.mMatrix, GX_ORTHOGRAPHIC);
     }
 }
 
@@ -279,22 +285,23 @@ void renderer::Renderer::Draw(renderer::Sprite &sprite)
 
     const float width = sprite.Width() * .5f;
     const float height = sprite.Height() * .5f;
+    const ColorRGBA& color = sprite.GetColor();
 
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         GX_Position3f32(-width, -height, 0);
-        GX_Color4u8(255, 255, 255, 255);
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
         GX_TexCoord2f32(0, 0);
 
         GX_Position3f32(width, -height, 0);
-        GX_Color4u8(255, 255, 255, 255);
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
         GX_TexCoord2f32(1, 0);
 
         GX_Position3f32(width, height, 0);
-        GX_Color4u8(255, 255, 255, 255);
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
         GX_TexCoord2f32(1, 1);
 
         GX_Position3f32(-width, height, 0);
-        GX_Color4u8(255, 255, 255, 255);
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
         GX_TexCoord2f32(0, 1);
     GX_End();
 }

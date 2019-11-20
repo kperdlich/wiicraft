@@ -23,6 +23,7 @@ public:
     Matrix4x4& operator=(Matrix4x4&&) = default;
 
     inline void SetIdentity();
+    inline void Data(const float data[4][4]) const;
 
     inline Matrix4x4 operator+(const Matrix4x4& other) const;
     inline Matrix4x4 operator*(const Matrix4x4& other) const;
@@ -54,7 +55,7 @@ public:
     inline float _43() const;
     inline float _44() const;
 
-private:
+public:
     float mMatrix[4][4];
 };
 

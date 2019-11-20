@@ -1,6 +1,7 @@
 #pragma once
 
 #include "wiidefines.h"
+#include "colorrgba.h"
 #include "matrix3x4.h"
 
 namespace renderer {
@@ -44,10 +45,14 @@ public:
     inline void Translate(const float x, const float y, const float z);
     inline void Rotate(const float degree);
 
+    inline void SetColor(const renderer::ColorRGBA& color);
+    inline const ColorRGBA& GetColor() const;
+
 private:
     void Bind(const uint8_t unit);
 
     GXTexObj mTexObj;
+    renderer::ColorRGBA mColor;
     float mPosX, mPosY, mPosZ;
     float mScaleX, mScaleY;
     float mRotationDeg;
@@ -134,6 +139,16 @@ inline void renderer::Sprite::Translate(const float x, const float y, const floa
 inline void renderer::Sprite::Rotate(const float degree)
 {
     mRotationDeg += degree;
+}
+
+inline void Sprite::SetColor(const ColorRGBA &color)
+{
+    mColor = color;
+}
+
+inline const ColorRGBA& Sprite::GetColor() const
+{
+    return mColor;
 }
 
 }

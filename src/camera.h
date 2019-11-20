@@ -3,6 +3,7 @@
 #include "vector3f.h"
 #include "matrix3x4.h"
 #include "matrix4x4.h"
+#include "frustrum.h"
 
 
 namespace renderer {
@@ -19,6 +20,9 @@ public:
     void operator=(Camera&&) = delete;
     void SetFrustrum(float minDist, float maxDist, float fov, float aspectRatio);
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
+
+    void GenerateFrustrumPlanes(bool normalize);
+    bool IsPointVisible(const math::Vertex3f &point) const;
 
     math::Matrix3x4 GetViewMatrix3x4() const;
     math::Matrix4x4 GetProjectionMatrix4x4() const;
@@ -38,6 +42,7 @@ public:
 
 private:
     math::Matrix3x4 mViewMatrix;
+    renderer::Frustrum mFrustrum; // For Frustrum Culling
     float mFrustrumNear, mFrustrumFar, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight;
     bool mIsPerspective;
 };

@@ -38,6 +38,16 @@ void renderer::Camera::SetFrustrum(float top, float bottom, float left, float ri
     mFrustrumFar = far;
 }
 
+void renderer::Camera::GenerateFrustrumPlanes(bool normalize)
+{
+    mFrustrum.ExtractPlanesD3D(*this, normalize);
+}
+
+bool renderer::Camera::IsPointVisible(const math::Vertex3f &point) const
+{
+    return mFrustrum.IsPointVisible(point);
+}
+
 math::Matrix3x4 renderer::Camera::GetViewMatrix3x4() const
 {    
     return mViewMatrix;

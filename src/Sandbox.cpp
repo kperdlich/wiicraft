@@ -46,7 +46,7 @@
 #include <assert.h>
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
-                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::Mesh &mesh);
+                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
 void DrawDummySprite(renderer::Sprite&, renderer::Renderer &renderer, bool cursor);
@@ -61,7 +61,7 @@ static WPADData* s_wpadData = nullptr;
 
 int main(int argc, char** argv)
 {
-    renderer::Renderer renderer(false);
+    renderer::Renderer renderer(true);
     renderer.SetZModeEnabled(true);
     renderer.SetClearColor(renderer::ColorRGBA::BLACK);
     renderer.SetCullMode(renderer::CullMode::Back);
@@ -183,14 +183,14 @@ int main(int argc, char** argv)
                                      2,0,2,
                         });
 
-    renderer::Mesh cube(indexBuffer, vertexArray, GX_QUADS);
+    renderer::StaticMesh cube(indexBuffer, vertexArray, GX_QUADS);
     cube.SetTexture(texture);
 
     renderer.LoadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 20);
 
     while(true)
     {
-        GX_InvVtxCache();
+        renderer.PreDraw();
 
         WPAD_ScanPads();
         s_wpadData = WPAD_Data(WPAD_CHAN_0);
@@ -219,28 +219,14 @@ int main(int argc, char** argv)
 
         renderer.SetCamera(&perspectiveCamera);
 
-        // Do Culling
-        renderer::Plane planes[6];
-        std::wstring clippingPlanes[6] = {L"Left", L"Right", L"Top", L"Botttom", L"Near", L"Far"};
-        std::unordered_map<std::wstring, renderer::Halfspace> planeMap;       
-        math::Matrix4x4 comb = renderer.GetCamera()->GetProjectionMatrix4x4() * renderer.GetCamera()->GetViewMatrix3x4();
-        renderer::ExtractPlanesD3D(planes, comb, true);
-
-        bool render = true;
-        for (uint8_t i = 0; i < 6; ++i)
-        {
-            renderer::Halfspace halfspace = renderer::ClassifyPoint(planes[i], {translation.mMtx34[0][3], translation.mMtx34[1][3], translation.mMtx34[2][3]});
-            planeMap[clippingPlanes[i]] = halfspace;
-            if (halfspace == renderer::Halfspace::NEGATIVE)
-            {
-                render = false;
-            }
-        }
-
+        // Do Culling               
+        renderer.GetCamera()->GenerateFrustrumPlanes(true);
+        const bool render = renderer.GetCamera()->IsPointVisible(translation.GetColum(3));
         if (render)
             DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation, cube);
 
-        renderer.SetCamera(&orthographicCamera);        
+        renderer.SetCamera(&orthographicCamera);
+        DrawDummySprite(backgroundSprite, renderer, false);
         DrawDummySprite(cursorSprite, renderer, true);
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
@@ -259,27 +245,15 @@ int main(int argc, char** argv)
         else
             renderer.DrawText(320, 395, L"Cube not rendered", renderer::ColorRGBA::GREEN);
 
-        int32_t y = 215;
-        assert(planeMap.size() == 6);
-        for(const auto& pair : planeMap)
-        {
-            std::wstringstream planeStr;
-            planeStr << L"Plane[";
-            planeStr << pair.first;
-            planeStr << L"] = ";
-            planeStr << pair.second;
-            renderer.DrawText(20, y, planeStr.str(), renderer::ColorRGBA::GREEN);
-            y += 20;
-        }
-
         renderer.DisplayBuffer();
     }
+    WPAD_Shutdown();
 }
 
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation,
-                                    renderer::Mesh& mesh)
+                                    renderer::StaticMesh& mesh)
 {
     GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);

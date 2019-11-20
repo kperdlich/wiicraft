@@ -30,6 +30,7 @@ public:
     Renderer& operator = (Renderer&&) = delete;
 
     void SetClearColor(const ColorRGBA& clearColor);
+    void PreDraw();
     void DisplayBuffer();
     void SetCamera(Camera *camera);
 

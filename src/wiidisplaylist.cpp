@@ -39,6 +39,7 @@ void renderer::DisplayList::End()
     mBufferSize = GX_EndDispList();
     // Update DisplayList size to the size returned by GX_EndDispList() to save memory
     realloc(mDispList, mBufferSize);
+    DCFlushRange(mDispList, mBufferSize);
 }
 
 void renderer::DisplayList::Clear()

@@ -216,14 +216,14 @@ class FreeTypeGX {
 
     private:
         FT_Library ftLibrary;		/**< FreeType FT_Library instance. */
-        FT_Byte * ftFontBuffer;		/**< Pointer to the current font buffer */
+        FT_Byte * ftFontBuffer = nullptr;		/**< Pointer to the current font buffer */
         FT_Long ftFontBufferSize;	/**< Size of the current font buffer */
         FT_UInt ftPointSize;		/**< Requested size of the rendered font. */
         FT_Short ftAscender;		/**< Ascender value of the rendered font. */
         FT_Short ftDescender;		/**< Descender value of the rendered font. */
 
         bool ftKerningEnabled;		/**< Flag indicating the availability of font kerning data. */
-        FT_Face ftFace;				/**< Reusable FreeType FT_Face object. */
+        FT_Face ftFace = nullptr;				/**< Reusable FreeType FT_Face object. */
 
         uint8_t textureFormat;		/**< Defined texture format of the target EFB. */
         uint8_t vertexIndex;		/**< Vertex format descriptor index. */

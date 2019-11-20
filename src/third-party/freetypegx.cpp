@@ -38,7 +38,7 @@ FreeTypeGX::FreeTypeGX(uint8_t textureFormat, uint8_t vertexIndex) {
 /**
  * Default destructor for the FreeTypeGX class.
  */
-FreeTypeGX::~FreeTypeGX() {
+FreeTypeGX::~FreeTypeGX() {    
     this->unloadFont();
     FT_Done_FreeType(this->ftLibrary);
 }
@@ -220,6 +220,7 @@ void FreeTypeGX::unloadFont() {
     }
     if(this->ftFace) {
         FT_Done_Face(this->ftFace);
+        this->ftFace = nullptr;
     }
 
     this->cacheTextWidth.clear();

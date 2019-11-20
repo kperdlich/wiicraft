@@ -16,7 +16,7 @@ renderer::Renderer::Renderer(bool useVSync)
 {
     s_Renderer = this;
     mRenderData = new renderer::RenderData();
-    mRenderData->mUseVSync = false;
+    mRenderData->mUseVSync = useVSync;
     mRenderData->mFrameBufferIndex = 0;
 
     VIDEO_Init();

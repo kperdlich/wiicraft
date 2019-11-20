@@ -4,23 +4,21 @@
 
 void renderer::Frustrum::NormalizePlane(renderer::Plane & plane)
 {
-    float mag;
-    mag = sqrt(plane.a * plane.a + plane.b * plane.b + plane.c * plane.c);
+    float mag = sqrt(plane.a * plane.a + plane.b * plane.b + plane.c * plane.c);
     plane.a = plane.a / mag;
     plane.b = plane.b / mag;
     plane.c = plane.c / mag;
     plane.d = plane.d / mag;
     }
 
-float renderer::Frustrum::DistanceToPoint(const renderer::Plane & plane, const math::Vertex3f & pt)
+float renderer::Frustrum::DistanceToPoint(const renderer::Plane & plane, const math::Vertex3f & point)
 {
-    return plane.a*pt.x + plane.b*pt.y + plane.c*pt.z + plane.d;
+    return plane.a*point.x + plane.b*point.y + plane.c*point.z + plane.d;
 }
 
 renderer::Halfspace renderer::Frustrum::ClassifyPoint(const renderer::Plane & plane, const math::Vertex3f & point) const
 {
-    float d;
-    d = plane.a*point.x + plane.b*point.y + plane.c*point.z + plane.d;
+    float d = plane.a*point.x + plane.b*point.y + plane.c*point.z + plane.d;
     if (d < 0) return Halfspace::NEGATIVE;
     if (d > 0) return Halfspace::POSITIVE;
     return Halfspace::ON_PLANE;

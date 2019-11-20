@@ -188,6 +188,8 @@ int main(int argc, char** argv)
 
     renderer.LoadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 20);
 
+    float degree = 0.5f;
+
     while(true)
     {
         renderer.PreDraw();
@@ -204,18 +206,18 @@ int main(int argc, char** argv)
         math::Matrix3x4 scale;
         scale.SetIdentity();
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
-            //translation.Translate(-.4f, 0.0f, 0.0f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)            
             perspectiveCamera.Rotate('Y', -.4f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
             perspectiveCamera.Rotate('Y', .4f);
-            //translation.Translate(.4f, 0.0f, 0.0f);
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
-            //rotation.Rotate('X', -.4f);
-            translation.Translate(0.0f, .1f, 0.0f);
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
-            translation.Translate(0.0f, -.1f, 0.0f);
-            //rotation.Rotate('X', .4f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)            
+            perspectiveCamera.Rotate('X', -.4f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)            
+            perspectiveCamera.Rotate('X', .4f);
+
+        rotation.Rotate('X', degree);
+        rotation.Rotate('Y', degree);
+        rotation.Rotate('Z', degree);
 
         renderer.SetCamera(&perspectiveCamera);
 
@@ -226,7 +228,7 @@ int main(int argc, char** argv)
             DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation, cube);
 
         renderer.SetCamera(&orthographicCamera);
-        DrawDummySprite(backgroundSprite, renderer, false);
+        //DrawDummySprite(backgroundSprite, renderer, false);
         DrawDummySprite(cursorSprite, renderer, true);
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());

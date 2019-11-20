@@ -42,8 +42,8 @@ void math::Matrix3x4::Translate(float x, float y, float z)
 }
 
 void math::Matrix3x4::Rotate(const char axis, float degree)
-{
-    Mtx mtx;
+{   
+    Mtx mtx;   
     guMtxIdentity(mtx);
     guMtxRotDeg(mtx, axis, degree);
     guMtxConcat(mtx, mMtx34, mMtx34);

@@ -63,8 +63,8 @@ int main(int argc, char** argv)
 {
     renderer::Renderer renderer(false);
     renderer.SetZModeEnabled(true);
-    renderer.SetClearColor(renderer::ColorRGBA::RED);
-    renderer.SetCullMode(renderer::CullMode::None);
+    renderer.SetClearColor(renderer::ColorRGBA::BLACK);
+    renderer.SetCullMode(renderer::CullMode::Back);
 
     renderer::Camera perspectiveCamera(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, true);
     perspectiveCamera.SetFrustrum(0.1f, 200.0f, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight());

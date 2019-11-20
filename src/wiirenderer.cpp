@@ -11,8 +11,8 @@
 
 renderer::Renderer::Renderer(bool useVSync)
 {
-    mRenderData = new RenderData();
-    mRenderData->mUseVSync = useVSync;
+    mRenderData = new renderer::RenderData();
+    mRenderData->mUseVSync = false;
     mRenderData->mFrameBufferIndex = 0;
 
     VIDEO_Init();
@@ -45,11 +45,10 @@ renderer::Renderer::Renderer(bool useVSync)
         VIDEO_WaitVSync();
     }
 
-    mRenderData->mFifoBuffer = memalign(32, RenderData::DEFAULT_FIFO_SIZE);
-    memset(mRenderData->mFifoBuffer, 0, RenderData::DEFAULT_FIFO_SIZE);
-    GX_Init(mRenderData->mFifoBuffer, RenderData::DEFAULT_FIFO_SIZE);
+    mRenderData->mFifoBuffer = memalign(32, renderer::RenderData::DEFAULT_FIFO_SIZE);
+    memset(mRenderData->mFifoBuffer, 0, renderer::RenderData::DEFAULT_FIFO_SIZE);
+    GX_Init(mRenderData->mFifoBuffer, renderer::RenderData::DEFAULT_FIFO_SIZE);
 
-    SetClearColor(ColorRGBA::GREEN);
     const f32 yScale = GX_GetYScaleFactor(mRenderData->mRmode->efbHeight, mRenderData->mRmode->xfbHeight);
     const u32 xfbHeight = GX_SetDispCopyYScale(yScale);
     GX_SetDispCopySrc(0, 0, mRenderData->mRmode->fbWidth, mRenderData->mRmode->efbHeight);
@@ -211,21 +210,11 @@ void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text
 {
     mRenderData->mDefaultFontVertexFormat.Bind();
 
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-
     mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
 }
 
 void renderer::Renderer::Draw(Mesh &mesh)
 {
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-
     mesh.GetVertexArray()->Bind();
     if (mesh.HasTexture())
     {
@@ -286,12 +275,6 @@ void renderer::Renderer::Draw(Mesh &mesh)
 void renderer::Renderer::Draw(renderer::Sprite &sprite)
 {
     mRenderData->mDefaultSpriteVertexFormat.Bind();
-
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-
     sprite.Bind(0);
 
     const float width = sprite.Width() * .5f;

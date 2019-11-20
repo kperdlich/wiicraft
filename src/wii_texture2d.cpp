@@ -1,8 +1,8 @@
 #include "texture2d.h"
-#include "wiitexture2ddata.h"
+#include "wii_texture2ddata.h"
 #include "image2d.h"
 #include "tpl_loader.h"
-#include <assert.h>
+#include "core.h"
 
 renderer::Texture2D::Texture2D(const Image2D& image)
 {
@@ -37,7 +37,7 @@ renderer::Texture2D::Texture2D(const Image2D& image)
             break;
         }
       default:
-        assert(false);
+        ASSERT(false);
     }
 
 }

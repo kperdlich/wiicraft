@@ -3,14 +3,18 @@
 #include "mesh.h"
 #include "staticmesh.h"
 #include "texture2d.h"
-#include "wiidisplaylist.h"
+#include "wii_displaylist.h"
 #include "freetypegx.h"
-#include "wiidefines.h"
-#include "wiisprite.h"
+#include "wii_defines.h"
+#include "wii_sprite.h"
 #include "renderdata.h"
+
+renderer::Renderer* renderer::Renderer::s_Renderer = nullptr;
+
 
 renderer::Renderer::Renderer(bool useVSync)
 {
+    s_Renderer = this;
     mRenderData = new renderer::RenderData();
     mRenderData->mUseVSync = false;
     mRenderData->mFrameBufferIndex = 0;
@@ -158,7 +162,7 @@ void renderer::Renderer::DisplayBuffer()
 
 void renderer::Renderer::SetCamera(renderer::Camera* camera)
 {
-    assert(camera != nullptr);
+    ASSERT(camera != nullptr);
     mCamera = camera;
     math::Matrix4x4 mtx = mCamera->GetProjectionMatrix4x4();
     if (mCamera->IsPerspective())
@@ -269,7 +273,7 @@ void renderer::Renderer::Draw(Mesh &mesh)
                     GX_Normal1x16(index);
                     break;
                 default:
-                    assert(false);
+                    ASSERT(false);
                     break;
             }
         }

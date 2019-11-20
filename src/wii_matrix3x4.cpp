@@ -1,5 +1,5 @@
 #include "matrix3x4.h"
-#include "wiidefines.h"
+#include "wii_defines.h"
 
 math::Matrix3x4::Matrix3x4(bool zero)
 {

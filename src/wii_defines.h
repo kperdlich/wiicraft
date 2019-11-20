@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <malloc.h>
 #include <string.h>
-#include <assert.h>
 #include <pngu.h>
 #include "Metaphrasis.h"
 #include "freetypegx.h"

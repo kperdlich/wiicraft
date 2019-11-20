@@ -1,7 +1,7 @@
 #include <iostream>
 #include <malloc.h>
 #include "vertexbuffer.h"
-#include "wiidefines.h"
+#include "wii_defines.h"
 
 renderer::VertexBuffer::VertexBuffer(const void *data, uint8_t size, uint8_t stride)
     : mStride(stride)

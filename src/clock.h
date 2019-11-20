@@ -1,6 +1,6 @@
 #pragma once
 
-#include "wiidefines.h"
+#include "wii_defines.h"
 
 namespace utils {
 class Clock

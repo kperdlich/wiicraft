@@ -50,6 +50,8 @@ public:
 
     inline Camera* GetCamera() const;
     inline RenderData* GetRenderData();
+
+    static Renderer* s_Renderer;
 private:
     RenderData* mRenderData;
     Camera* mCamera;

@@ -1,5 +1,5 @@
 #include "vector3f.h"
-#include "wiidefines.h"
+#include "wii_defines.h"
 
 math::Vector3f::Vector3f(float x, float y, float z)
 {

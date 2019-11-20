@@ -1,5 +1,5 @@
-#include <assert.h>
-#include "wiidefines.h"
+#include "core.h"
+#include "wii_defines.h"
 #include "renderer.h"
 #include "renderdata.h"
 #include "vertexarray.h"
@@ -11,8 +11,8 @@ renderer::VertexArray::VertexArray(VertexFormat *vertexFormat)
 
 void renderer::VertexArray::AddVertexBuffer(uint32_t vertexAttribute, VertexBuffer* vertexBuffer)
 {
-    assert(vertexBuffer != nullptr);
-    assert(mVertexBufferMap.find(vertexAttribute) == mVertexBufferMap.end());
+    ASSERT(vertexBuffer != nullptr);
+    ASSERT(mVertexBufferMap.find(vertexAttribute) == mVertexBufferMap.end());
     mVertexBufferMap[vertexAttribute] = vertexBuffer;
 }
 

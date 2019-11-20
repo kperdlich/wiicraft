@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <assert.h>
+#include "core.h"
 #include "mathhelper.h"
 
 namespace math {
@@ -41,13 +41,13 @@ public:
 
 inline const float *Matrix3x4::operator[](uint8_t index) const
 {
-    assert(index >= 0 && index < 3);
+    ASSERT(index >= 0 && index < 3);
     return mMtx34[index];
 }
 
 inline math::Vertex3f Matrix3x4::GetColum(uint8_t index) const
 {
-    assert(index >= 0 && index <= 3);
+    ASSERT(index >= 0 && index <= 3);
     return {mMtx34[0][index], mMtx34[1][index], mMtx34[2][index]};
 }
 

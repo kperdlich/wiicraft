@@ -1,5 +1,5 @@
 #include "image2d.h"
-#include "wiisprite.h"
+#include "wii_sprite.h"
 #include "renderer.h"
 
 

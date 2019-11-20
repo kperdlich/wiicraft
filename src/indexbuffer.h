@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <assert.h>
+#include "core.h"
 #include <memory>
 #include <stddef.h>
 #include <stdint.h>
@@ -29,13 +29,13 @@ private:
 
 inline uint16_t IndexBuffer::operator [](uint32_t index) const
 {
-    assert(index >= 0 && index < mElementCount);
+    ASSERT(index >= 0 && index < mElementCount);
     return mBuffer[index];
 }
 
 inline uint16_t IndexBuffer::GetIndexAt(uint32_t index) const
 {
-    assert(index >= 0 && index < mElementCount);
+    ASSERT(index >= 0 && index < mElementCount);
     return mBuffer[index];
 }
 

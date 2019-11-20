@@ -1,7 +1,7 @@
 #include <math.h>
 #include "mathhelper.h"
 #include "camera.h"
-#include "wiidefines.h"
+#include "wii_defines.h"
 
 
 renderer::Camera::Camera(const math::Vector3f &position,

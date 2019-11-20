@@ -27,7 +27,7 @@
 #include "vertexformat.h"
 #include "image2d.h"
 #include "texture2d.h"
-#include "wiisprite.h"
+#include "wii_sprite.h"
 #include "indexbuffer.h"
 #include "vertexbuffer.h"
 #include "vertexarray.h"
@@ -35,7 +35,7 @@
 #include "mesh.h"
 #include "staticmesh.h"
 #include "frustrum.h"
-#include "wiidisplaylist.h"
+#include "wii_displaylist.h"
 #include <array>
 #include <initializer_list>
 #include "ClassicBackgroundSprite_png.h"
@@ -43,7 +43,7 @@
 #include "rursus_compact_mono_ttf.h"
 #include "Cursor_png.h"
 #include "Wood_tpl.h"
-#include <assert.h>
+#include "core.h"
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
@@ -73,7 +73,7 @@ int main(int argc, char** argv)
     orthographicCamera.SetFrustrum(0, renderer.GetHeight(), 0, renderer.GetWidth(), 0, 100.0f);
 
     utils::Clock clock;
-    clock.Start();
+    clock.Start();    
 
     WPAD_Init();
     WPAD_SetVRes(WPAD_CHAN_0, renderer.GetWidth(), renderer.GetHeight());

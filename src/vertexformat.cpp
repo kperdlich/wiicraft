@@ -1,5 +1,5 @@
 #include "vertexformat.h"
-#include "wiidefines.h"
+#include "wii_defines.h"
 
 renderer::VertexFormat::VertexFormat(uint32_t formatIndex) : mFormatIndex(formatIndex) {}
 

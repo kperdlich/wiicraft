@@ -1,6 +1,6 @@
 #pragma once
 
-#include "wiidefines.h"
+#include "wii_defines.h"
 #include "matrix3x4.h"
 
 namespace math {

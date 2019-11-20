@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "wiidefines.h"
+#include "wii_defines.h"
 #include "vertexarray.h"
 #include "vertexformat.h"
 

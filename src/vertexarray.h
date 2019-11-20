@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include <assert.h>
+#include "core.h"
 #include <map>
 #include "vertexbuffer.h"
 #include "vertexformat.h"
@@ -47,7 +47,7 @@ inline void VertexArray::SetVertexFormat(VertexFormat* vertexFormat)
 
 inline uint8_t VertexArray::GetVertexFormatIndex() const
 {
-    assert(mVertexFormat != nullptr);
+    ASSERT(mVertexFormat != nullptr);
     return mVertexFormat->GetFormatIndex();
 }
 

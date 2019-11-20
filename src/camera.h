@@ -21,6 +21,7 @@ public:
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
 
     math::Matrix3x4 GetViewMatrix3x4() const;
+    math::Matrix4x4 GetProjectionMatrix4x4() const;
 
     inline bool IsPerspective() const;
     inline float GetFrustrumNear() const;

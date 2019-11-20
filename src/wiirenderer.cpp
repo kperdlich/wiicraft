@@ -31,15 +31,25 @@ renderer::Renderer::Renderer(bool useVSync)
         mRenderData->mRmode->viXOrigin = (VI_MAX_WIDTH_NTSC - 672)/2;
     }
 
+
     // allocate framebuffers for double buffering
     mRenderData->mFrameBuffers[0] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(mRenderData->mRmode));
     mRenderData->mFrameBuffers[1] = MEM_K0_TO_K1(SYS_AllocateFramebuffer(mRenderData->mRmode));
 
+    VIDEO_Configure(mRenderData->mRmode);
+    VIDEO_SetNextFramebuffer(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex]);
+    VIDEO_Flush();
+    VIDEO_WaitVSync();
+    if (mRenderData->mRmode->viTVMode & VI_NON_INTERLACE)
+    {
+        VIDEO_WaitVSync();
+    }
+
     mRenderData->mFifoBuffer = memalign(32, RenderData::DEFAULT_FIFO_SIZE);
     memset(mRenderData->mFifoBuffer, 0, RenderData::DEFAULT_FIFO_SIZE);
     GX_Init(mRenderData->mFifoBuffer, RenderData::DEFAULT_FIFO_SIZE);
-    SetClearColor(ColorRGBA::BLACK);
 
+    SetClearColor(ColorRGBA::GREEN);
     const f32 yScale = GX_GetYScaleFactor(mRenderData->mRmode->efbHeight, mRenderData->mRmode->xfbHeight);
     const u32 xfbHeight = GX_SetDispCopyYScale(yScale);
     GX_SetDispCopySrc(0, 0, mRenderData->mRmode->fbWidth, mRenderData->mRmode->efbHeight);
@@ -59,6 +69,7 @@ renderer::Renderer::Renderer(bool useVSync)
         GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
     }
 
+
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GX_SetAlphaUpdate(GX_TRUE);
 
@@ -69,39 +80,40 @@ renderer::Renderer::Renderer(bool useVSync)
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 
+    GX_SetViewport(0.0f, 0.0f, mRenderData->mRmode->fbWidth, mRenderData->mRmode->efbHeight, 0.0f, 1.0f);
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GX_SetAlphaUpdate(GX_TRUE);
+    GX_SetAlphaCompare(GX_GREATER, 0, GX_AOP_AND, GX_ALWAYS, 0);
+    GX_SetColorUpdate(GX_ENABLE);
 
-    GX_CopyDisp(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex], GX_TRUE);
+    GX_ClearVtxDesc();
     GX_InvalidateTexAll();
     GX_InvVtxCache();
 
-    VIDEO_Configure(mRenderData->mRmode);
-    VIDEO_SetNextFramebuffer(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex]);
     VIDEO_SetBlack(false);
-    VIDEO_Flush();
-    VIDEO_WaitVSync();
-    if (mRenderData->mRmode->viTVMode & VI_NON_INTERLACE)
-    {
-        VIDEO_WaitVSync();
-    }
 
     mRenderData->mWidth = mRenderData->mRmode->fbWidth;
     mRenderData->mHeight = mRenderData->mRmode->efbHeight;
-
-    mRenderData->mFreeType = new FreeTypeGX(GX_TF_RGBA8, GX_VTXFMT1);
 
     mRenderData->mDefaultFontVertexFormat.SetFormatIndex(GX_VTXFMT1);
     mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XY, GX_S16});
     mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
     mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
 
+    mRenderData->mFreeType = new FreeTypeGX(GX_TF_RGBA8, GX_VTXFMT1);
+
     mRenderData->mDefaultSpriteVertexFormat.SetFormatIndex(GX_VTXFMT0);
     mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
     mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+    mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
 }
 
 renderer::Renderer::~Renderer()
 {
     delete mRenderData->mFreeType;
+    free(MEM_K1_TO_K0(mRenderData->mFrameBuffers[0]));
+    free(MEM_K1_TO_K0(mRenderData->mFrameBuffers[1]));
+    free(mRenderData->mFifoBuffer);
     delete mRenderData;
 }
 
@@ -120,6 +132,8 @@ void renderer::Renderer::DisplayBuffer()
 {
     GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
     GX_SetColorUpdate(GX_TRUE);
+    GX_SetAlphaUpdate(GX_TRUE);
+
     mRenderData->mFrameBufferIndex ^= 1; // Flip FrameBuffer
     GX_CopyDisp(mRenderData->mFrameBuffers[mRenderData->mFrameBufferIndex], GX_TRUE);
 
@@ -139,13 +153,13 @@ void renderer::Renderer::SetCamera(renderer::Camera* camera)
     mCamera = camera;
     Mtx44 mtx;
     if (mCamera->IsPerspective())
-    {        
+    {
         guFrustum(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
                   mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
         GX_LoadProjectionMtx(mtx, GX_PERSPECTIVE);
     }
     else
-    {        
+    {
         guOrtho(mtx, mCamera->GetFrustrumTop(), mCamera->GetFrustrumBottom(), mCamera->GetFrustrumLeft(), mCamera->GetFrustrumRight(),
                 mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar());
         GX_LoadProjectionMtx(mtx, GX_ORTHOGRAPHIC);
@@ -194,17 +208,35 @@ void renderer::Renderer::LoadFont(const uint8_t *fontData, const int32_t size, c
 }
 
 void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color)
-{    
+{
     mRenderData->mDefaultFontVertexFormat.Bind();
-    mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_CENTER);
+
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GX_SetColorUpdate(GX_TRUE);
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+
+    mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
 }
 
 void renderer::Renderer::Draw(Mesh &mesh)
 {
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GX_SetColorUpdate(GX_TRUE);
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+
     mesh.GetVertexArray()->Bind();
     if (mesh.HasTexture())
     {
         mesh.GetTexture()->Bind(0);
+    }
+    else
+    {
+        GX_SetNumTexGens(0);
+        GX_SetNumTevStages(1);
+        GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+        GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
     }
 
     const std::shared_ptr<const IndexBuffer> indexBuffer = mesh.GetIndexBuffer();
@@ -246,6 +278,7 @@ void renderer::Renderer::Draw(Mesh &mesh)
                     break;
             }
         }
+
     }
     GX_End();
 }
@@ -253,6 +286,12 @@ void renderer::Renderer::Draw(Mesh &mesh)
 void renderer::Renderer::Draw(renderer::Sprite &sprite)
 {
     mRenderData->mDefaultSpriteVertexFormat.Bind();
+
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
+    GX_SetColorUpdate(GX_TRUE);
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+
     sprite.Bind(0);
 
     const float width = sprite.Width() * .5f;
@@ -260,17 +299,21 @@ void renderer::Renderer::Draw(renderer::Sprite &sprite)
 
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         GX_Position3f32(-width, -height, 0);
+        GX_Color4u8(255, 255, 255, 255);
         GX_TexCoord2f32(0, 0);
 
         GX_Position3f32(width, -height, 0);
+        GX_Color4u8(255, 255, 255, 255);
         GX_TexCoord2f32(1, 0);
 
         GX_Position3f32(width, height, 0);
+        GX_Color4u8(255, 255, 255, 255);
         GX_TexCoord2f32(1, 1);
 
         GX_Position3f32(-width, height, 0);
+        GX_Color4u8(255, 255, 255, 255);
         GX_TexCoord2f32(0, 1);
-        GX_End();
+    GX_End();
 }
 
 void renderer::Renderer::Draw(renderer::StaticMesh& staticMesh)

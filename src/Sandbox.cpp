@@ -17,6 +17,8 @@
  *
 ***/
 
+#include <unordered_map>
+#include <sstream>
 #include "renderer.h"
 #include "clock.h"
 #include "colorrgba.h"
@@ -32,17 +34,19 @@
 #include "vertexformat.h"
 #include "mesh.h"
 #include "staticmesh.h"
+#include "frustrum.h"
 #include "wiidisplaylist.h"
 #include <array>
 #include <initializer_list>
 #include "ClassicBackgroundSprite_png.h"
 #include "Minecraft_ttf.h"
+#include "rursus_compact_mono_ttf.h"
 #include "Cursor_png.h"
 #include "Wood_tpl.h"
 #include <assert.h>
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
-                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
+                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::Mesh &mesh);
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
 void DrawDummySprite(renderer::Sprite&, renderer::Renderer &renderer, bool cursor);
@@ -95,7 +99,6 @@ int main(int argc, char** argv)
     rotation.SetIdentity();
     translation.Translate(0.0f, 0.0f, -5.0f);
 
-
     math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
     float blockSize = 1.0f;
     guVector vertices[8] = {
@@ -123,64 +126,71 @@ int main(int argc, char** argv)
        };
 
     std::vector<float> tex = {
-        0.0, 0.0,
-        1.0, 0.0,
-        0.0, 1.0,
-        1.0, 1.0f
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f
     };
 
-    renderer::VertexBuffer modelPos(pos, 3 * sizeof(float));
-    renderer::VertexBuffer modelTex(tex, 2 * sizeof(float));
+    uint32_t color = 0xFFFFFFFF;
+
+    renderer::VertexBuffer modelPos(pos.data(), pos.size() * sizeof(float), 3 * sizeof(float));
+    renderer::VertexBuffer modelTex(tex.data(), tex.size() * sizeof(float), 2 * sizeof(float));
+    renderer::VertexBuffer modelColor(&color, sizeof(uint32_t), sizeof(uint32_t));
 
     renderer::VertexFormat cubeFormat(GX_VTXFMT0);
-    cubeFormat.AddAttribute({GX_INDEX16, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    cubeFormat.AddAttribute({GX_INDEX16, GX_VA_POS, GX_POS_XYZ, GX_F32});    
+    cubeFormat.AddAttribute({GX_INDEX16, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
     cubeFormat.AddAttribute({GX_INDEX16, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+
 
     std::shared_ptr<renderer::VertexArray> vertexArray = std::make_shared<renderer::VertexArray>(&cubeFormat);
     vertexArray->AddVertexBuffer(GX_VA_POS, &modelPos);
+    vertexArray->AddVertexBuffer(GX_VA_CLR0, &modelColor);
     vertexArray->AddVertexBuffer(GX_VA_TEX0, &modelTex);
 
 
     std::shared_ptr<renderer::IndexBuffer> indexBuffer =
             std::make_shared<renderer::IndexBuffer>(std::initializer_list<uint16_t>{
-                                     0, 0,
-                                     3, 1,
-                                     2, 3,
-                                     1, 2,
+                                     0,0,0,
+                                     3,0,1,
+                                     2,0,3,
+                                     1,0,2,
 
-                                     5, 0,
-                                     4, 1,
-                                     7, 3,
-                                     6, 3,
+                                     5,0,0,
+                                     4,0,1,
+                                     7,0,3,
+                                     6,0,3,
 
-                                     3,0,
-                                     5,1,
-                                     6,3,
-                                     2,2,
+                                     3,0,0,
+                                     5,0,1,
+                                     6,0,3,
+                                     2,0,2,
 
-                                     4,0,
-                                     0,1,
-                                     1,3,
-                                     7,2,
+                                     4,0,0,
+                                     0,0,1,
+                                     1,0,3,
+                                     7,0,2,
 
-                                     4,0,
-                                     5,1,
-                                     3,3,
-                                     0,2,
+                                     4,0,0,
+                                     5,0,1,
+                                     3,0,3,
+                                     0,0,2,
 
-                                     6,0,
-                                     7,1,
-                                     1,3,
-                                     2,2
+                                     6,0,0,
+                                     7,0,1,
+                                     1,0,3,
+                                     2,0,2,
                         });
 
-    renderer::StaticMesh cube(indexBuffer, vertexArray, GX_QUADS);
+    renderer::Mesh cube(indexBuffer, vertexArray, GX_QUADS);
     cube.SetTexture(texture);
 
-    renderer.LoadFont(Minecraft_ttf, Minecraft_ttf_size, 64);
+    renderer.LoadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 20);
 
     while(true)
     {
+        GX_InvVtxCache();
 
         WPAD_ScanPads();
         s_wpadData = WPAD_Data(WPAD_CHAN_0);
@@ -191,27 +201,76 @@ int main(int argc, char** argv)
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_HOME)
             break;
 
-        math::Matrix3x4 modelView;
         math::Matrix3x4 scale;
         scale.SetIdentity();
 
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
-            rotation.Rotate('Y', -.4f);
+            //translation.Translate(-.4f, 0.0f, 0.0f);
+            perspectiveCamera.Rotate('Y', -.4f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-            rotation.Rotate('Y', .4f);
+            perspectiveCamera.Rotate('Y', .4f);
+            //translation.Translate(.4f, 0.0f, 0.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
-            rotation.Rotate('X', -.4f);
+            //rotation.Rotate('X', -.4f);
+            translation.Translate(0.0f, .1f, 0.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
-            rotation.Rotate('X', .4f);
+            translation.Translate(0.0f, -.1f, 0.0f);
+            //rotation.Rotate('X', .4f);
 
-        renderer.SetCamera(&perspectiveCamera);       
-        DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation, cube);
+        renderer.SetCamera(&perspectiveCamera);
+
+        // Do Culling
+        renderer::Plane planes[6];
+        std::wstring clippingPlanes[6] = {L"Left", L"Right", L"Top", L"Botttom", L"Near", L"Far"};
+        std::unordered_map<std::wstring, renderer::Halfspace> planeMap;       
+        math::Matrix4x4 comb = renderer.GetCamera()->GetProjectionMatrix4x4() * renderer.GetCamera()->GetViewMatrix3x4();
+        renderer::ExtractPlanesD3D(planes, comb, true);
+
+        bool render = true;
+        for (uint8_t i = 0; i < 6; ++i)
+        {
+            renderer::Halfspace halfspace = renderer::ClassifyPoint(planes[i], {translation.mMtx34[0][3], translation.mMtx34[1][3], translation.mMtx34[2][3]});
+            planeMap[clippingPlanes[i]] = halfspace;
+            if (halfspace == renderer::Halfspace::NEGATIVE)
+            {
+                render = false;
+            }
+        }
+
+        if (render)
+            DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation, cube);
 
         renderer.SetCamera(&orthographicCamera);        
         DrawDummySprite(cursorSprite, renderer, true);
 
-        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());        
-        renderer.DrawText(320, 275, L"Hello World", renderer::ColorRGBA::GREEN);
+        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
+
+        std::wstringstream str;
+        str << L"X: ";
+        str << translation.mMtx34[0][3];
+        str << L" Y: ";
+        str << translation.mMtx34[1][3];
+        str << L" Z: ";
+        str << translation.mMtx34[2][3];
+        renderer.DrawText(320, 375, str.str(), renderer::ColorRGBA::GREEN);
+
+        if (render)
+            renderer.DrawText(320, 395, L"Cube rendered", renderer::ColorRGBA::GREEN);
+        else
+            renderer.DrawText(320, 395, L"Cube not rendered", renderer::ColorRGBA::GREEN);
+
+        int32_t y = 215;
+        assert(planeMap.size() == 6);
+        for(const auto& pair : planeMap)
+        {
+            std::wstringstream planeStr;
+            planeStr << L"Plane[";
+            planeStr << pair.first;
+            planeStr << L"] = ";
+            planeStr << pair.second;
+            renderer.DrawText(20, y, planeStr.str(), renderer::ColorRGBA::GREEN);
+            y += 20;
+        }
 
         renderer.DisplayBuffer();
     }
@@ -220,11 +279,11 @@ int main(int argc, char** argv)
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation,
-                                    renderer::StaticMesh& mesh)
+                                    renderer::Mesh& mesh)
 {
-    /*GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);*/
+    GX_SetColorUpdate(GX_TRUE);
 
     math::Matrix3x4 scale;
     scale.SetIdentity();

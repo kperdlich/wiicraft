@@ -48,6 +48,21 @@ math::Matrix3x4 renderer::Camera::GetViewMatrix3x4() const
 
 }
 
+math::Matrix4x4 renderer::Camera::GetProjectionMatrix4x4() const
+{
+    Mtx44 mtx;
+    if (mIsPerspective)
+    {
+        guFrustum(mtx, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight, mFrustrumNear, mFrustrumFar);
+    }
+    else
+    {
+        guOrtho(mtx, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight, mFrustrumNear, mFrustrumFar);
+    }
+
+    return mtx;
+}
+
 void renderer::Camera::Translate(float x, float y, float z)
 {
     mViewMatrix.Translate(x, y, z);

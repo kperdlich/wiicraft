@@ -2,14 +2,14 @@
 
 #include <memory>
 #include <assert.h>
-#include <unordered_map>
+#include <map>
 #include "vertexbuffer.h"
 #include "vertexformat.h"
 #include "indexbuffer.h"
 
 namespace renderer {
 
-using VertexBufferMap = std::unordered_map<uint32_t, VertexBuffer*>;
+using VertexBufferMap = std::map<uint32_t, VertexBuffer*>;
 
 class Renderer;
 
@@ -37,7 +37,7 @@ private:
     void Bind();
 
     VertexFormat* mVertexFormat;
-    std::unordered_map<uint32_t, VertexBuffer*> mVertexBufferMap;
+    std::map<uint32_t, VertexBuffer*> mVertexBufferMap;
 };
 
 inline void VertexArray::SetVertexFormat(VertexFormat* vertexFormat)

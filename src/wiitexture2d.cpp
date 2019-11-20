@@ -49,6 +49,8 @@ renderer::Texture2D::~Texture2D()
 
 void renderer::Texture2D::Bind(uint8_t unit)
 {
+    GX_SetNumTexGens(1);
+    GX_SetNumTevStages(1);
     GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
     GX_SetTexCoordGen(GX_TEXCOORD0 + unit, GX_TG_MTX2x4, GX_TG_TEX0 + unit, GX_IDENTITY);
     GX_SetTevOrder(GX_TEVSTAGE0 + unit, GX_TEXCOORD0 + unit, GX_TEXMAP0 + unit, GX_COLOR0A0);

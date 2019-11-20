@@ -28,6 +28,8 @@ src/colorrgba.h
 src/colorrgba.h
 src/colorrgba.h
 src/colorrgba.h
+src/frustrum.cpp
+src/frustrum.h
 src/gxdisplaylist.cpp
 src/gxdisplaylist.h
 src/gxrenderer.cpp

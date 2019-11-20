@@ -10,7 +10,7 @@ namespace renderer {
 class VertexBuffer
 {
 public:
-    VertexBuffer(const std::vector<float> &elements, uint8_t stride);
+    VertexBuffer(const void* data, uint8_t size, uint8_t stride);
     ~VertexBuffer();
     VertexBuffer(const VertexBuffer&) = delete;
     VertexBuffer(VertexBuffer&&) = delete;

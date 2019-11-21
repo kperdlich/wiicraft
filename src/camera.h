@@ -22,7 +22,8 @@ public:
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
 
     void GenerateFrustrumPlanes(bool normalize);
-    bool IsPointVisible(const math::Vertex3f &point) const;
+    bool IsPointVisible(const math::Vector3f &point) const;
+    bool IsBoxVisible(const core::Box& box) const;
 
     math::Matrix3x4 GetViewMatrix3x4() const;
     math::Matrix4x4 GetProjectionMatrix4x4() const;
@@ -39,10 +40,9 @@ public:
     void Rotate(const char axis, float degree);
 
     inline const math::Vector3f& Position() const;
-
 private:
-    math::Matrix3x4 mViewMatrix;
     renderer::Frustrum mFrustrum; // For Frustrum Culling
+    math::Matrix3x4 mViewMatrix;
     float mFrustrumNear, mFrustrumFar, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight;
     bool mIsPerspective;
 };

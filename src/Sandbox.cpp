@@ -113,17 +113,17 @@ int main(int argc, char** argv)
                    };
 
 
-    std::vector<float> pos = {
-        vertices[0].x, vertices[0].y, vertices[0].z,
-        vertices[1].x, vertices[1].y, vertices[1].z,
-        vertices[2].x, vertices[2].y, vertices[2].z,
-        vertices[3].x, vertices[3].y, vertices[3].z,
+    core::Box pos = {{
+        {vertices[0].x, vertices[0].y, vertices[0].z},
+        {vertices[1].x, vertices[1].y, vertices[1].z},
+        {vertices[2].x, vertices[2].y, vertices[2].z},
+        {vertices[3].x, vertices[3].y, vertices[3].z},
 
-        vertices[4].x, vertices[4].y, vertices[4].z,
-        vertices[5].x, vertices[5].y, vertices[5].z,
-        vertices[6].x, vertices[6].y, vertices[6].z,
-        vertices[7].x, vertices[7].y, vertices[7].z
-       };
+        {vertices[4].x, vertices[4].y, vertices[4].z},
+        {vertices[5].x, vertices[5].y, vertices[5].z},
+        {vertices[6].x, vertices[6].y, vertices[6].z},
+        {vertices[7].x, vertices[7].y, vertices[7].z}
+       }};
 
     std::vector<float> tex = {
         0.0f, 0.0f,
@@ -134,7 +134,7 @@ int main(int argc, char** argv)
 
     uint32_t color = 0xFFFFFFFF;
 
-    renderer::VertexBuffer modelPos(pos.data(), pos.size() * sizeof(float), 3 * sizeof(float));
+    renderer::VertexBuffer modelPos(pos.vertices, sizeof(core::Box), 3 * sizeof(float));
     renderer::VertexBuffer modelTex(tex.data(), tex.size() * sizeof(float), 2 * sizeof(float));
     renderer::VertexBuffer modelColor(&color, sizeof(uint32_t), sizeof(uint32_t));
 
@@ -207,13 +207,13 @@ int main(int argc, char** argv)
         scale.SetIdentity();
 
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)            
-            perspectiveCamera.Rotate('Y', -.4f);
+            perspectiveCamera.Rotate('Y', -1.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-            perspectiveCamera.Rotate('Y', .4f);
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)            
-            perspectiveCamera.Rotate('X', -.4f);
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)            
-            perspectiveCamera.Rotate('X', .4f);
+            perspectiveCamera.Rotate('Y', 1.0f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)                        
+            perspectiveCamera.Rotate('X', -1.0f);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)                        
+            perspectiveCamera.Rotate('X', 1.0f);
 
         rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
@@ -222,8 +222,20 @@ int main(int argc, char** argv)
         renderer.SetCamera(&perspectiveCamera);
 
         // Do Culling               
-        renderer.GetCamera()->GenerateFrustrumPlanes(true);
-        const bool render = renderer.GetCamera()->IsPointVisible(translation.GetColum(3));
+        renderer.GetCamera()->GenerateFrustrumPlanes(false);
+        const math::Vector3f& boxTranslation = translation.GetColum(3);
+        core::Box newBoxPos = {{
+            {pos.vertices[0] + boxTranslation},
+            {pos.vertices[1] + boxTranslation},
+            {pos.vertices[2] + boxTranslation},
+            {pos.vertices[3] + boxTranslation},
+
+            {pos.vertices[4] + boxTranslation},
+            {pos.vertices[5] + boxTranslation},
+            {pos.vertices[6] + boxTranslation},
+            {pos.vertices[7] + boxTranslation}
+           }};
+        const bool render = renderer.GetCamera()->IsBoxVisible(newBoxPos);
         if (render)
             DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation, cube);
 
@@ -245,7 +257,7 @@ int main(int argc, char** argv)
         if (render)
             renderer.DrawText(320, 395, L"Cube rendered", renderer::ColorRGBA::GREEN);
         else
-            renderer.DrawText(320, 395, L"Cube not rendered", renderer::ColorRGBA::GREEN);
+            renderer.DrawText(320, 395, L"Cube not rendered", renderer::ColorRGBA::GREEN);       
 
         renderer.DisplayBuffer();
     }

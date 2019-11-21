@@ -1,30 +1,37 @@
 #include "frustrum.h"
 #include "camera.h"
+#include "geometry_data.h"
 #include "math.h"
 
-void renderer::Frustrum::NormalizePlane(renderer::Plane & plane)
+void renderer::Frustrum::NormalizePlane(renderer::Plane & plane) const
 {
     float mag = sqrt(plane.a * plane.a + plane.b * plane.b + plane.c * plane.c);
     plane.a = plane.a / mag;
     plane.b = plane.b / mag;
     plane.c = plane.c / mag;
     plane.d = plane.d / mag;
-    }
-
-float renderer::Frustrum::DistanceToPoint(const renderer::Plane & plane, const math::Vertex3f & point)
-{
-    return plane.a*point.x + plane.b*point.y + plane.c*point.z + plane.d;
 }
 
-renderer::Halfspace renderer::Frustrum::ClassifyPoint(const renderer::Plane & plane, const math::Vertex3f & point) const
+float renderer::Frustrum::DistanceToPoint(const renderer::Plane & plane, const math::Vector3f & point) const
 {
-    float d = plane.a*point.x + plane.b*point.y + plane.c*point.z + plane.d;
-    if (d < 0) return Halfspace::NEGATIVE;
-    if (d > 0) return Halfspace::POSITIVE;
+    return plane.a*point.X() + plane.b*point.Y() + plane.c*point.Z() + plane.d;
+}
+
+renderer::Halfspace renderer::Frustrum::ClassifyPoint(const renderer::Plane & plane, const math::Vector3f & point) const
+{
+    float d = plane.a*point.X() + plane.b*point.Y() + plane.c*point.Z() + plane.d;
+    if (d < 0)
+    {
+        return Halfspace::NEGATIVE;
+    }
+    if (d > 0)
+    {
+        return Halfspace::POSITIVE;
+    }
     return Halfspace::ON_PLANE;
 }
 
-bool renderer::Frustrum::IsPointVisible(const math::Vertex3f &point) const
+bool renderer::Frustrum::IsPointVisible(const math::Vector3f &point) const
 {
     for (uint8_t i = 0; i < 6; ++i)
     {
@@ -37,7 +44,35 @@ bool renderer::Frustrum::IsPointVisible(const math::Vertex3f &point) const
     return true;
 }
 
-void renderer::Frustrum::ExtractPlanesD3D(const renderer::Camera &camera, bool normalize)
+bool renderer::Frustrum::IsBoxVisible(const core::Box &box) const
+{
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        uint32_t verticesOutOfFrustrum = 0, verticesInFrustrum = 0;
+        for (uint8_t j = 0; j < 8 && (verticesInFrustrum == 0 || verticesOutOfFrustrum == 0); j++)
+        {
+            if (DistanceToPoint(mPlanes[i], box.vertices[j]) < 0)
+            {
+                ++verticesOutOfFrustrum;
+            }
+            else
+            {
+                ++verticesInFrustrum;
+            }
+        }
+        if (verticesInFrustrum == 0)
+        {
+            return false;
+        }
+        else if (verticesOutOfFrustrum > 0)
+        {
+            return true;
+        }
+    }
+    return true;
+}
+
+void renderer::Frustrum::ExtractPlanes(const renderer::Camera &camera, bool normalize)
 {
     const math::Matrix4x4& comboMatrix = camera.GetProjectionMatrix4x4() * camera.GetViewMatrix3x4();
 

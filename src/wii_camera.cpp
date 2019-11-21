@@ -1,4 +1,5 @@
 #include <math.h>
+#include "geometry_data.h"
 #include "mathhelper.h"
 #include "camera.h"
 #include "wii_defines.h"
@@ -40,12 +41,17 @@ void renderer::Camera::SetFrustrum(float top, float bottom, float left, float ri
 
 void renderer::Camera::GenerateFrustrumPlanes(bool normalize)
 {
-    mFrustrum.ExtractPlanesD3D(*this, normalize);
+    mFrustrum.ExtractPlanes(*this, normalize);
 }
 
-bool renderer::Camera::IsPointVisible(const math::Vertex3f &point) const
+bool renderer::Camera::IsPointVisible(const math::Vector3f &point) const
 {
     return mFrustrum.IsPointVisible(point);
+}
+
+bool renderer::Camera::IsBoxVisible(const core::Box &box) const
+{
+    return mFrustrum.IsBoxVisible(box);
 }
 
 math::Matrix3x4 renderer::Camera::GetViewMatrix3x4() const

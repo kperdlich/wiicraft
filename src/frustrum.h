@@ -1,7 +1,8 @@
 #pragma once
 
 #include "matrix4x4.h"
-#include "mathhelper.h"
+#include "vector3f.h"
+#include "geometry_data.h"
 
 namespace renderer {
 
@@ -29,11 +30,12 @@ public:
     Frustrum(Frustrum&&) = delete;
     Frustrum& operator = (Frustrum&&) = delete;
 
-    void ExtractPlanesD3D(const renderer::Camera& camera, bool normalize);
-    void NormalizePlane(Plane & plane);
-    float DistanceToPoint(const Plane & plane, const math::Vertex3f & point);
-    Halfspace ClassifyPoint(const Plane & plane, const math::Vertex3f & point) const;
-    bool IsPointVisible(const math::Vertex3f& point) const;
+    void ExtractPlanes(const renderer::Camera& camera, bool normalize);
+    void NormalizePlane(Plane & plane) const;
+    float DistanceToPoint(const Plane & plane, const math::Vector3f & point) const;
+    Halfspace ClassifyPoint(const Plane & plane, const math::Vector3f &point) const;
+    bool IsPointVisible(const math::Vector3f& point) const;
+    bool IsBoxVisible(const core::Box& box) const;
 
     inline const Plane* GetPlanes() const;
 

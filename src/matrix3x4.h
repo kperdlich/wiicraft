@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include "core.h"
-#include "mathhelper.h"
+#include "vector3f.h"
 
 namespace math {
 
@@ -30,7 +30,7 @@ public:
     void SetIdentity();
     void SetZero();
 
-    inline math::Vertex3f GetColum(uint8_t index) const;
+    inline math::Vector3f GetColum(uint8_t index) const;
     inline const float* operator[] (uint8_t index) const;
 
     static Matrix3x4 Identity();
@@ -45,7 +45,7 @@ inline const float *Matrix3x4::operator[](uint8_t index) const
     return mMtx34[index];
 }
 
-inline math::Vertex3f Matrix3x4::GetColum(uint8_t index) const
+inline math::Vector3f Matrix3x4::GetColum(uint8_t index) const
 {
     ASSERT(index >= 0 && index <= 3);
     return {mMtx34[0][index], mMtx34[1][index], mMtx34[2][index]};

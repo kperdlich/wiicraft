@@ -14,10 +14,4 @@ inline static double DegToRadians(double v)
     return v * (PI / 180);
 }
 
-
-struct Vertex3f
-{
-    float x, y, z;
-};
-
 }

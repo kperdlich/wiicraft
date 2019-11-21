@@ -64,10 +64,6 @@ bool renderer::Frustrum::IsBoxVisible(const core::Box &box) const
         {
             return false;
         }
-        else if (verticesOutOfFrustrum > 0)
-        {
-            return true;
-        }
     }
     return true;
 }

@@ -18,8 +18,8 @@ public:
     ~Image2D();
     Image2D(const Image2D&) = delete;
     Image2D(Image2D&&) = delete;
-    void operator=(const Image2D&) = delete;
-    void operator=(Image2D&&) = delete;
+    Image2D& operator=(const Image2D&) = delete;
+    Image2D& operator=(Image2D&&) = delete;
 
     int Width() const;
     int Height() const;

@@ -35,6 +35,8 @@ public:
 
     VertexFormat mDefaultSpriteVertexFormat;
     VertexFormat mDefaultFontVertexFormat;
+    VertexFormat mDefaultLineVertexFormat;
+
 };
 
 inline void RenderData::SetVertexArray(VertexArray* vertexArray)

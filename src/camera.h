@@ -16,8 +16,9 @@ public:
     ~Camera() = default;
     Camera(const Camera&) = delete;
     Camera(Camera&&) = delete;
-    void operator=(const Camera&) = delete;
-    void operator=(Camera&&) = delete;
+    Camera& operator=(const Camera&) = delete;
+    Camera& operator=(Camera&&) = delete;
+
     void SetFrustrum(float minDist, float maxDist, float fov, float aspectRatio);
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
 

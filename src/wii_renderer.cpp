@@ -98,17 +98,21 @@ renderer::Renderer::Renderer(bool useVSync)
     mRenderData->mWidth = mRenderData->mRmode->fbWidth;
     mRenderData->mHeight = mRenderData->mRmode->efbHeight;
 
+    mRenderData->mFreeType = new FreeTypeGX(GX_TF_RGBA8, GX_VTXFMT1);
+
     mRenderData->mDefaultFontVertexFormat.SetFormatIndex(GX_VTXFMT1);
     mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XY, GX_S16});
     mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
     mRenderData->mDefaultFontVertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
 
-    mRenderData->mFreeType = new FreeTypeGX(GX_TF_RGBA8, GX_VTXFMT1);
-
     mRenderData->mDefaultSpriteVertexFormat.SetFormatIndex(GX_VTXFMT0);
     mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
     mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
     mRenderData->mDefaultSpriteVertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
+
+    mRenderData->mDefaultLineVertexFormat.SetFormatIndex(GX_VTXFMT2);
+    mRenderData->mDefaultLineVertexFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
+    mRenderData->mDefaultLineVertexFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
 }
 
 renderer::Renderer::~Renderer()
@@ -216,10 +220,14 @@ void renderer::Renderer::LoadFont(const uint8_t *fontData, const int32_t size, c
     mRenderData->mFreeType->loadFont(fontData, size, fontSize, false);
 }
 
+void renderer::Renderer::SetLineWidth(uint8_t width)
+{
+    GX_SetLineWidth(width, mRenderData->mDefaultLineVertexFormat.GetFormatIndex());
+}
+
 void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color)
 {
     mRenderData->mDefaultFontVertexFormat.Bind();
-
     mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
 }
 
@@ -332,6 +340,41 @@ void renderer::Renderer::Draw(renderer::StaticMesh& staticMesh)
         }
         staticMesh.mDisplayList->Render();
     }
+}
+
+void renderer::Renderer::DrawLine(const math::Vector3f& from, const math::Vector3f& end, const renderer::ColorRGBA &color)
+{
+    mRenderData->mDefaultLineVertexFormat.Bind();
+    GX_SetNumTexGens(0);
+    GX_SetNumTevStages(1);
+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    GX_Begin(GX_LINES, mRenderData->mDefaultLineVertexFormat.GetFormatIndex(), 2);
+        GX_Position3f32(from.X(), from.Y(), from.Z());
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+
+        GX_Position3f32(end.X(), end.Y(), end.Z());
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+    GX_End();
+}
+
+void renderer::Renderer::DrawRay(const math::Vector3f &from, const math::Vector3f& direction, const renderer::ColorRGBA &color)
+{
+    mRenderData->mDefaultLineVertexFormat.Bind();
+    GX_SetNumTexGens(0);
+    GX_SetNumTevStages(1);
+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+
+    const math::Vector3f& end = from + direction;
+
+    GX_Begin(GX_LINES, mRenderData->mDefaultLineVertexFormat.GetFormatIndex(), 2);
+        GX_Position3f32(from.X(), from.Y(), from.Z());
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+
+        GX_Position3f32(end.X(), end.Y(), end.Z());
+        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+    GX_End();
 }
 
 uint32_t renderer::Renderer::GetWidth() const

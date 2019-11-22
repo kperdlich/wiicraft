@@ -10,8 +10,8 @@ public:
     ~Clock() = default;
 	Clock(const Clock&) = delete;
 	Clock(Clock&&) = delete;
-	void operator=(const Clock&) = delete;
-	void operator=(Clock&&) = delete;
+    Clock& operator=(const Clock&) = delete;
+    Clock& operator=(Clock&&) = delete;
 
     inline void Start();
     inline uint64_t ElapsedMilliseconds() const;

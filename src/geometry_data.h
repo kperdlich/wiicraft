@@ -4,7 +4,7 @@
 
 namespace core {
 
-struct Vertex3f
+struct Point
 {
     float x, y, z;
 };

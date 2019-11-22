@@ -44,6 +44,7 @@
 #include "Cursor_png.h"
 #include "Wood_tpl.h"
 #include "core.h"
+#include "aabb.h"
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
@@ -100,16 +101,16 @@ int main(int argc, char** argv)
     translation.Translate(0.0f, 0.0f, -5.0f);
 
     math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
-    float blockSize = 1.0f;
+    const float blockHalfSize = 1.0f;
     guVector vertices[8] = {
-                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() + blockSize },// v1
-                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() + blockSize }, //v2
-                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() + blockSize }, //v3
-                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() + blockSize }, // v4
-                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() - blockSize }, //v5
-                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() - blockSize }, // v6
-                    { (float)blockPosition.X() + blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() - blockSize }, // v7
-                    { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() - blockSize } // v8
+                    { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize },// v1
+                    { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v2
+                    { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v3
+                    { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, // v4
+                    { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, //v5
+                    { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, // v6
+                    { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, // v7
+                    { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() - blockHalfSize } // v8
                    };
 
 
@@ -190,6 +191,7 @@ int main(int argc, char** argv)
 
     float degree = 0.5f;
 
+    renderer.SetLineWidth(12);
     while(true)
     {
         renderer.PreDraw();
@@ -207,21 +209,24 @@ int main(int argc, char** argv)
         scale.SetIdentity();
 
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)            
-            perspectiveCamera.Rotate('Y', -1.0f);
+            //perspectiveCamera.Rotate('Y', -1.0f);
+            translation.Translate(-.1f, 0.0f, 0.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-            perspectiveCamera.Rotate('Y', 1.0f);
+            //perspectiveCamera.Rotate('Y', 1.0f);
+            translation.Translate(+.1f, 0.0f, 0.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)                        
-            perspectiveCamera.Rotate('X', -1.0f);
+            //perspectiveCamera.Rotate('X', -1.0f);
+            translation.Translate(0.0f, .1f, 0.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)                        
-            perspectiveCamera.Rotate('X', 1.0f);
+            //perspectiveCamera.Rotate('X', 1.0f);
+            translation.Translate(0.0f, -.1f, 0.0f);
 
         rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
         rotation.Rotate('Z', degree);
 
-        renderer.SetCamera(&perspectiveCamera);
-
-        // Do Culling               
+        // Perspective camera
+        renderer.SetCamera(&perspectiveCamera);    
         renderer.GetCamera()->GenerateFrustrumPlanes(false);
         const math::Vector3f& boxTranslation = translation.GetColum(3);
         core::Box newBoxPos = {{
@@ -235,12 +240,36 @@ int main(int argc, char** argv)
             {pos.vertices[6] + boxTranslation},
             {pos.vertices[7] + boxTranslation}
            }};
-        const bool render = renderer.GetCamera()->IsBoxVisible(newBoxPos);
-        if (render)
-            DrawIndexedDummy3DTexturedCube(clock, renderer, translation, rotation, cube);
 
+        const bool render = perspectiveCamera.IsBoxVisible(newBoxPos);
+        if (render)
+        {
+            math::Matrix3x4 scale;
+            scale.SetIdentity();
+
+            math::Matrix3x4 viewMatrix = renderer.GetCamera()->GetViewMatrix3x4();
+            math::Matrix3x4 modelView = viewMatrix * (translation * rotation * scale);
+
+            renderer.LoadModelViewMatrix(modelView);
+            renderer.Draw(cube);
+        }
+
+        math::Matrix3x4 cube2Transform;
+        cube2Transform.Translate(-3.0f, 0.0f, -5.0f);
+        math::Matrix3x4 modelView2 = renderer.GetCamera()->GetViewMatrix3x4() * cube2Transform;
+        renderer.LoadModelViewMatrix(modelView2);
+        renderer.Draw(cube);
+
+        renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
+        core::AABB cube1AABB(translation.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
+        core::AABB cube2AABB(cube2Transform.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
+        if (cube1AABB.CoolidesWith(cube2AABB))
+            renderer.DrawRay(cube2Transform.GetColum(3), math::Vector3f::Up * 2.0f, renderer::ColorRGBA::WHITE);
+        else
+            renderer.DrawRay(cube2Transform.GetColum(3), math::Vector3f::Up * 2.0f, renderer::ColorRGBA::RED);
+
+        // Ortho camera
         renderer.SetCamera(&orthographicCamera);
-        //DrawDummySprite(backgroundSprite, renderer, false);
         DrawDummySprite(cursorSprite, renderer, true);
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
@@ -253,6 +282,15 @@ int main(int argc, char** argv)
         str << L" Z: ";
         str << translation.mMtx34[2][3];
         renderer.DrawText(320, 375, str.str(), renderer::ColorRGBA::GREEN);
+
+        std::wstringstream str2;
+        str2 << L"X: ";
+        str2 << cube2Transform.mMtx34[0][3];
+        str2 << L" Y: ";
+        str2 << cube2Transform.mMtx34[1][3];
+        str2 << L" Z: ";
+        str2 << cube2Transform.mMtx34[2][3];
+        renderer.DrawText(20, 375, str2.str(), renderer::ColorRGBA::GREEN);
 
         if (render)
             renderer.DrawText(320, 395, L"Cube rendered", renderer::ColorRGBA::GREEN);
@@ -269,34 +307,15 @@ void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& ren
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation,
                                     renderer::StaticMesh& mesh)
 {
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
+    /*GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);
-
-    math::Matrix3x4 scale;
-    scale.SetIdentity();
-
-    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
-        rotation.Rotate('Y', -.4f);
-    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-        rotation.Rotate('Y', .4f);
-    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
-        rotation.Rotate('X', -.4f);
-    if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
-        rotation.Rotate('X', .4f);
-
-    math::Matrix3x4 viewMatrix = renderer.GetCamera()->GetViewMatrix3x4();
-    math::Matrix3x4 modelView = viewMatrix * (translation * rotation * scale);
-
-    renderer.LoadModelViewMatrix(modelView);
-    renderer.Draw(mesh);
+    GX_SetColorUpdate(GX_TRUE);*/
 }
 
 
 
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation)
 {
-
     GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
     GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
     GX_SetColorUpdate(GX_TRUE);

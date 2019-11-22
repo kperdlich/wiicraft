@@ -7,6 +7,8 @@ src/Sandbox.cpp
 src/Sandbox.cpp
 src/Sandbox.cpp
 src/Sandbox.cpp
+src/aabb.cpp
+src/aabb.h
 src/camera.cpp
 src/camera.h
 src/camera.h
@@ -31,6 +33,7 @@ src/colorrgba.h
 src/core.h
 src/frustrum.cpp
 src/frustrum.h
+src/geometry_data.h
 src/gxdisplaylist.cpp
 src/gxdisplaylist.h
 src/gxrenderer.cpp
@@ -71,6 +74,9 @@ src/mesh.h
 src/mesh.h
 src/mesh.h
 src/mesh.h
+src/quaternion.h
+src/raycast.cpp
+src/raycast.h
 src/renderdata.h
 src/renderdata.h
 src/renderdata.h
@@ -136,6 +142,7 @@ src/wii_displaylist.cpp
 src/wii_displaylist.h
 src/wii_image2d.cpp
 src/wii_matrix3x4.cpp
+src/wii_quaternion.cpp
 src/wii_renderer.cpp
 src/wii_sprite.cpp
 src/wii_sprite.h

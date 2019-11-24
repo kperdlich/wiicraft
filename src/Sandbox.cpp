@@ -45,6 +45,7 @@
 #include "Wood_tpl.h"
 #include "core.h"
 #include "aabb.h"
+#include "raycast.h"
 
 void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
                                     math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
@@ -189,7 +190,7 @@ int main(int argc, char** argv)
 
     renderer.LoadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 20);
 
-    float degree = 0.5f;
+    float degree = 1.0f;
 
     renderer.SetLineWidth(12);
     while(true)
@@ -221,9 +222,9 @@ int main(int argc, char** argv)
             //perspectiveCamera.Rotate('X', 1.0f);
             translation.Translate(0.0f, -.1f, 0.0f);
 
-        rotation.Rotate('X', degree);
+        /*rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
-        rotation.Rotate('Z', degree);
+        rotation.Rotate('Z', degree);*/
 
         // Perspective camera
         renderer.SetCamera(&perspectiveCamera);    
@@ -268,12 +269,23 @@ int main(int argc, char** argv)
         else
             renderer.DrawRay(cube2Transform.GetColum(3), math::Vector3f::Up * 2.0f, renderer::ColorRGBA::RED);
 
+        core::RayHitResult result;
+        if (core::Raycast({&cube2AABB, &cube1AABB}, {0.5f, 0.0f, 0.0f}, math::Vector3f::Forward, 5.0f, result))
+        {
+            ASSERT(result.Entity == &cube1AABB);
+            renderer.DrawRay({0.5f, 0.0f, 0.0f}, math::Vector3f::Forward * 5.0f, renderer::ColorRGBA::WHITE);
+        }
+        else
+            renderer.DrawRay({0.5f, 0.0f, 0.0f}, math::Vector3f::Forward * 5.0f, renderer::ColorRGBA::RED);
+
+
         // Ortho camera
         renderer.SetCamera(&orthographicCamera);
         DrawDummySprite(cursorSprite, renderer, true);
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
 
+        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
         std::wstringstream str;
         str << L"X: ";
         str << translation.mMtx34[0][3];

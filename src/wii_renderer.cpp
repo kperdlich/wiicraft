@@ -227,7 +227,12 @@ void renderer::Renderer::SetLineWidth(uint8_t width)
 
 void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color)
 {
-    mRenderData->mDefaultFontVertexFormat.Bind();
+    GX_SetNumTexGens(1);
+    GX_SetNumTevStages(1);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+    GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+    mRenderData->mDefaultFontVertexFormat.Bind();   
     mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
 }
 
@@ -332,12 +337,7 @@ void renderer::Renderer::Draw(renderer::StaticMesh& staticMesh)
         staticMesh.mDisplayList->Render();
     }
     else
-    {
-        staticMesh.mMesh->GetVertexArray()->Bind();
-        if (staticMesh.mMesh->HasTexture())
-        {
-            staticMesh.mMesh->GetTexture()->Bind(0);
-        }
+    {       
         staticMesh.mDisplayList->Render();
     }
 }

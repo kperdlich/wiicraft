@@ -44,14 +44,19 @@ void renderer::Camera::GenerateFrustrumPlanes(bool normalize)
     mFrustrum.ExtractPlanes(*this, normalize);
 }
 
-bool renderer::Camera::IsPointVisible(const math::Vector3f &point) const
+bool renderer::Camera::IsVisible(const math::Vector3f &point) const
 {
     return mFrustrum.IsPointVisible(point);
 }
 
-bool renderer::Camera::IsBoxVisible(const core::Box &box) const
+bool renderer::Camera::IsVisible(const core::Box &box) const
 {
-    return mFrustrum.IsBoxVisible(box);
+    return mFrustrum.IsVisible(box);
+}
+
+bool renderer::Camera::IsVisible(const core::AABB &aabb) const
+{
+    return mFrustrum.IsVisible(aabb);
 }
 
 math::Matrix3x4 renderer::Camera::GetViewMatrix3x4() const

@@ -1,42 +1,42 @@
+#include <math.h>
 #include "frustrum.h"
 #include "camera.h"
 #include "geometry_data.h"
-#include "math.h"
+#include "vector4f.h"
 
-void renderer::Frustrum::NormalizePlane(renderer::Plane & plane) const
+void renderer::Frustrum::NormalizePlane(math::Vector4f & plane) const
 {
-    float mag = sqrt(plane.a * plane.a + plane.b * plane.b + plane.c * plane.c);
-    plane.a = plane.a / mag;
-    plane.b = plane.b / mag;
-    plane.c = plane.c / mag;
-    plane.d = plane.d / mag;
+    float mag = plane.Length();
+    plane.SetX(plane.X() / mag);
+    plane.SetY(plane.Y() / mag);
+    plane.SetZ(plane.Z() / mag);
+    plane.SetW(plane.W() / mag);
 }
 
-float renderer::Frustrum::DistanceToPoint(const renderer::Plane & plane, const math::Vector3f & point) const
+float renderer::Frustrum::DistanceToPoint(const math::Vector4f & plane, const math::Vector3f & point) const
 {
-    return plane.a*point.X() + plane.b*point.Y() + plane.c*point.Z() + plane.d;
+    return plane.X() * point.X() + plane.Y() * point.Y() + plane.Z() * point.Z() + plane.W();
 }
 
-renderer::Halfspace renderer::Frustrum::ClassifyPoint(const renderer::Plane & plane, const math::Vector3f & point) const
+renderer::Halfspace renderer::Frustrum::ClassifyPoint(const math::Vector4f & plane, const math::Vector3f & point) const
 {
-    float d = plane.a*point.X() + plane.b*point.Y() + plane.c*point.Z() + plane.d;
-    if (d < 0)
+    float distance = plane.X()*point.X() + plane.Y()*point.Y() + plane.Z()*point.Z() + plane.W();
+    if (distance < 0)
     {
         return Halfspace::NEGATIVE;
     }
-    if (d > 0)
+    if (distance > 0)
     {
         return Halfspace::POSITIVE;
     }
     return Halfspace::ON_PLANE;
 }
 
-bool renderer::Frustrum::IsPointVisible(const math::Vector3f &point) const
+bool renderer::Frustrum::IsVisible(const math::Vector3f &point) const
 {
     for (uint8_t i = 0; i < 6; ++i)
     {
-        const Halfspace halfspace = ClassifyPoint(mPlanes[i], point);
-        if (halfspace == Halfspace::NEGATIVE)
+        if (DistanceToPoint(mPlanes[i], point) < 0)
         {
             return false;
         }
@@ -44,11 +44,11 @@ bool renderer::Frustrum::IsPointVisible(const math::Vector3f &point) const
     return true;
 }
 
-bool renderer::Frustrum::IsBoxVisible(const core::Box &box) const
+bool renderer::Frustrum::IsVisible(const core::Box &box) const
 {
     for (uint8_t i = 0; i < 6; i++)
     {
-        uint32_t verticesOutOfFrustrum = 0, verticesInFrustrum = 0;
+        uint8_t verticesOutOfFrustrum = 0, verticesInFrustrum = 0;
         for (uint8_t j = 0; j < 8 && (verticesInFrustrum == 0 || verticesOutOfFrustrum == 0); j++)
         {
             if (DistanceToPoint(mPlanes[i], box.vertices[j]) < 0)
@@ -68,40 +68,61 @@ bool renderer::Frustrum::IsBoxVisible(const core::Box &box) const
     return true;
 }
 
+bool renderer::Frustrum::IsVisible(const core::AABB& aabb) const
+{
+    for (uint8_t i = 0; i < 6; ++i)
+    {
+        uint8_t verticesOutOfFrustrum = 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMin().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMin().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMax().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMin().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        if (verticesOutOfFrustrum == 8)
+        {
+            return false;
+        }
+    }
+    return true;
+}
+
 void renderer::Frustrum::ExtractPlanes(const renderer::Camera &camera, bool normalize)
 {
     const math::Matrix4x4& comboMatrix = camera.GetProjectionMatrix4x4() * camera.GetViewMatrix3x4();
 
     // Left clipping plane
-    mPlanes[0].a = comboMatrix._41() + comboMatrix._11();
-    mPlanes[0].b = comboMatrix._42() + comboMatrix._12();
-    mPlanes[0].c = comboMatrix._43() + comboMatrix._13();
-    mPlanes[0].d = comboMatrix._44() + comboMatrix._14();
+    mPlanes[0].SetX(comboMatrix._41() + comboMatrix._11());
+    mPlanes[0].SetY(comboMatrix._42() + comboMatrix._12());
+    mPlanes[0].SetZ(comboMatrix._43() + comboMatrix._13());
+    mPlanes[0].SetW(comboMatrix._44() + comboMatrix._14());
     // Right clipping plane
-    mPlanes[1].a = comboMatrix._41() - comboMatrix._11();
-    mPlanes[1].b = comboMatrix._42() - comboMatrix._12();
-    mPlanes[1].c = comboMatrix._43() - comboMatrix._13();
-    mPlanes[1].d = comboMatrix._44() - comboMatrix._14();
+    mPlanes[1].SetX(comboMatrix._41() - comboMatrix._11());
+    mPlanes[1].SetY(comboMatrix._42() - comboMatrix._12());
+    mPlanes[1].SetZ(comboMatrix._43() - comboMatrix._13());
+    mPlanes[1].SetW(comboMatrix._44() - comboMatrix._14());
     // Top clipping plane
-    mPlanes[2].a = comboMatrix._41() - comboMatrix._21();
-    mPlanes[2].b = comboMatrix._42() - comboMatrix._22();
-    mPlanes[2].c = comboMatrix._43() - comboMatrix._23();
-    mPlanes[2].d = comboMatrix._44() - comboMatrix._24();
+    mPlanes[2].SetX(comboMatrix._41() - comboMatrix._21());
+    mPlanes[2].SetY(comboMatrix._42() - comboMatrix._22());
+    mPlanes[2].SetZ(comboMatrix._43() - comboMatrix._23());
+    mPlanes[2].SetW(comboMatrix._44() - comboMatrix._24());
     // Bottom clipping plane
-    mPlanes[3].a = comboMatrix._41() + comboMatrix._21();
-    mPlanes[3].b = comboMatrix._42() + comboMatrix._22();
-    mPlanes[3].c = comboMatrix._43() + comboMatrix._23();
-    mPlanes[3].d = comboMatrix._44() + comboMatrix._24();
+    mPlanes[3].SetX(comboMatrix._41() + comboMatrix._21());
+    mPlanes[3].SetY(comboMatrix._42() + comboMatrix._22());
+    mPlanes[3].SetZ(comboMatrix._43() + comboMatrix._23());
+    mPlanes[3].SetW(comboMatrix._44() + comboMatrix._24());
     // Near clipping plane
-    mPlanes[4].a = comboMatrix._41() + comboMatrix._31();
-    mPlanes[4].b = comboMatrix._42() + comboMatrix._32();
-    mPlanes[4].c = comboMatrix._43() + comboMatrix._33();
-    mPlanes[4].d = comboMatrix._44() + comboMatrix._34();
+    mPlanes[4].SetX(comboMatrix._41() + comboMatrix._31());
+    mPlanes[4].SetY(comboMatrix._42() + comboMatrix._32());
+    mPlanes[4].SetZ(comboMatrix._43() + comboMatrix._33());
+    mPlanes[4].SetW(comboMatrix._44() + comboMatrix._34());
     // Far clipping plane
-    mPlanes[5].a = comboMatrix._41() - comboMatrix._31();
-    mPlanes[5].b = comboMatrix._42() - comboMatrix._32();
-    mPlanes[5].c = comboMatrix._43() - comboMatrix._33();
-    mPlanes[5].d = comboMatrix._44() - comboMatrix._34();
+    mPlanes[5].SetX(comboMatrix._41() - comboMatrix._31());
+    mPlanes[5].SetY(comboMatrix._42() - comboMatrix._32());
+    mPlanes[5].SetZ(comboMatrix._43() - comboMatrix._33());
+    mPlanes[5].SetW(comboMatrix._44() - comboMatrix._34());
     // Normalize the plane equations, if requested
     if (normalize == true)
     {

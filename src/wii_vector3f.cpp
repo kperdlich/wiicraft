@@ -50,13 +50,13 @@ void math::Vector3f::Normalize()
     guVecNormalize(reinterpret_cast<guVector*>(&mVec));
 }
 
-float math::Vector3f::Dot(const math::Vector3f other) const
+float math::Vector3f::Dot(const math::Vector3f& other) const
 {
     return guVecDotProduct(reinterpret_cast<guVector*>(&const_cast<Vector3f&>(*this).mVec),
                            reinterpret_cast<guVector*>(&const_cast<Vector3f&>(other).mVec));
 }
 
-math::Vector3f math::Vector3f::Cross(const math::Vector3f other) const
+math::Vector3f math::Vector3f::Cross(const math::Vector3f& other) const
 {
     Vector3f cross;
     guVecCross(reinterpret_cast<guVector*>(&const_cast<Vector3f&>(*this).mVec),

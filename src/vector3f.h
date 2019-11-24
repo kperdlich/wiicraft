@@ -28,8 +28,8 @@ public:
     inline void SetZ(float value);
 
     void Normalize();
-    float Dot(const Vector3f other) const;
-    Vector3f Cross(const Vector3f other) const;
+    float Dot(const Vector3f &other) const;
+    Vector3f Cross(const Vector3f& other) const;
     float Length() const;
 
 private:

@@ -217,10 +217,10 @@ int main(int argc, char** argv)
             translation.Translate(+.1f, 0.0f, 0.0f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)                        
             //perspectiveCamera.Rotate('X', -1.0f);
-            translation.Translate(0.0f, .1f, 0.0f);
+            translation.Translate(0.0f, 0.0f, 0.1f);
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)                        
             //perspectiveCamera.Rotate('X', 1.0f);
-            translation.Translate(0.0f, -.1f, 0.0f);
+            translation.Translate(0.0f, 0.0f, -.1f);
 
         /*rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
@@ -228,7 +228,7 @@ int main(int argc, char** argv)
 
         // Perspective camera
         renderer.SetCamera(&perspectiveCamera);    
-        renderer.GetCamera()->GenerateFrustrumPlanes(false);
+        renderer.GetCamera()->GenerateFrustrumPlanes(true);
         const math::Vector3f& boxTranslation = translation.GetColum(3);
         core::Box newBoxPos = {{
             {pos.vertices[0] + boxTranslation},
@@ -242,7 +242,8 @@ int main(int argc, char** argv)
             {pos.vertices[7] + boxTranslation}
            }};
 
-        const bool render = perspectiveCamera.IsBoxVisible(newBoxPos);
+        core::AABB cube1AABB(translation.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
+        const bool render = perspectiveCamera.IsVisible(cube1AABB);
         if (render)
         {
             math::Matrix3x4 scale;
@@ -256,13 +257,13 @@ int main(int argc, char** argv)
         }
 
         math::Matrix3x4 cube2Transform;
+        cube2Transform.SetIdentity();
         cube2Transform.Translate(-3.0f, 0.0f, -5.0f);
         math::Matrix3x4 modelView2 = renderer.GetCamera()->GetViewMatrix3x4() * cube2Transform;
         renderer.LoadModelViewMatrix(modelView2);
-        renderer.Draw(cube);
+        //renderer.Draw(cube);
 
         renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-        core::AABB cube1AABB(translation.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
         core::AABB cube2AABB(cube2Transform.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
         if (cube1AABB.CoolidesWith(cube2AABB))
             renderer.DrawRay(cube2Transform.GetColum(3), math::Vector3f::Up * 2.0f, renderer::ColorRGBA::WHITE);

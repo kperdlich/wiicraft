@@ -1,17 +1,13 @@
 #pragma once
 
 #include "matrix4x4.h"
-#include "vector3f.h"
+#include "vector4f.h"
+#include "aabb.h"
 #include "geometry_data.h"
 
 namespace renderer {
 
 class Camera;
-
-struct Plane
-{
-    float a, b, c, d;
-};
 
 enum class Halfspace : int8_t
 {
@@ -31,19 +27,21 @@ public:
     Frustrum& operator = (Frustrum&&) = delete;
 
     void ExtractPlanes(const renderer::Camera& camera, bool normalize);
-    void NormalizePlane(Plane & plane) const;
-    float DistanceToPoint(const Plane & plane, const math::Vector3f & point) const;
-    Halfspace ClassifyPoint(const Plane & plane, const math::Vector3f &point) const;
+    void NormalizePlane(math::Vector4f & plane) const;
+    float DistanceToPoint(const math::Vector4f & plane, const math::Vector3f & point) const;
+    Halfspace ClassifyPoint(const math::Vector4f & plane, const math::Vector3f &point) const;
     bool IsPointVisible(const math::Vector3f& point) const;
-    bool IsBoxVisible(const core::Box& box) const;
+    bool IsVisible(const core::AABB& aabb) const;
+    bool IsVisible(const core::Box& box) const;
 
-    inline const Plane* GetPlanes() const;
+
+    inline const math::Vector4f* GetPlanes() const;
 
 private:
-    Plane mPlanes[6];
+    math::Vector4f mPlanes[6];
 };
 
-inline const Plane* Frustrum::GetPlanes() const
+inline const math::Vector4f* Frustrum::GetPlanes() const
 {
     return mPlanes;
 }

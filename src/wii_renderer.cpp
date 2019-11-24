@@ -210,6 +210,16 @@ void renderer::Renderer::SetCullMode(const CullMode& mode)
     }
 }
 
+void renderer::Renderer::EnableFog(const float startZ, const float endZ, const renderer::ColorRGBA& color)
+{
+    GX_SetFog(GX_FOG_LIN, startZ, endZ, mCamera->GetFrustrumNear(), mCamera->GetFrustrumFar(), { color.Red(), color.Green(), color.Blue(), 0 });
+}
+
+void renderer::Renderer::DisableFog()
+{
+    GX_SetFog(GX_FOG_NONE, 0.0f, 0.0f, 0.0f, 0.0f, { 0, 0, 0, 0 });
+}
+
 void renderer::Renderer::LoadModelViewMatrix(const math::Matrix3x4 &modelView, const uint8_t matrixIndex)
 {
     GX_LoadPosMtxImm(const_cast<math::Matrix3x4&>(modelView).mMtx34, matrixIndex);

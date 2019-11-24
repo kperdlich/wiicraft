@@ -36,6 +36,8 @@ public:
 
     void SetZModeEnabled(bool isEnabled);
     void SetCullMode(const CullMode& mode);
+    void EnableFog(const float startZ, const float endZ, const ColorRGBA &color);
+    void DisableFog();
 
     void LoadModelViewMatrix(const math::Matrix3x4& modelView, const uint8_t matrixIndex = 0);
     void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);

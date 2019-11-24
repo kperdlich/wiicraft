@@ -23,7 +23,7 @@ public:
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
 
     void GenerateFrustrumPlanes(bool normalize);
-    bool IsPointVisible(const math::Vector3f &point) const;
+    bool IsVisible(const math::Vector3f &point) const;
     bool IsVisible(const core::Box& box) const;
     bool IsVisible(const core::AABB& aabb) const;
 

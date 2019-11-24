@@ -222,26 +222,13 @@ int main(int argc, char** argv)
             //perspectiveCamera.Rotate('X', 1.0f);
             translation.Translate(0.0f, 0.0f, -.1f);
 
-        /*rotation.Rotate('X', degree);
+        rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
-        rotation.Rotate('Z', degree);*/
+        rotation.Rotate('Z', degree);
 
         // Perspective camera
         renderer.SetCamera(&perspectiveCamera);    
-        renderer.GetCamera()->GenerateFrustrumPlanes(true);
-        const math::Vector3f& boxTranslation = translation.GetColum(3);
-        core::Box newBoxPos = {{
-            {pos.vertices[0] + boxTranslation},
-            {pos.vertices[1] + boxTranslation},
-            {pos.vertices[2] + boxTranslation},
-            {pos.vertices[3] + boxTranslation},
-
-            {pos.vertices[4] + boxTranslation},
-            {pos.vertices[5] + boxTranslation},
-            {pos.vertices[6] + boxTranslation},
-            {pos.vertices[7] + boxTranslation}
-           }};
-
+        renderer.GetCamera()->GenerateFrustrumPlanes(true);        
         core::AABB cube1AABB(translation.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
         const bool render = perspectiveCamera.IsVisible(cube1AABB);
         if (render)
@@ -261,7 +248,7 @@ int main(int argc, char** argv)
         cube2Transform.Translate(-3.0f, 0.0f, -5.0f);
         math::Matrix3x4 modelView2 = renderer.GetCamera()->GetViewMatrix3x4() * cube2Transform;
         renderer.LoadModelViewMatrix(modelView2);
-        //renderer.Draw(cube);
+        renderer.Draw(cube);
 
         renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
         core::AABB cube2AABB(cube2Transform.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});

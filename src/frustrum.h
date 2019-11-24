@@ -30,7 +30,7 @@ public:
     void NormalizePlane(math::Vector4f & plane) const;
     float DistanceToPoint(const math::Vector4f & plane, const math::Vector3f & point) const;
     Halfspace ClassifyPoint(const math::Vector4f & plane, const math::Vector3f &point) const;
-    bool IsPointVisible(const math::Vector3f& point) const;
+    bool IsVisible(const math::Vector3f& point) const;
     bool IsVisible(const core::AABB& aabb) const;
     bool IsVisible(const core::Box& box) const;
 

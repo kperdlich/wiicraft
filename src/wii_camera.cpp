@@ -46,7 +46,7 @@ void renderer::Camera::GenerateFrustrumPlanes(bool normalize)
 
 bool renderer::Camera::IsVisible(const math::Vector3f &point) const
 {
-    return mFrustrum.IsPointVisible(point);
+    return mFrustrum.IsVisible(point);
 }
 
 bool renderer::Camera::IsVisible(const core::Box &box) const

@@ -24,11 +24,18 @@ math::Matrix3x4::Matrix3x4(float m00, float m01, float m02, float m03,
 }
 
 
-math::Matrix3x4 math::Matrix3x4::operator *(const math::Matrix3x4 &other)
+math::Matrix3x4 math::Matrix3x4::operator * (const math::Matrix3x4 &other) const
 {
-    Matrix3x4 mtx;
-    guMtxConcat(mMtx34, const_cast<Matrix3x4&>(other).mMtx34, mtx.mMtx34);
+    Mtx mtx;
+    guMtxConcat(const_cast<MtxP>(mMtx34), const_cast<Matrix3x4&>(other).mMtx34, mtx);
     return mtx;
+}
+
+math::Vector3f math::Matrix3x4::operator *(const math::Vector3f &vec) const
+{
+    guVector ret;
+    guVecMultiply(const_cast<MtxP>(mMtx34), (guVector*) &vec.mVec, &ret);
+    return math::Vector3f(ret.x, ret.y, ret.z);
 }
 
 void math::Matrix3x4::Scale(float x, float y, float z)
@@ -47,6 +54,13 @@ void math::Matrix3x4::Rotate(const char axis, float degree)
     guMtxIdentity(mtx);
     guMtxRotDeg(mtx, axis, degree);
     guMtxConcat(mtx, mMtx34, mMtx34);
+}
+
+math::Matrix3x4 math::Matrix3x4::Inverse() const
+{
+    Mtx mtx;
+    guMtxInverse(const_cast<MtxP>(mMtx34), mtx);
+    return mtx;
 }
 
 void math::Matrix3x4::SetIdentity()

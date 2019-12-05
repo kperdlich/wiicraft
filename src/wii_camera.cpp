@@ -6,17 +6,18 @@
 
 
 renderer::Camera::Camera(const math::Vector3f &position,
-                         const math::Vector3f &up,
+                         const math::Vector3f &worldUp,
                          const math::Vector3f &lookAt,
                          bool isPerspective)
-    : mIsPerspective(isPerspective)
-{
-    float mtx[3][4];
-    guVector vecPos = {position.X(), position.Y(), position.Z()};
-    guVector vecCamUp = {up.X(), up.Y(), up.Z()};
-    guVector vecLookAt = {lookAt.X(), lookAt.Y(), lookAt.Z()};
-    guLookAt(mtx, &vecPos, &vecCamUp, &vecLookAt);
-    mViewMatrix = mtx;
+    : mPosition(position),
+      mWorldUp(worldUp),
+      mLookAt(lookAt),
+      mYaw(-60.0f),
+      mPitch(0.0f),
+      mIsPerspective(isPerspective)
+{   
+
+   UpdateCameraVectors();
 }
 
 void renderer::Camera::SetFrustrum(float minDist, float maxDist, float fov, float aspectRatio)
@@ -61,12 +62,14 @@ bool renderer::Camera::IsVisible(const core::AABB &aabb) const
 
 math::Matrix3x4 renderer::Camera::GetViewMatrix3x4() const
 {    
-    return mViewMatrix;
-    /*return math::Matrix3x4(
-                mRight.X(), mRight.Y(), mRight.Z(), -mRight.Dot(mPosition),
-                mUp.X(), mUp.Y(), mUp.Z(), -mUp.Dot(mPosition),
-                mLookAt.X(), mLookAt.Y(), mLookAt.Z(), -mLookAt.Dot(mPosition));*/
-
+    float mtx[3][4];
+    guVector vecPos = {mPosition.X(), mPosition.Y(), mPosition.Z()};
+    guVector vecCamUp = {mUp.X(), mUp.Y(), mUp.Z()};
+    guVector vecLookAt = {mPosition.X() + mLookAt.X(),
+                          mPosition.Y() + mLookAt.Y(),
+                          mPosition.Z() + mLookAt.Z()};
+    guLookAt(mtx, &vecPos, &vecCamUp, &vecLookAt);
+    return mtx;
 }
 
 math::Matrix4x4 renderer::Camera::GetProjectionMatrix4x4() const
@@ -84,12 +87,46 @@ math::Matrix4x4 renderer::Camera::GetProjectionMatrix4x4() const
     return mtx;
 }
 
-void renderer::Camera::Translate(float x, float y, float z)
+void renderer::Camera::Move(const CameraMovementDirection& direction)
 {
-    mViewMatrix.Translate(x, y, z);
+    switch (direction)
+    {
+        case CameraMovementDirection::FORWARD:
+            mPosition += mLookAt;
+            break;
+        case CameraMovementDirection::BACKWARD:
+            mPosition -= mLookAt;
+            break;
+        case CameraMovementDirection::LEFT:
+            mPosition -= mRight;
+            break;
+        case CameraMovementDirection::RIGHT:
+            mPosition += mRight;
+            break;
+        default:
+            ASSERT(false);
+            break;
+    }
 }
 
-void renderer::Camera::Rotate(const char axis, float degree)
+void renderer::Camera::Rotate(float x, float y)
 {
-    mViewMatrix.Rotate(axis, degree);
+    mYaw += x;
+    mPitch += y;
+    mPitch = math::Clamp(mPitch, -89.0f, 89.0f);
+
+    UpdateCameraVectors();
+}
+
+void renderer::Camera::UpdateCameraVectors()
+{
+    mLookAt.SetX(cos(math::DegToRadians(mYaw)) * cos(math::DegToRadians(mPitch)));
+    mLookAt.SetY(sin(math::DegToRadians(mPitch)));
+    mLookAt.SetZ(sin(math::DegToRadians(mYaw)) * cos(math::DegToRadians(mPitch)));
+    mLookAt.Normalize();
+
+    mRight = mLookAt.Cross(mWorldUp);
+    mRight.Normalize();
+    mUp = mRight.Cross(mLookAt);
+    mUp.Normalize();
 }

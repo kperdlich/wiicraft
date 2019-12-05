@@ -21,11 +21,16 @@ public:
     Matrix3x4& operator = (const Matrix3x4&) = default;
     Matrix3x4(Matrix3x4&&) = default;
     Matrix3x4& operator = (Matrix3x4&&) = default;
-    Matrix3x4 operator * (const Matrix3x4& other);
+
+    Matrix3x4 operator * (const Matrix3x4& other) const;
+    Vector3f operator * (const Vector3f& vec) const;
+
 
     void Scale(float x, float y, float z);
     void Translate(float x, float y, float z);
     void Rotate(const char axis, float degree);
+
+    math::Matrix3x4 Inverse() const;
 
     void SetIdentity();
     void SetZero();

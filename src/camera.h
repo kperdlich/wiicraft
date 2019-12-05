@@ -7,10 +7,19 @@
 
 
 namespace renderer {
+
+enum class CameraMovementDirection : char
+{
+    FORWARD,
+    BACKWARD,
+    LEFT,
+    RIGHT
+};
+
 class Camera {
 public:
     Camera(const math::Vector3f& position,
-           const math::Vector3f& up,
+           const math::Vector3f& worldUp,
            const math::Vector3f& lookAt,
            bool isPerspective);
     ~Camera() = default;
@@ -30,22 +39,30 @@ public:
     math::Matrix3x4 GetViewMatrix3x4() const;
     math::Matrix4x4 GetProjectionMatrix4x4() const;
 
+    void Move(const CameraMovementDirection& direction);
+    void Rotate(float x, float y);
+
     inline bool IsPerspective() const;
     inline float GetFrustrumNear() const;
     inline float GetFrustrumFar() const;
     inline float GetFrustrumTop() const;
     inline float GetFrustrumBottom() const;
     inline float GetFrustrumLeft() const;
-    inline float GetFrustrumRight() const;
-
-    void Translate(float x, float y, float z);
-    void Rotate(const char axis, float degree);
-
+    inline float GetFrustrumRight() const;    
     inline const math::Vector3f& Position() const;
+
+private:
+    void UpdateCameraVectors();
+
 private:
     renderer::Frustrum mFrustrum; // For Frustrum Culling
-    math::Matrix3x4 mViewMatrix;
+    math::Vector3f mPosition;
+    math::Vector3f mUp;
+    math::Vector3f mWorldUp;
+    math::Vector3f mLookAt;
+    math::Vector3f mRight;
     float mFrustrumNear, mFrustrumFar, mFrustrumTop, mFrustrumBottom, mFrustrumLeft, mFrustrumRight;
+    float mYaw, mPitch;
     bool mIsPerspective;
 };
 
@@ -82,6 +99,11 @@ inline float Camera::GetFrustrumLeft() const
 inline float Camera::GetFrustrumRight() const
 {
     return mFrustrumRight;
+}
+
+inline const math::Vector3f& Camera::Position() const
+{
+    return mPosition;
 }
 
 }

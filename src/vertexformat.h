@@ -32,9 +32,9 @@ public:
     inline uint8_t GetFormatIndex() const;
     inline void SetFormatIndex(uint8_t format);
 
-private:
     void Bind();
 
+private:
     std::vector<VertexFormatAttribute> mAttributes;
     uint8_t mFormatIndex;
 };

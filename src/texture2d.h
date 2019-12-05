@@ -19,9 +19,10 @@ public:
     Texture2D(Texture2D&&) = default;
     Texture2D& operator=(const Texture2D&) = default;
     Texture2D& operator=(Texture2D&&) = default;
-private:
-    void Bind(uint8_t unit);
 
+    void Bind(uint8_t unit = 0);
+
+private:
     Texture2DData* mTextureData;
 };
 

@@ -1,4 +1,5 @@
 #include "wii_displaylist.h"
+#include "core.h"
 
 renderer::DisplayList::DisplayList()
     : mDispList(nullptr),
@@ -18,15 +19,14 @@ renderer::DisplayList::~DisplayList()
 
 void renderer::DisplayList::Render()
 {
-    if (mBufferSize > 0)
-    {
-        GX_CallDispList(mDispList, mBufferSize);
-    }
+    ASSERT(mBufferSize > 0);
+    GX_CallDispList(mDispList, mBufferSize);
 }
 
 void renderer::DisplayList::Begin(const size_t bufferSize)
 {
     Clear();
+    ASSERT(bufferSize > 0);
     mDispList = memalign(32, bufferSize);
     memset(mDispList, 0, bufferSize);
     DCInvalidateRange(mDispList, bufferSize);
@@ -37,6 +37,7 @@ void renderer::DisplayList::Begin(const size_t bufferSize)
 void renderer::DisplayList::End()
 {
     mBufferSize = GX_EndDispList();
+    ASSERT(mBufferSize != 0);
     // Update DisplayList size to the size returned by GX_EndDispList() to save memory
     realloc(mDispList, mBufferSize);
     DCFlushRange(mDispList, mBufferSize);

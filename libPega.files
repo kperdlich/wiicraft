@@ -7,6 +7,8 @@ src/Sandbox.cpp
 src/Sandbox.cpp
 src/Sandbox.cpp
 src/Sandbox.cpp
+src/SkyBox.cpp
+src/SkyBox.h
 src/aabb.cpp
 src/aabb.h
 src/camera.cpp
@@ -113,6 +115,8 @@ src/vector3f.h
 src/vector3f.h
 src/vector3f.h
 src/vector3f.h
+src/vector4f.cpp
+src/vector4f.h
 src/vertexarray.cpp
 src/vertexarray.cpp
 src/vertexarray.cpp

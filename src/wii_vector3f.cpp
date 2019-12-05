@@ -20,6 +20,22 @@ math::Vector3f::Vector3f(float x, float y, float z)
     mVec.mZ = z;
 }
 
+math::Vector3f& math::Vector3f::operator +=(const math::Vector3f &other)
+{
+    guVecAdd((guVector*)(&mVec),
+             (guVector*)(&const_cast<Vector3f&>(other).mVec),
+             (guVector*)(&mVec));
+    return *this;
+}
+
+math::Vector3f &math::Vector3f::operator -=(const math::Vector3f &other)
+{
+    guVecSub((guVector*)(&mVec),
+             (guVector*)(&const_cast<Vector3f&>(other).mVec),
+             (guVector*)(&mVec));
+    return *this;
+}
+
 math::Vector3f math::Vector3f::operator -(const math::Vector3f& other) const
 {
     Vector3f vec;

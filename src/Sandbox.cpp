@@ -46,9 +46,8 @@
 #include "core.h"
 #include "aabb.h"
 #include "raycast.h"
+#include "SkyBox.h"
 
-void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
-                                    math::Matrix3x4& translation, math::Matrix3x4& rotation, renderer::StaticMesh &mesh);
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
 void DrawDummySprite(renderer::Sprite&, renderer::Renderer &renderer, bool cursor);
@@ -68,7 +67,7 @@ int main(int argc, char** argv)
     renderer.SetClearColor(renderer::ColorRGBA::BLACK);
     renderer.SetCullMode(renderer::CullMode::Back);
 
-    renderer::Camera perspectiveCamera(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, true);
+    renderer::Camera perspectiveCamera(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, -1.0f}, true);
     perspectiveCamera.SetFrustrum(0.1f, 200.0f, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight());
 
     renderer::Camera orthographicCamera(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, false);
@@ -191,8 +190,8 @@ int main(int argc, char** argv)
     renderer.LoadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 20);
 
     float degree = 1.0f;
-
     renderer.SetLineWidth(12);
+    renderer::SkyBox skybox;
     while(true)
     {
         renderer.PreDraw();
@@ -209,28 +208,40 @@ int main(int argc, char** argv)
         math::Matrix3x4 scale;
         scale.SetIdentity();
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)            
-            //perspectiveCamera.Rotate('Y', -1.0f);
-            translation.Translate(-.1f, 0.0f, 0.0f);
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
+            //perspectiveCamera.Rotate(-1.0f, .0f);
+            perspectiveCamera.Move(renderer::CameraMovementDirection::LEFT);
+
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-            //perspectiveCamera.Rotate('Y', 1.0f);
-            translation.Translate(+.1f, 0.0f, 0.0f);
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)                        
-            //perspectiveCamera.Rotate('X', -1.0f);
-            translation.Translate(0.0f, 0.0f, 0.1f);
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)                        
-            //perspectiveCamera.Rotate('X', 1.0f);
-            translation.Translate(0.0f, 0.0f, -.1f);
+            //perspectiveCamera.Rotate(1.0f, .0f);
+            perspectiveCamera.Move(renderer::CameraMovementDirection::RIGHT);
+
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)        
+            //perspectiveCamera.Rotate(.0f, 1.0f);
+            perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)            
+            //perspectiveCamera.Rotate(.0f, -1.0f);
+            perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
+
+
 
         rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
         rotation.Rotate('Z', degree);
 
         // Perspective camera
-        renderer.SetCamera(&perspectiveCamera);    
-        renderer.GetCamera()->GenerateFrustrumPlanes(true);        
-        core::AABB cube1AABB(translation.GetColum(3), {blockHalfSize, blockHalfSize, blockHalfSize});
-        const bool render = perspectiveCamera.IsVisible(cube1AABB);
+        renderer.SetCamera(&perspectiveCamera);
+        skybox.Render(renderer);
+
+        renderer.GetCamera()->GenerateFrustrumPlanes(true);
+        core::AABB cube1AABB(translation.GetColum(3),
+                    {blockHalfSize, blockHalfSize, blockHalfSize});
+        const bool render = perspectiveCamera.IsVisible(core::AABB(
+                    (translation).GetColum(3),
+                    {blockHalfSize, blockHalfSize, blockHalfSize}));
         if (render)
         {
             math::Matrix3x4 scale;
@@ -273,15 +284,24 @@ int main(int argc, char** argv)
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
 
-        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
-        std::wstringstream str;
+        /*std::wstringstream str;
         str << L"X: ";
         str << translation.mMtx34[0][3];
         str << L" Y: ";
         str << translation.mMtx34[1][3];
         str << L" Z: ";
         str << translation.mMtx34[2][3];
-        renderer.DrawText(320, 375, str.str(), renderer::ColorRGBA::GREEN);
+        renderer.DrawText(320, 375, str.str(), renderer::ColorRGBA::GREEN);*/
+
+        math::Vector3f camerapos = perspectiveCamera.Position();
+        std::wstringstream cameraBuffer;
+        cameraBuffer << L"CX: ";
+        cameraBuffer << camerapos.X();
+        cameraBuffer << L" CY: ";
+        cameraBuffer << camerapos.Y();
+        cameraBuffer << L" CZ: ";
+        cameraBuffer << camerapos.Z();
+        renderer.DrawText(320, 375, cameraBuffer.str(), renderer::ColorRGBA::RED);
 
         std::wstringstream str2;
         str2 << L"X: ";
@@ -290,35 +310,20 @@ int main(int argc, char** argv)
         str2 << cube2Transform.mMtx34[1][3];
         str2 << L" Z: ";
         str2 << cube2Transform.mMtx34[2][3];
-        renderer.DrawText(20, 375, str2.str(), renderer::ColorRGBA::GREEN);
+        renderer.DrawText(20, 375, str2.str(), renderer::ColorRGBA::RED);
 
         if (render)
-            renderer.DrawText(320, 395, L"Cube rendered", renderer::ColorRGBA::GREEN);
+            renderer.DrawText(320, 395, L"Cube rendered", renderer::ColorRGBA::RED);
         else
-            renderer.DrawText(320, 395, L"Cube not rendered", renderer::ColorRGBA::GREEN);       
+            renderer.DrawText(320, 395, L"Cube not rendered", renderer::ColorRGBA::RED);
 
         renderer.DisplayBuffer();
     }
     WPAD_Shutdown();
 }
 
-
-void DrawIndexedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer,
-                                    math::Matrix3x4& translation, math::Matrix3x4& rotation,
-                                    renderer::StaticMesh& mesh)
-{
-    /*GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);*/
-}
-
-
-
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation)
 {
-    GX_SetChanCtrl(GX_COLOR0A0, GX_DISABLE, GX_SRC_VTX, GX_SRC_VTX, 0, GX_DF_NONE, GX_AF_NONE);
-    GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-    GX_SetColorUpdate(GX_TRUE);
 
     math::Matrix3x4 modelView;
     math::Matrix3x4 scale;
@@ -339,7 +344,8 @@ void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &rende
     math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
     float blockSize = 1.0f;
 
-    GX_LoadPosMtxImm(modelView.mMtx34, GX_PNMTX0);
+    renderer.LoadModelViewMatrix(modelView);
+    //GX_LoadPosMtxImm(modelView.mMtx34, GX_PNMTX0);
     guVector vertices[8] = {
                     { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() + blockSize, (float)blockPosition.Z() + blockSize },// v1
                     { (float)blockPosition.X() - blockSize, (float)blockPosition.Y() - blockSize, (float)blockPosition.Z() + blockSize }, //v2
@@ -356,106 +362,130 @@ void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer &rende
     GX_Begin(GX_QUADS, GX_VTXFMT0, 24);
         // front side
         GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
         GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
 
         GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
 
         GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
 
 
         // back side
         GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
 
         GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
 
         GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
 
         GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
 
 
 
         // right side
         GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
 
         GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
 
         GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
 
         GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
 
 
 
         // left side
         GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
 
         GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
 
         GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
 
         GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
 
 
 
         // top side
         GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
 
         GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
 
         GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
 
         GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
 
 
 
         // bottom side
         GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
 
         GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
 
         GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
 
         GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
+        GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
 
     GX_End();

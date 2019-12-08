@@ -1,5 +1,5 @@
 #include "wii_defines.h"
-#include "geometry_data.h"
+#include "vector3f.h"
 #include "SkyBox.h"
 #include "image2d.h"
 #include "texture2d.h"
@@ -43,43 +43,44 @@ void renderer::SkyBox::CreateSkyBox(renderer::Renderer& renderer)
 {
     math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
     const float blockHalfSize = PLAYER_DISTANCE;
-    core::Point vertices[8] = {
-        { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize },// v1
-        { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v2
-        { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v3
-        { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, // v4
-        { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, //v5
-        { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, // v6
-        { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, // v7
-        { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() - blockHalfSize } // v8
-    };
+    math::Vector3f vertices[8] = {
+            { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize },// v1
+            { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v2
+            { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v3
+            { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, // v4
+            { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, //v5
+            { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, // v6
+            { (float)blockPosition.X() + blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() - blockHalfSize }, // v7
+            { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() - blockHalfSize } // v8
+        };
+
+
+     m_displayList.Begin(4000);
 
     renderer::VertexFormat skyboxFormat(0);
     skyboxFormat.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
     skyboxFormat.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
     skyboxFormat.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
-    skyboxFormat.Bind();
-
-    m_displayList.Begin(4000);
+    skyboxFormat.Bind();   
 
     renderer.SetCullMode(CullMode::Front);
 
     m_pSkyBoxTextures[SKY_FRONT]->Bind();
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         // front side
-        GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
+        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
-        GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
+        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
-        GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
+        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
-        GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
+        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
     GX_End();
@@ -87,19 +88,19 @@ void renderer::SkyBox::CreateSkyBox(renderer::Renderer& renderer)
     m_pSkyBoxTextures[SKY_BACK]->Bind();
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         // back side
-        GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
+        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
-        GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
+        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
-        GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
+        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
-        GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
+        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
     GX_End();
@@ -107,19 +108,19 @@ void renderer::SkyBox::CreateSkyBox(renderer::Renderer& renderer)
     m_pSkyBoxTextures[SKY_RIGHT]->Bind();
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         // right side
-        GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
+        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
-        GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
+        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
-        GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
+        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
-        GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
+        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
     GX_End();
@@ -127,19 +128,19 @@ void renderer::SkyBox::CreateSkyBox(renderer::Renderer& renderer)
     m_pSkyBoxTextures[SKY_LEFT]->Bind();
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         // left side
-        GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
+        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
-        GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
+        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
-        GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
+        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
-        GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
+        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
     GX_End();
@@ -147,19 +148,19 @@ void renderer::SkyBox::CreateSkyBox(renderer::Renderer& renderer)
     m_pSkyBoxTextures[SKY_UP]->Bind();
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         // top side
-        GX_Position3f32(vertices[4].x, vertices[4].y, vertices[4].z);
+        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
-        GX_Position3f32(vertices[5].x, vertices[5].y, vertices[5].z);
+        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
-        GX_Position3f32(vertices[3].x, vertices[3].y, vertices[3].z);
+        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
-        GX_Position3f32(vertices[0].x, vertices[0].y, vertices[0].z);
+        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 1.0f);
     GX_End();
@@ -167,19 +168,19 @@ void renderer::SkyBox::CreateSkyBox(renderer::Renderer& renderer)
     m_pSkyBoxTextures[SKY_DOWN]->Bind();
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         // bottom side
-        GX_Position3f32(vertices[6].x, vertices[6].y, vertices[6].z);
+        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(0.0f, 0.0f);
 
-        GX_Position3f32(vertices[7].x, vertices[7].y, vertices[7].z);
+        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 0.0f);
 
-        GX_Position3f32(vertices[1].x, vertices[1].y, vertices[1].z);
+        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
         GX_Color1u32(0xFFFFFFFF);
         GX_TexCoord2f32(1.0f, 1.0f);
 
-        GX_Position3f32(vertices[2].x, vertices[2].y, vertices[2].z);
+        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
         GX_Color1u32(0xFFFFFFFF); GX_TexCoord2f32(0.0f, 1.0f);
     GX_End();
 

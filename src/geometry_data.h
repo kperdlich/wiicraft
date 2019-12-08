@@ -4,11 +4,6 @@
 
 namespace core {
 
-struct Point
-{
-    float x, y, z;
-};
-
 struct Box
 {
     math::Vector3f vertices[8];

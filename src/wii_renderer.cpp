@@ -387,6 +387,27 @@ void renderer::Renderer::DrawRay(const math::Vector3f &from, const math::Vector3
     GX_End();
 }
 
+void renderer::Renderer::ClearStatistics()
+{
+    mStatistics.ChunksInFrustrum = 0;
+    mStatistics.CulledChunks = 0;
+}
+
+void renderer::Renderer::UpdateFPS()
+{
+    static uint8_t frameCount = 0;
+    static uint32_t fpsLastTime = 0;
+
+    uint32_t currentTime = ticks_to_millisecs(gettime());
+    ++frameCount;
+    if (currentTime - fpsLastTime > 1000)
+    {
+        fpsLastTime = currentTime;
+        mStatistics.FPS = frameCount;
+        frameCount = 0;
+    }
+}
+
 uint32_t renderer::Renderer::GetWidth() const
 {
     return mRenderData->mWidth;

@@ -12,7 +12,7 @@ renderer::Camera::Camera(const math::Vector3f &position,
     : mPosition(position),
       mWorldUp(worldUp),
       mLookAt(lookAt),
-      mYaw(-60.0f),
+      mYaw(90.0f),
       mPitch(0.0f),
       mIsPerspective(isPerspective)
 {   

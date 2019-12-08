@@ -18,13 +18,12 @@ include $(DEVKITPPC)/wii_rules
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	src \
-                        src/third-party
+				src/third-party \
+				src/game
 DATA		:=	assets
 INCLUDES	:= 	src \
-                        src/third-party
-
-				
-
+				src/third-party \
+				src/game
 #---------------------------------------------------------------------------------
 # path to .dol debugger
 #---------------------------------------------------------------------------------

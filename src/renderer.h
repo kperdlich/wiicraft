@@ -3,6 +3,7 @@
 #include <memory>
 #include "matrix3x4.h"
 #include "colorrgba.h"
+#include "statistics.h"
 
 namespace renderer {
 
@@ -51,15 +52,21 @@ public:
     void DrawLine(const math::Vector3f &from, const math::Vector3f& end, const renderer::ColorRGBA& color);
     void DrawRay(const math::Vector3f &from, const math::Vector3f &direction, const renderer::ColorRGBA& color);
 
+    void ClearStatistics();
+    void UpdateFPS();
+
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
 
     inline Camera* GetCamera() const;
     inline RenderData* GetRenderData();
+    inline Statistics& GetStatistics();
+    inline const Statistics& GetStatistics() const;
 
     static Renderer* s_Renderer;
 private:
-    RenderData* mRenderData;
+    Statistics mStatistics;
+    RenderData* mRenderData;    
     Camera* mCamera;
 };
 
@@ -71,6 +78,16 @@ inline Camera *Renderer::GetCamera() const
 inline RenderData* Renderer::GetRenderData()
 {
     return mRenderData;
+}
+
+inline Statistics &Renderer::GetStatistics()
+{
+    return mStatistics;
+}
+
+inline const Statistics &Renderer::GetStatistics() const
+{
+    return mStatistics;
 }
 
 };

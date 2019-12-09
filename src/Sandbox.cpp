@@ -18,6 +18,7 @@
 ***/
 
 #include <unordered_map>
+#include <unordered_set>
 #include <sstream>
 #include "renderer.h"
 #include "clock.h"
@@ -49,6 +50,7 @@
 #include "SkyBox.h"
 #include "game/chunksection.h"
 #include "game/ChunkLoaderMultiplayer.h"
+#include "game/BlockManager.h"
 
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
@@ -195,12 +197,25 @@ int main(int argc, char** argv)
 
     float degree = 1.0f;
     renderer.SetLineWidth(12);
-    renderer::SkyBox skybox;
+    renderer::SkyBox skybox;    
+
+    wiicraft::BlockManager blockManager;
 
     wiicraft::ChunkLoaderMultiplayer chunkLoaderJob;
     chunkLoaderJob.Start();
 
-    std::array<wiicraft::ChunkSection, 25> chunkSections;
+    std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkSections;
+    std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkCache;
+
+    for (int32_t x = 0; x < 7; ++x)
+    {
+        for (int32_t y = 0; y < 7; ++y)
+        {
+            auto cs = std::make_shared<wiicraft::ChunkSection>();
+            cs->SetPosition({x, y});
+            chunkSections[cs->GetPositionPair()] = cs;
+        }
+    }
 
     wiicraft::ChunkPosition oldChunkPos = {-1, -1};
 
@@ -298,34 +313,65 @@ int main(int argc, char** argv)
             renderer.DrawRay({0.5f, 0.0f, 0.0f}, math::Vector3f::Forward * 5.0f, renderer::ColorRGBA::RED);
 
 
-
         const wiicraft::ChunkPosition currentChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera.Position());
         if (currentChunkPos.x != oldChunkPos.x || currentChunkPos.y != oldChunkPos.y)
         {
-            const auto& chunkmap = wiicraft::ChunkSection::GenerateChunkMap(perspectiveCamera.Position());
-            for (uint32_t i = 0; i < 25; ++i)
+            chunkCache.clear();
+            auto chunkmap = wiicraft::ChunkSection::GenerateChunkMap(perspectiveCamera.Position());
+            for (auto chunkMapIt = chunkmap.begin(); chunkMapIt != chunkmap.end();)
             {
-                chunkSections[i].SetTo(wiicraft::BlockType::AIR);
-                chunkSections[i].SetPosition(chunkmap[i]);
-                chunkSections[i].SetLoaded(false);
-                chunkLoaderJob.Add(&chunkSections[i]);
+                auto chunkIt = chunkSections.find(std::make_pair(chunkMapIt->x, chunkMapIt->y));
+                if (chunkIt != chunkSections.end() && chunkIt->second->IsLoaded())
+                {
+                    chunkCache[chunkIt->first] = chunkIt->second;
+                    chunkMapIt = chunkmap.erase(chunkMapIt);
+                }
+                else
+                {
+                    ++chunkMapIt;
+                }
             }
+
+            std::vector<std::shared_ptr<wiicraft::ChunkSection>> loadingList;
+            for (auto& cs : chunkSections)
+            {
+                auto cacheIt = chunkCache.find(cs.second->GetPositionPair());
+                if (cacheIt == chunkCache.end())
+                {
+                    const wiicraft::ChunkPosition& newChunkPos = chunkmap.back();
+                    cs.second->SetTo(wiicraft::BlockType::AIR);
+                    cs.second->SetPosition(newChunkPos);
+                    cs.second->SetLoaded(false);
+                    chunkmap.pop_back();
+                    loadingList.push_back(cs.second);
+                    chunkLoaderJob.Add(&*cs.second);
+                }
+            }
+            chunkSections.clear();
+            for(auto& cs : loadingList)
+            {
+                chunkSections[cs->GetPositionPair()] = cs;
+            }
+            for(auto& cs : chunkCache)
+            {
+                chunkSections[cs.second->GetPositionPair()] = cs.second;
+            }
+            ASSERT(chunkmap.size() == 0);
             oldChunkPos = currentChunkPos;
         }
 
-        for (auto& cs : chunkSections)
-        {
-            if (cs.IsLoaded())
-            {
-                renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-                renderer.DrawRay(cs.GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f -8.0f,wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
-                renderer.DrawRay(cs.GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
-                renderer.DrawRay(cs.GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
-                texture->Bind();
-                cs.Render(renderer);
-            }
+        renderer.EnableFog(40.0f, 50.0f, { 192, 216, 255, 0 });
+        for (auto& c : chunkCache)
+        {            
+            auto cs = c.second;
+            renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
+            renderer.DrawRay(cs->GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f -8.0f,wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
+            renderer.DrawRay(cs->GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
+            renderer.DrawRay(cs->GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
+            texture->Bind();
+            cs->Render(renderer, blockManager);
         }
-
+        //renderer.DisableFog();
 
         // Ortho camera
         renderer.SetCamera(&orthographicCamera);

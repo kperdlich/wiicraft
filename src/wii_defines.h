@@ -14,6 +14,8 @@
 #include <malloc.h>
 #include <string.h>
 #include <pngu.h>
+#include <fat.h>
+#include <dirent.h>
 #include "Metaphrasis.h"
 #include "freetypegx.h"
 

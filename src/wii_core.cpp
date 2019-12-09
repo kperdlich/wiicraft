@@ -27,7 +27,7 @@ void core::Assert(const char* expression, const char* file, int32_t line)
     WPAD_SetVRes(WPAD_CHAN_0, pRMode->fbWidth, pRMode->xfbHeight);
 
     printf("\x1b[7;0H");
-    printf("Assertion failed:\nFile: %s, Line %d\nExpression: %s\n\n", file, line, expression);
+    printf("Assertion failed:\nFile: %s,\n Line %d\nExpression: %s\n\n", file, line, expression);
     printf("Press 'A' to exit.");
 
     do

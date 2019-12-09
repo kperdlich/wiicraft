@@ -1,10 +1,12 @@
+#include <math.h>
 #include "chunksection.h"
 #include "renderer.h"
 #include "camera.h"
 #include "vertexformat.h"
 
 wiicraft::ChunkSection::ChunkSection() :
-    mIsDirty(true)
+    mLoaded(true),
+    mDirty(false)
 {
     for (uint32_t i = 0; i < CHUNK_SIZE; ++i)
     {
@@ -47,18 +49,19 @@ void wiicraft::ChunkSection::SetTo(const BlockType& blockType)
             }
         }
     }
-    mIsDirty = true;
+    mLoaded = true;
 }
 
 void wiicraft::ChunkSection::Render(renderer::Renderer& renderer)
 {
     for (uint32_t i = 0; i < CHUNK_SIZE; ++i)
     {
+        const math::Vector3f& worldPosition = GetWorldPosition();
         const core::AABB chunkAABB(
         {
-           mPosition.X() + (CHUNK_SIZE * 0.5f),
-           mPosition.Y() + (i * CHUNK_SIZE) + (CHUNK_SIZE * 0.5f),
-           mPosition.Z() + (CHUNK_SIZE * 0.5f)
+           worldPosition.X() + (CHUNK_SIZE * 0.5f),
+           worldPosition.Y() + (i * CHUNK_SIZE) + (CHUNK_SIZE * 0.5f),
+           worldPosition.Z() + (CHUNK_SIZE * 0.5f)
         },
         {
             CHUNK_SIZE * 0.5f, CHUNK_SIZE * 0.5f, CHUNK_SIZE * 0.5f
@@ -67,15 +70,14 @@ void wiicraft::ChunkSection::Render(renderer::Renderer& renderer)
         if (renderer.GetCamera()->IsVisible(chunkAABB))
         {
             ++renderer.GetStatistics().ChunksInFrustrum;
-            if (mChunkDisplayList[i]->GetBufferSize() == 0)
-            {
-                mChunkDisplayList[i]->Clear();
+            if (mChunkDisplayList[i]->GetBufferSize() == 0 || mDirty)
+            {                
                 GenerateChunk(i, renderer);
             }
             ASSERT(i <= mChunkDisplayList.size() -1);
             math::Matrix3x4 chunkModelMatrix;
             chunkModelMatrix.SetIdentity();
-            chunkModelMatrix.Translate(mPosition.X(), mPosition.Y(), mPosition.Z());
+            chunkModelMatrix.Translate(worldPosition.X(), worldPosition.Y(), worldPosition.Z());
             renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * chunkModelMatrix);
             mChunkDisplayList[i]->Render();
         }
@@ -86,6 +88,7 @@ void wiicraft::ChunkSection::Render(renderer::Renderer& renderer)
             mChunkDisplayList[i]->Clear();
         }
     }
+    mDirty = false;
 }
 
 void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t chunkFaceAmmount,
@@ -106,6 +109,13 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
     {
         renderer.GetStatistics().ChunkDisplayListSizeMB -= displayList.GetBufferSize() / 1000.0f / 1000.0f;
     }
+
+    displayList.Clear();
+    if (chunkFaceAmmount == 0)
+    {
+        return;
+    }
+
     displayList.Begin(400000);
 
     renderer::VertexFormat chunkBlock(GX_VTXFMT0);
@@ -302,10 +312,7 @@ void wiicraft::ChunkSection::GenerateChunk(uint32_t chunkIndex, renderer::Render
             }
         }
     }
-    ASSERT(chunkFaceAmount > 0);
-    UpdateChunkDisplayList(chunkIndex, chunkFaceAmount, chunkBlockRenderMap, renderer,
-        {static_cast<uint8_t>(chunkIndex * 16), static_cast<uint8_t>(chunkIndex * 16), 0xff, 0xff
-    });
+    UpdateChunkDisplayList(chunkIndex, chunkFaceAmount, chunkBlockRenderMap, renderer, renderer::ColorRGBA::WHITE);
 }
 
 bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, wiicraft::BlockRenderData &blockRenderVO) const
@@ -357,11 +364,37 @@ bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, 
 
     if (blockRenderVO.Faces > 0)
     {
-        blockRenderVO.BlockPosition = { x, y, z }; // LocalPositionToGlobalPosition(Vec3i{ x, y, z });
+        blockRenderVO.BlockPosition = { x, y, z };
         return true;
     }
 
     return false;
 }
 
+wiicraft::ChunkPosition wiicraft::ChunkSection::WorldPositionToChunkPosition(const math::Vector3f& worldPosition)
+{
+    ChunkPosition pos;
+    pos.x = static_cast<int32_t>(std::floor(worldPosition.X() / CHUNK_SIZE));
+    pos.y = static_cast<int32_t>(std::floor(worldPosition.Z() / CHUNK_SIZE));
+    return pos;
+}
 
+std::vector<wiicraft::ChunkPosition> wiicraft::ChunkSection::GenerateChunkMap(const math::Vector3f &worldPosition)
+{
+    const ChunkPosition& chunkPosition = WorldPositionToChunkPosition(worldPosition);
+    std::vector<ChunkPosition> chunkList;
+
+    int32_t x = chunkPosition.x - (5 / 2);
+    int32_t z = chunkPosition.y + (5 / 2);
+
+    for (int32_t i = 0; i < 5; i++)
+    {
+        for (int32_t j = 0; j < 5; j++)
+        {
+            chunkList.push_back({x + i, z - j});
+        }
+    }
+
+    ASSERT(chunkList.size() == 25);
+    return chunkList;
+}

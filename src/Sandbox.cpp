@@ -48,6 +48,7 @@
 #include "raycast.h"
 #include "SkyBox.h"
 #include "game/chunksection.h"
+#include "game/ChunkLoaderMultiplayer.h"
 
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
@@ -63,6 +64,8 @@ static WPADData* s_wpadData = nullptr;
 
 int main(int argc, char** argv)
 {
+    ASSERT(fatInitDefault());
+
     renderer::Renderer renderer(true);
     renderer.SetZModeEnabled(true);
     renderer.SetClearColor(renderer::ColorRGBA::BLACK);
@@ -194,15 +197,12 @@ int main(int argc, char** argv)
     renderer.SetLineWidth(12);
     renderer::SkyBox skybox;
 
-    wiicraft::ChunkSection chunkSections[7][7];
-    for (uint8_t x = 0; x < 7; ++x)
-    {
-        for (uint8_t y = 0; y < 7; ++y)
-        {
-            chunkSections[x][y].SetTo(wiicraft::BlockType::DIRT);
-            chunkSections[x][y].SetPosition({static_cast<float>(x) * 16, -256.0f, -(static_cast<float>(y) * 16)});
-        }
-    }
+    wiicraft::ChunkLoaderMultiplayer chunkLoaderJob;
+    chunkLoaderJob.Start();
+
+    std::array<wiicraft::ChunkSection, 25> chunkSections;
+
+    wiicraft::ChunkPosition oldChunkPos = {-1, -1};
 
     uint64_t millisecondsLastFrame = 0;
 
@@ -233,14 +233,19 @@ int main(int argc, char** argv)
             //perspectiveCamera.Move(renderer::CameraMovementDirection::RIGHT);
 
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)        
-            //perspectiveCamera.Rotate(.0f, 1.0f);
-            perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)                    
+            perspectiveCamera.Rotate(.0f, 1.0f);
+            //perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
 
         if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)            
-            //perspectiveCamera.Rotate(.0f, -1.0f);
-            perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
+            perspectiveCamera.Rotate(.0f, -1.0f);
+            //perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
 
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_A)
+            perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_B)
+            perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
 
         rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
@@ -293,16 +298,31 @@ int main(int argc, char** argv)
             renderer.DrawRay({0.5f, 0.0f, 0.0f}, math::Vector3f::Forward * 5.0f, renderer::ColorRGBA::RED);
 
 
-        for (uint8_t x = 0; x < 7; ++x)
+
+        const wiicraft::ChunkPosition currentChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera.Position());
+        if (currentChunkPos.x != oldChunkPos.x || currentChunkPos.y != oldChunkPos.y)
         {
-            for (uint8_t y = 0; y < 7; ++y)
+            const auto& chunkmap = wiicraft::ChunkSection::GenerateChunkMap(perspectiveCamera.Position());
+            for (uint32_t i = 0; i < 25; ++i)
+            {
+                chunkSections[i].SetTo(wiicraft::BlockType::AIR);
+                chunkSections[i].SetPosition(chunkmap[i]);
+                chunkSections[i].SetLoaded(false);
+                chunkLoaderJob.Add(&chunkSections[i]);
+            }
+            oldChunkPos = currentChunkPos;
+        }
+
+        for (auto& cs : chunkSections)
+        {
+            if (cs.IsLoaded())
             {
                 renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-                renderer.DrawRay(chunkSections[x][y].GetPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f -8.0f,wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
-                renderer.DrawRay(chunkSections[x][y].GetPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
-                renderer.DrawRay(chunkSections[x][y].GetPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
+                renderer.DrawRay(cs.GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f -8.0f,wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
+                renderer.DrawRay(cs.GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
+                renderer.DrawRay(cs.GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
                 texture->Bind();
-                chunkSections[x][y].Render(renderer);
+                cs.Render(renderer);
             }
         }
 
@@ -356,12 +376,33 @@ int main(int argc, char** argv)
         culledChunks << renderer.GetStatistics().CulledChunks;
         renderer.DrawText(380, 90, culledChunks.str(), renderer::ColorRGBA::RED);
 
+        std::wstringstream queue;
+        queue << L"Chunk Queue: ";
+        queue << chunkLoaderJob.GetQueueCount();
+        renderer.DrawText(380, 110, queue.str(), renderer::ColorRGBA::RED);
+
+        std::wstringstream chunkPos;
+        chunkPos << L"Chunk Pos: X:";
+        chunkPos << currentChunkPos.x;
+        chunkPos << L" Y: ";
+        chunkPos << currentChunkPos.y;
+        renderer.DrawText(380, 130, chunkPos.str(), renderer::ColorRGBA::RED);
+
+        std::wstringstream oldchunkPos;
+        oldchunkPos << L"Old Chunk Pos: X:";
+        oldchunkPos << oldChunkPos.x;
+        oldchunkPos << L" Y: ";
+        oldchunkPos << oldChunkPos.y;
+        renderer.DrawText(380, 150, oldchunkPos.str(), renderer::ColorRGBA::RED);
+
         renderer.DisplayBuffer();
         renderer.ClearStatistics();
         renderer.UpdateFPS();
 
         millisecondsLastFrame = ticks_to_millisecs(gettime()) - startFrameTime;
     }
+
+    chunkLoaderJob.Stop();
     WPAD_Shutdown();
 }
 

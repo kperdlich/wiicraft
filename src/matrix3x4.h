@@ -5,6 +5,7 @@
 #include "vector3f.h"
 
 namespace math {
+class Matrix4x4;
 
 // The elements of the 3x4 matrix are stored in
 // row-major order.
@@ -24,7 +25,7 @@ public:
 
     Matrix3x4 operator * (const Matrix3x4& other) const;
     Vector3f operator * (const Vector3f& vec) const;
-
+    Matrix4x4 operator * (const Matrix4x4& other) const;
 
     void Scale(float x, float y, float z);
     void Translate(float x, float y, float z);

@@ -1,4 +1,5 @@
 #include "matrix3x4.h"
+#include "matrix4x4.h"
 #include "wii_defines.h"
 
 math::Matrix3x4::Matrix3x4(bool zero)
@@ -86,3 +87,71 @@ math::Matrix3x4 math::Matrix3x4::Identity()
     return mtx;
 }
 
+math::Matrix4x4 math::Matrix3x4::operator *(const math::Matrix4x4 &other) const
+{
+    return math::Matrix4x4(
+                mMtx34[0][0] * other[0][0] +
+                        mMtx34[0][1] * other[1][0] +
+                        mMtx34[0][2] * other[2][0] +
+                        mMtx34[0][3] * other[3][0],
+
+                        mMtx34[0][0] * other[0][1] +
+                        mMtx34[0][1] * other[1][1] +
+                        mMtx34[0][2] * other[2][1] +
+                        mMtx34[0][3] * other[3][1],
+
+                        mMtx34[0][0] * other[0][2] +
+                        mMtx34[0][1] * other[1][2] +
+                        mMtx34[0][2] * other[2][2] +
+                        mMtx34[0][3] * other[3][2],
+
+                        mMtx34[0][0] * other[0][3] +
+                        mMtx34[0][1] * other[1][3] +
+                        mMtx34[0][2] * other[2][3] +
+                        mMtx34[0][3] * other[3][3],
+
+                        mMtx34[1][0] * other[0][0] +
+                        mMtx34[1][1] * other[1][0] +
+                        mMtx34[1][2] * other[2][0] +
+                        mMtx34[1][3] * other[3][0],
+
+                        mMtx34[1][0] * other[0][1] +
+                        mMtx34[1][1] * other[1][1] +
+                        mMtx34[1][2] * other[2][1] +
+                        mMtx34[1][3] * other[3][1],
+
+                        mMtx34[1][0] * other[0][2] +
+                        mMtx34[1][1] * other[1][2] +
+                        mMtx34[1][2] * other[2][2] +
+                        mMtx34[1][3] * other[3][2],
+
+                        mMtx34[1][0] * other[0][3] +
+                        mMtx34[1][1] * other[1][3] +
+                        mMtx34[1][2] * other[2][3] +
+                        mMtx34[1][3] * other[3][3],
+
+                        mMtx34[2][0] * other[0][0] +
+                        mMtx34[2][1] * other[1][0] +
+                        mMtx34[2][2] * other[2][0] +
+                        mMtx34[2][3] * other[3][0],
+
+                        mMtx34[2][0] * other[0][1] +
+                        mMtx34[2][1] * other[1][1] +
+                        mMtx34[2][2] * other[2][1] +
+                        mMtx34[2][3] * other[3][1],
+
+                        mMtx34[2][0] * other[0][2] +
+                        mMtx34[2][1] * other[1][2] +
+                        mMtx34[2][2] * other[2][2] +
+                        mMtx34[2][3] * other[3][2],
+
+                        mMtx34[2][0] * other[0][3] +
+                        mMtx34[2][1] * other[1][3] +
+                        mMtx34[2][2] * other[2][3] +
+                        mMtx34[2][3] * other[3][3],
+
+                        other[3][0],
+                        other[3][1],
+                        other[3][2],
+                        other[3][3]);
+}

@@ -12,7 +12,7 @@ renderer::Camera::Camera(const math::Vector3f &position,
     : mPosition(position),
       mWorldUp(worldUp),
       mLookAt(lookAt),
-      mYaw(90.0f),
+      mYaw(-90.0f),
       mPitch(0.0f),
       mIsPerspective(isPerspective)
 {   
@@ -38,6 +38,17 @@ void renderer::Camera::SetFrustrum(float top, float bottom, float left, float ri
     mFrustrumRight = right;
     mFrustrumNear = near;
     mFrustrumFar = far;
+}
+
+math::Vector3f renderer::Camera::ScreenSpaceToWorldSpace(float posX, float posY, float screenWidth, float screenHeight) const
+{
+    float x = 2.0f * posX / screenWidth - 1;
+    float y = 2.0f * posY / screenHeight - 1;
+
+    math::Vector4f screenPosition(x, -y, -1.0f, 1.0f);
+    const math::Matrix4x4& viewProjectionInverse = (GetProjectionMatrix4x4() * GetViewMatrix3x4()).Inverse();
+    math::Vector4f worldPosition = viewProjectionInverse * screenPosition;
+    return {worldPosition.X() / worldPosition.W(), worldPosition.Y() / worldPosition.W(), worldPosition.Z() / worldPosition.W()};
 }
 
 void renderer::Camera::GenerateFrustrumPlanes(bool normalize)

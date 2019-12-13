@@ -31,6 +31,7 @@ public:
     void SetFrustrum(float minDist, float maxDist, float fov, float aspectRatio);
     void SetFrustrum(float top, float bottom, float left, float right, float near, float far);    
 
+    math::Vector3f ScreenSpaceToWorldSpace(float posX, float posY, float screenWidth, float screenHeight) const;
     void GenerateFrustrumPlanes(bool normalize);
     bool IsVisible(const math::Vector3f &point) const;
     bool IsVisible(const core::Box& box) const;
@@ -50,6 +51,7 @@ public:
     inline float GetFrustrumLeft() const;
     inline float GetFrustrumRight() const;    
     inline const math::Vector3f& Position() const;
+    inline const math::Vector3f& Forward() const;
 
 private:
     void UpdateCameraVectors();
@@ -104,6 +106,11 @@ inline float Camera::GetFrustrumRight() const
 inline const math::Vector3f& Camera::Position() const
 {
     return mPosition;
+}
+
+const math::Vector3f &Camera::Forward() const
+{
+    return mLookAt;
 }
 
 }

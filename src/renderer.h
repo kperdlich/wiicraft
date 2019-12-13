@@ -42,7 +42,6 @@ public:
 
     void LoadModelViewMatrix(const math::Matrix3x4& modelView, const uint8_t matrixIndex = 0);
     void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);
-
     void SetLineWidth(uint8_t width);
 
     void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color);

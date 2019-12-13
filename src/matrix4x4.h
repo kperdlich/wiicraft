@@ -2,6 +2,8 @@
 
 #include "wii_defines.h"
 #include "matrix3x4.h"
+#include "vector4f.h"
+#include "core.h"
 
 namespace math {
 // The elements of the 4x4 matrix are stored in
@@ -10,7 +12,7 @@ class Matrix4x4
 {
 public:
 
-    Matrix4x4();	
+    explicit Matrix4x4(bool zero = false);
     Matrix4x4(float matrix[4][4]);
     Matrix4x4(float m00, float m01, float m02, float m03,
             float m10, float m11, float m12, float m13,
@@ -23,16 +25,20 @@ public:
     Matrix4x4& operator=(Matrix4x4&&) = default;
 
     inline void SetIdentity();
+    inline void SetZero();
+    math::Matrix4x4 Inverse() const;
 
     inline Matrix4x4 operator+(const Matrix4x4& other) const;
     inline Matrix4x4 operator*(const Matrix4x4& other) const;
     inline Matrix4x4 operator*(float value) const;
+    inline Vector4f operator*(const Vector4f& vec) const;
     inline void operator+=(const Matrix4x4& other);
     inline void operator*=(const Matrix4x4& other);
     inline bool operator==(const Matrix4x4& other) const;
     inline bool operator!=(const Matrix4x4& other) const; 
 
-    inline Matrix4x4 operator*(const Matrix3x4& other) const;
+    math::Matrix4x4 operator*(const math::Matrix3x4& other) const;
+    inline const float* operator[] (uint8_t index) const;
 
     inline float _11() const;
     inline float _12() const;
@@ -64,6 +70,14 @@ inline void Matrix4x4::SetIdentity()
     mMatrix[1][0] = 0; mMatrix[1][1] = 1;  mMatrix[1][2] = 0;  mMatrix[1][3] = 0;
     mMatrix[2][0] = 0; mMatrix[2][1] = 0;  mMatrix[2][2] = 1;  mMatrix[2][3] = 0;
     mMatrix[3][0] = 0; mMatrix[3][1] = 0;  mMatrix[3][2] = 0;  mMatrix[3][3] = 1;
+}
+
+void Matrix4x4::SetZero()
+{
+    mMatrix[0][0] = 0; mMatrix[0][1] = 0;  mMatrix[0][2] = 0;  mMatrix[0][3] = 0;
+    mMatrix[1][0] = 0; mMatrix[1][1] = 0;  mMatrix[1][2] = 0;  mMatrix[1][3] = 0;
+    mMatrix[2][0] = 0; mMatrix[2][1] = 0;  mMatrix[2][2] = 0;  mMatrix[2][3] = 0;
+    mMatrix[3][0] = 0; mMatrix[3][1] = 0;  mMatrix[3][2] = 0;  mMatrix[3][3] = 0;
 }
 
 inline Matrix4x4 Matrix4x4::operator+(const Matrix4x4& other) const
@@ -108,6 +122,15 @@ inline Matrix4x4 Matrix4x4::operator*(float value) const
     return result;
 }
 
+Vector4f Matrix4x4::operator*(const Vector4f &vec) const
+{
+    return Vector4f(
+            mMatrix[0][0] * vec.X() + mMatrix[0][1] * vec.Y() + mMatrix[0][2] * vec.Z() + mMatrix[0][3] * vec.W(),
+            mMatrix[1][0] * vec.X() + mMatrix[1][1] * vec.Y() + mMatrix[1][2] * vec.Z() + mMatrix[1][3] * vec.W(),
+            mMatrix[2][0] * vec.X() + mMatrix[2][1] * vec.Y() + mMatrix[2][2] * vec.Z() + mMatrix[2][3] * vec.W(),
+            mMatrix[3][0] * vec.X() + mMatrix[3][1] * vec.Y() + mMatrix[3][2] * vec.Z() + mMatrix[3][3] * vec.W());
+}
+
 inline void Matrix4x4::operator+=(const Matrix4x4& other)
 {
     *this = *this + other;
@@ -138,7 +161,14 @@ inline bool Matrix4x4::operator!=(const Matrix4x4& other) const
     return !(*this == other);
 }
 
-Matrix4x4 Matrix4x4::operator*(const Matrix3x4 &other) const
+const float *Matrix4x4::operator[](uint8_t index) const
+{
+    ASSERT(index >= 0 && index < 4);
+    return mMatrix[index];
+}
+
+
+inline math::Matrix4x4 math::Matrix4x4::operator*(const math::Matrix3x4 &other) const
 {
     return Matrix4x4(
         mMatrix[0][0] * other[0][0] + mMatrix[0][1] * other[1][0] + mMatrix[0][2] * other[2][0],

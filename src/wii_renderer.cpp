@@ -316,19 +316,19 @@ void renderer::Renderer::Draw(renderer::Sprite &sprite)
 
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         GX_Position3f32(-width, -height, 0);
-        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+        GX_Color1u32(color.Color());
         GX_TexCoord2f32(0, 0);
 
         GX_Position3f32(width, -height, 0);
-        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+        GX_Color1u32(color.Color());
         GX_TexCoord2f32(1, 0);
 
         GX_Position3f32(width, height, 0);
-        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+        GX_Color1u32(color.Color());
         GX_TexCoord2f32(1, 1);
 
         GX_Position3f32(-width, height, 0);
-        GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
+        GX_Color1u32(color.Color());
         GX_TexCoord2f32(0, 1);
     GX_End();
 }

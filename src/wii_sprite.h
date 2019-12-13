@@ -24,13 +24,13 @@ public:
     inline uint32_t Width() const;
     inline uint32_t Height() const;
 
-    inline float PosX() const;
+    inline float GetX() const;
     inline void SetPosX(const float posX);
 
-    inline float PosY() const;
+    inline float GetY() const;
     inline void SetPosY(const float posY);
 
-    inline float PosZ() const;
+    inline float GetZ() const;
     inline void SetPosZ(const float posZ);
 
     inline float ScaleX() const;
@@ -79,12 +79,12 @@ inline void Sprite::SetScaleY(const float scaleY)
     mScaleY = scaleY;
 }
 
-inline float Sprite::PosY() const
+inline float Sprite::GetY() const
 {
     return mPosY;
 }
 
-inline float Sprite::PosZ() const
+inline float Sprite::GetZ() const
 {
     return mPosZ;
 }
@@ -109,7 +109,7 @@ inline void Sprite::SetScaleX(const float scaleX)
     mScaleX = scaleX;
 }
 
-inline float Sprite::PosX() const
+inline float Sprite::GetX() const
 {
     return mPosX;
 }

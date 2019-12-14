@@ -1,6 +1,8 @@
 #include "aabb.h"
 
 core::AABB::AABB(const math::Vector3f& center, const math::Vector3f& halfWidth)
+    : mCenter(center),
+      mHalfWidth(halfWidth)
 {
     mMax = {center.X() + halfWidth.X(), center.Y() + halfWidth.Y(), center.Z() + halfWidth.Z()};
     mMin = {center.X() - halfWidth.X(), center.Y() - halfWidth.Y(), center.Z() - halfWidth.Z()};

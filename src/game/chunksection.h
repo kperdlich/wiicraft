@@ -56,6 +56,8 @@ enum class BlockType : uint8_t
 class ChunkSection
 {
 public:
+    static constexpr float BlockHalfSize = 0.5f;
+    static constexpr float BlockSize = BlockHalfSize * 2.0f;
     static constexpr uint32_t CHUNK_SECTION_SIZE_X = 16;
     static constexpr uint32_t CHUNK_SECTION_SIZE_Y = 256;
     static constexpr uint32_t CHUNK_SECTION_SIZE_Z = 16;
@@ -63,6 +65,8 @@ public:
     static constexpr uint32_t CHUNK_AMOUNT = CHUNK_SECTION_SIZE_Y / CHUNK_SIZE;
 
     static ChunkPosition WorldPositionToChunkPosition(const math::Vector3f &worldPosition);
+    static math::Vector3f ChunkPositionToWorldPosition(const ChunkPosition& chunkPosition);
+    static math::Vector3f WorldPositionToBlockPosition(const math::Vector3f& worldPosition, const ChunkPosition& chunkPosition);
     static std::vector<ChunkPosition> GenerateChunkMap(const math::Vector3f &worldPosition);
 
     ChunkSection();
@@ -79,6 +83,9 @@ public:
                                 renderer::Renderer& renderer,
                                 wiicraft::BlockManager& blockmanager,
                                 const renderer::ColorRGBA& color = renderer::ColorRGBA::WHITE);
+
+    math::Vector3f WorldPositionToBlockPosition(const math::Vector3f& worldPosition) const;
+    std::pair<math::Vector3f, BlockType> GetBlockTypeByWorldPosition(const math::Vector3f& worldPosition) const;
 
     inline bool operator < (const ChunkSection& other) const;
 
@@ -98,7 +105,7 @@ private:
 
 private:
     std::vector<std::unique_ptr<renderer::DisplayList>> mChunkDisplayList;
-    std::pair<int32_t, int32_t> mPosition;
+    std::pair<int32_t, int32_t> mPosition; // Top Left Corner
     BlockType*** mBlocks;
     bool mLoaded, mDirty;
 };

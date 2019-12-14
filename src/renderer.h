@@ -5,6 +5,10 @@
 #include "colorrgba.h"
 #include "statistics.h"
 
+namespace core {
+    class AABB;
+}
+
 namespace renderer {
 
 enum class CullMode : uint8_t {
@@ -50,6 +54,7 @@ public:
     void Draw(StaticMesh& mesh);
     void DrawLine(const math::Vector3f &from, const math::Vector3f& end, const renderer::ColorRGBA& color);
     void DrawRay(const math::Vector3f &from, const math::Vector3f &direction, const renderer::ColorRGBA& color);
+    void DrawAABB(const core::AABB& aabb, const renderer::ColorRGBA& color);
 
     void ClearStatistics();
     void UpdateFPS();

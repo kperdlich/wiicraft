@@ -103,16 +103,16 @@ void renderer::Camera::Move(const CameraMovementDirection& direction)
     switch (direction)
     {
         case CameraMovementDirection::FORWARD:
-            mPosition += mLookAt;
+            mPosition += mLookAt * 0.1f;
             break;
         case CameraMovementDirection::BACKWARD:
-            mPosition -= mLookAt;
+            mPosition -= mLookAt * 0.1f;
             break;
         case CameraMovementDirection::LEFT:
-            mPosition -= mRight;
+            mPosition -= mRight * 0.1f;
             break;
         case CameraMovementDirection::RIGHT:
-            mPosition += mRight;
+            mPosition += mRight * 0.1f;
             break;
         default:
             ASSERT(false);

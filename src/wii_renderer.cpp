@@ -384,7 +384,64 @@ void renderer::Renderer::DrawRay(const math::Vector3f &from, const math::Vector3
 
         GX_Position3f32(end.X(), end.Y(), end.Z());
         GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
-    GX_End();
+        GX_End();
+}
+
+void renderer::Renderer::DrawAABB(const core::AABB &aabb, const renderer::ColorRGBA &color)
+{
+    mRenderData->mDefaultLineVertexFormat.Bind();
+    GX_SetNumTexGens(0);
+    GX_SetNumTevStages(1);
+    GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
+    GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+
+    math::Vector3f blockPosition = aabb.GetCenter();
+    const math::Vector3f& blockHalfSize = aabb.GetHalfWidth();
+    math::Vector3f vertices[8] = {
+            { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() + blockHalfSize.Y(), (float)blockPosition.Z() + blockHalfSize.Z() },// v1
+            { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() - blockHalfSize.Y(), (float)blockPosition.Z() + blockHalfSize.Z() }, //v2
+            { (float)blockPosition.X() + blockHalfSize.X(), (float)blockPosition.Y() - blockHalfSize.Y(), (float)blockPosition.Z() + blockHalfSize.Z() }, //v3
+            { (float)blockPosition.X() + blockHalfSize.X(), (float)blockPosition.Y() + blockHalfSize.Y(), (float)blockPosition.Z() + blockHalfSize.Z() }, // v4
+            { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() + blockHalfSize.Y(), (float)blockPosition.Z() - blockHalfSize.Z() }, //v5
+            { (float)blockPosition.X() + blockHalfSize.X(), (float)blockPosition.Y() + blockHalfSize.Y(), (float)blockPosition.Z() - blockHalfSize.Z() }, // v6
+            { (float)blockPosition.X() + blockHalfSize.X(), (float)blockPosition.Y() - blockHalfSize.Y(), (float)blockPosition.Z() - blockHalfSize.Z() }, // v7
+            { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() - blockHalfSize.Y(), (float)blockPosition.Z() - blockHalfSize.Z() } // v8
+        };
+
+    GX_Begin(GX_LINESTRIP, GX_VTXFMT0, 16);
+            GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+            GX_Color1u32(color.Color());
+            GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+            GX_Color1u32(color.Color());
+        GX_End();
 }
 
 void renderer::Renderer::ClearStatistics()

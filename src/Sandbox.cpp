@@ -21,6 +21,7 @@
 #include <unordered_set>
 #include <sstream>
 #include "renderer.h"
+#include "mathhelper.h"
 #include "clock.h"
 #include "colorrgba.h"
 #include "camera.h"
@@ -116,7 +117,7 @@ int main(int argc, char** argv)
     translation.Translate(0.0f, 0.0f, -5.0f);
 
     math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
-    const float blockHalfSize = 1.0f;
+    const float blockHalfSize = .5f;
     guVector vertices[8] = {
                     { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() + blockHalfSize, (float)blockPosition.Z() + blockHalfSize },// v1
                     { (float)blockPosition.X() - blockHalfSize, (float)blockPosition.Y() - blockHalfSize, (float)blockPosition.Z() + blockHalfSize }, //v2
@@ -211,20 +212,20 @@ int main(int argc, char** argv)
     wiicraft::BlockManager blockManager;
 
     wiicraft::ChunkLoaderMultiplayer chunkLoaderJob;
-    chunkLoaderJob.Start();
+    //chunkLoaderJob.Start();
 
     std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkSections;
     std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkCache;
 
-    for (int32_t x = 0; x < 7; ++x)
+    for (int32_t x = 0; x < 2; ++x)
     {
-        for (int32_t y = 0; y < 7; ++y)
+        for (int32_t y = 0; y < 2; ++y)
         {
             auto cs = std::make_shared<wiicraft::ChunkSection>();
             cs->SetPosition({x, y});            
-            //cs->SetTo(wiicraft::BlockType::DIRT);
+            cs->SetTo(wiicraft::BlockType::DIRT);
             chunkSections[cs->GetPositionPair()] = cs;
-            //chunkCache[cs->GetPositionPair()] = cs;
+            chunkCache[cs->GetPositionPair()] = cs;
         }
     }
 
@@ -236,6 +237,14 @@ int main(int argc, char** argv)
     bool drawSpriteRay = false;
     math::Vector3f spriteRayPos;
     math::Vector3f spriteRayForward;
+
+
+    // Player Stuff
+    math::Vector3f playerHitbox(0.3f, .9f, 0.3f);
+
+
+    std::vector<core::AABB> aabsAroundPlayer;
+    std::vector<core::AABB> aabbsCollidedWithPlayer;
     while(true)
     {
         uint64_t startFrameTime = ticks_to_millisecs(gettime());
@@ -253,37 +262,6 @@ int main(int argc, char** argv)
         math::Matrix3x4 scale;
         scale.SetIdentity();
 
-
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
-        {
-            //crosshairSprite.SetPosX(crosshairSprite.GetX() -1.0f);
-            perspectiveCamera.Rotate(-1.0f, .0f);
-            //perspectiveCamera.Move(renderer::CameraMovementDirection::LEFT);
-        }
-
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
-        {
-            //crosshairSprite.SetPosX(crosshairSprite.GetX() + 1.0f);
-            perspectiveCamera.Rotate(1.0f, .0f);
-            //perspectiveCamera.Move(renderer::CameraMovementDirection::RIGHT);
-        }
-
-
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)                    
-            perspectiveCamera.Rotate(.0f, 1.0f);
-            //perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
-
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)            
-            perspectiveCamera.Rotate(.0f, -1.0f);
-            //perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
-
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_A)
-        {
-            perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
-        }
-
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_B)
-            perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
 
         rotation.Rotate('X', degree);
         rotation.Rotate('Y', degree);
@@ -349,8 +327,108 @@ int main(int argc, char** argv)
         }
         else
             renderer.DrawRay({.0f, 0.0f, -1.0f}, math::Vector3f::Forward * 5.0f, renderer::ColorRGBA::RED);
-        // End - just Sandbox testing stuff
+        // End - just Sandbox testing stuff        
 
+
+
+        aabsAroundPlayer.clear();
+
+        math::Vector3f currentPlayerBlock = wiicraft::ChunkSection::WorldPositionToBlockPosition(perspectiveCamera.Position(), wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera.Position()));
+        math::Vector3f start = {currentPlayerBlock.X() - 1.0f, currentPlayerBlock.Y() - 1.0f, currentPlayerBlock.Z() - 1.0f};
+        for (uint8_t x = 0; x < 3; ++x)
+        {
+            for (uint8_t y = 0; y < 3; ++y)
+            {
+                for (uint8_t z = 0; z < 3; ++z)
+                {
+                    const math::Vector3f& pos = {start.X() +(x*blockHalfSize*2.0f), start.Y() +(y*blockHalfSize*2.0f), start.Z() +(z*blockHalfSize*2.0f)};
+                    const wiicraft::ChunkPosition& chunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(pos);
+                    auto csIt = chunkSections.find(std::make_pair(chunkPos.x, chunkPos.y));
+                    if (csIt != chunkSections.end())
+                    {
+                        const auto& blockPositionType = csIt->second->GetBlockTypeByWorldPosition(pos);
+                        if (blockPositionType.second != wiicraft::BlockType::AIR)
+                        {
+                            aabsAroundPlayer.push_back({blockPositionType.first, {blockHalfSize, blockHalfSize, blockHalfSize}});
+                        }
+                    }
+                }
+            }
+        }
+
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
+        {
+            //crosshairSprite.SetPosX(crosshairSprite.GetX() -1.0f);
+            perspectiveCamera.Rotate(-1.0f, .0f);
+            //perspectiveCamera.Move(renderer::CameraMovementDirection::LEFT);
+        }
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
+        {
+            //crosshairSprite.SetPosX(crosshairSprite.GetX() + 1.0f);
+            perspectiveCamera.Rotate(1.0f, .0f);
+            //perspectiveCamera.Move(renderer::CameraMovementDirection::RIGHT);
+        }
+
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
+            perspectiveCamera.Rotate(.0f, 1.0f);
+            //perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
+            perspectiveCamera.Rotate(.0f, -1.0f);
+            //perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_A)
+        {
+            aabbsCollidedWithPlayer.clear();
+            const math::Vector3f& currentForwardDirection = perspectiveCamera.Position() + perspectiveCamera.Forward();
+             core::AABB playerAABB(currentForwardDirection, playerHitbox);
+             bool collision = false;
+             for (const core::AABB& aabb : aabsAroundPlayer)
+             {
+                 if (playerAABB.CoolidesWith(aabb))
+                 {
+                     aabbsCollidedWithPlayer.push_back(aabb);
+                     collision = true;
+                     break;
+                 }
+             }
+            if (!collision)
+                perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
+        }
+
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_B)
+        {
+            aabbsCollidedWithPlayer.clear();
+            core::AABB playerAABB(perspectiveCamera.Position() + (perspectiveCamera.Forward() * -1.0f) , playerHitbox);
+            bool collision = false;
+            for (const core::AABB& aabb : aabsAroundPlayer)
+            {
+                if (playerAABB.CoolidesWith(aabb))
+                {
+                    aabbsCollidedWithPlayer.push_back(aabb);
+                    collision = true;
+                    break;
+                }
+            }
+            if (!collision)
+                perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
+        }
+
+
+        renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
+
+        renderer.DrawAABB({perspectiveCamera.Position(), playerHitbox}, renderer::ColorRGBA::BLUE);
+        renderer.DrawAABB(cube2AABB, renderer::ColorRGBA::BLUE);
+        renderer.DrawAABB(cube1AABB, renderer::ColorRGBA::BLUE);
+
+        for (const auto& eAABBS : aabsAroundPlayer)
+            renderer.DrawAABB(eAABBS, renderer::ColorRGBA::WHITE);
+
+        for (const auto& eAABBS : aabbsCollidedWithPlayer)
+            renderer.DrawAABB(eAABBS, renderer::ColorRGBA::RED);
 
 
         if (drawSpriteRay)
@@ -369,8 +447,12 @@ int main(int argc, char** argv)
         else
             crosshairSprite.SetColor(renderer::ColorRGBA::WHITE);
 
+        renderer.DrawRay(perspectiveCamera.Position(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
+        renderer.DrawRay(perspectiveCamera.Position(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
+        renderer.DrawRay(perspectiveCamera.Position(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
+
         const wiicraft::ChunkPosition currentChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera.Position());
-        if (currentChunkPos.x != oldChunkPos.x || currentChunkPos.y != oldChunkPos.y)
+        /*if (currentChunkPos.x != oldChunkPos.x || currentChunkPos.y != oldChunkPos.y)
         {
             chunkCache.clear();
             auto chunkmap = wiicraft::ChunkSection::GenerateChunkMap(perspectiveCamera.Position());
@@ -414,9 +496,9 @@ int main(int argc, char** argv)
             }
             ASSERT(chunkmap.size() == 0);
             oldChunkPos = currentChunkPos;
-        }
+        }*/
 
-        renderer.EnableFog(40.0f, 50.0f, { 192, 216, 255, 0 });
+        //renderer.EnableFog(40.0f, 50.0f, { 192, 216, 255, 0 });
         for (auto& c : chunkCache)
         {            
             auto cs = c.second;
@@ -434,7 +516,7 @@ int main(int argc, char** argv)
         DrawDummySprite(crosshairSprite, renderer, false);
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
-        math::Vector3f camerapos = perspectiveCamera.Forward();
+        math::Vector3f camerapos = perspectiveCamera.Position();
         std::wstringstream cameraBuffer;
         cameraBuffer << L"CX: ";
         cameraBuffer << camerapos.X();
@@ -445,23 +527,23 @@ int main(int argc, char** argv)
         renderer.DrawText(120, 375, cameraBuffer.str(), renderer::ColorRGBA::RED);
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
-        std::wstringstream spriteBuffer;
+        /*std::wstringstream spriteBuffer;
         spriteBuffer << L"SX: ";
-        spriteBuffer << spriteRayPos.X();
+        spriteBuffer << blockPositionType.X();
         spriteBuffer << L" SY: ";
-        spriteBuffer << spriteRayPos.Y();
+        spriteBuffer << blockPositionType.Y();
         spriteBuffer << L" SZ: ";
-        spriteBuffer << spriteRayPos.Z();
-        renderer.DrawText(120, 395, spriteBuffer.str(), renderer::ColorRGBA::RED);
+        spriteBuffer << blockPositionType.Z();
+        renderer.DrawText(120, 395, spriteBuffer.str(), renderer::ColorRGBA::RED);*/
 
         /*std::wstringstream str2;
-        str2 << L"X: ";
-        str2 << cube2Transform.mMtx34[0][3];
-        str2 << L" Y: ";
-        str2 << cube2Transform.mMtx34[1][3];
-        str2 << L" Z: ";
-        str2 << cube2Transform.mMtx34[2][3];
-        renderer.DrawText(20, 375, str2.str(), renderer::ColorRGBA::RED);*/
+        str2 << L"LBX: ";
+        str2 << blockPosition.x;
+        str2 << L" LBY: ";
+        str2 << blockPosition.y;
+        str2 << L" LBZ: ";
+        str2 << blockPosition.z;
+        renderer.DrawText(20, 415, str2.str(), renderer::ColorRGBA::RED);*/
 
         if (render)
             renderer.DrawText(320, 415, L"Cube rendered", renderer::ColorRGBA::RED);

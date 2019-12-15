@@ -385,15 +385,15 @@ bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, 
 wiicraft::ChunkPosition wiicraft::ChunkSection::WorldPositionToChunkPosition(const math::Vector3f& worldPosition)
 {
     ChunkPosition pos;
-    pos.x = static_cast<int32_t>(std::floor(worldPosition.X() / CHUNK_SIZE));
-    pos.y = static_cast<int32_t>(std::floor(worldPosition.Z() / CHUNK_SIZE));
+    pos.first = static_cast<int32_t>(std::floor(worldPosition.X() / CHUNK_SIZE));
+    pos.second = static_cast<int32_t>(std::floor(worldPosition.Z() / CHUNK_SIZE));
     return pos;
 }
 
 math::Vector3f wiicraft::ChunkSection::ChunkPositionToWorldPosition(const wiicraft::ChunkPosition &chunkPosition)
 {
-    return {static_cast<float>(chunkPosition.x * static_cast<int32_t>(CHUNK_SIZE)), 0.0f,
-                static_cast<float>(chunkPosition.y * static_cast<int32_t>(CHUNK_SIZE))};
+    return {static_cast<float>(chunkPosition.first * static_cast<int32_t>(CHUNK_SIZE)), 0.0f,
+                static_cast<float>(chunkPosition.second * static_cast<int32_t>(CHUNK_SIZE))};
 }
 
 math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(const math::Vector3f &worldPosition, const wiicraft::ChunkPosition &chunkPosition)
@@ -430,8 +430,8 @@ std::vector<wiicraft::ChunkPosition> wiicraft::ChunkSection::GenerateChunkMap(co
     const ChunkPosition& chunkPosition = WorldPositionToChunkPosition(worldPosition);
     std::vector<ChunkPosition> chunkList;
 
-    int32_t x = chunkPosition.x - (7 / 2);
-    int32_t z = chunkPosition.y + (7 / 2);
+    int32_t x = chunkPosition.first - (7 / 2);
+    int32_t z = chunkPosition.second + (7 / 2);
 
     for (int32_t i = 0; i < 7; i++)
     {

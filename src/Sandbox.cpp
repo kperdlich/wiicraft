@@ -108,8 +108,8 @@ int main(int argc, char** argv)
     renderer::Sprite crosshairSprite(crosshairImage);
     crosshairSprite.SetPosX(renderer.GetWidth() * 0.5f);
     crosshairSprite.SetPosY(renderer.GetHeight() * 0.5f);
-    crosshairSprite.SetScaleX(0.05f);
-    crosshairSprite.SetScaleY(0.05f);
+    crosshairSprite.SetScaleX(0.01f);
+    crosshairSprite.SetScaleY(0.01f);
 
     math::Matrix3x4 translation, rotation;
     translation.SetIdentity();
@@ -212,20 +212,20 @@ int main(int argc, char** argv)
     wiicraft::BlockManager blockManager;
 
     wiicraft::ChunkLoaderMultiplayer chunkLoaderJob;
-    //chunkLoaderJob.Start();
+    chunkLoaderJob.Start();
 
     std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkSections;
     std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkCache;
 
-    for (int32_t x = 0; x < 2; ++x)
+    for (int32_t x = 0; x < 7; ++x)
     {
-        for (int32_t y = 0; y < 2; ++y)
+        for (int32_t y = 0; y < 7; ++y)
         {
             auto cs = std::make_shared<wiicraft::ChunkSection>();
-            cs->SetPosition({x, y});            
-            cs->SetTo(wiicraft::BlockType::DIRT);
-            chunkSections[cs->GetPositionPair()] = cs;
-            chunkCache[cs->GetPositionPair()] = cs;
+            cs->SetPosition({x, y});
+            //cs->SetTo(wiicraft::BlockType::DIRT);
+            chunkSections[cs->GetPosition()] = cs;
+            //chunkCache[cs->GetPosition()] = cs;
         }
     }
 
@@ -242,9 +242,9 @@ int main(int argc, char** argv)
     // Player Stuff
     math::Vector3f playerHitbox(0.3f, .9f, 0.3f);
 
-
-    std::vector<core::AABB> aabsAroundPlayer;
+    std::vector<core::AABB> aabbsAroundPlayer;
     std::vector<core::AABB> aabbsCollidedWithPlayer;
+    bool movementEnabled = true;
     while(true)
     {
         uint64_t startFrameTime = ticks_to_millisecs(gettime());
@@ -280,6 +280,9 @@ int main(int argc, char** argv)
             spriteRayPos = world;
             spriteRayForward = perspectiveCamera.Forward();
         }
+
+        if (s_wpadButton.ButtonDown & WPAD_BUTTON_PLUS)
+            movementEnabled = !movementEnabled;
 
 
         skybox.Render(renderer);
@@ -320,9 +323,9 @@ int main(int argc, char** argv)
             renderer.DrawRay(cube2Transform.GetColum(3), math::Vector3f::Up * 2.0f, renderer::ColorRGBA::RED);
 
         core::RayHitResult result;
-        if (core::Raycast({&cube2AABB, &cube1AABB}, {.0f, 0.0f, -1.0f}, math::Vector3f::Forward, 5.0f, result))
-        {
-            ASSERT(result.Entity == &cube1AABB);
+        std::vector<core::AABB> aabbs = {cube1AABB, cube2AABB};
+        if (core::Raycast(aabbs, {.0f, 0.0f, -1.0f}, math::Vector3f::Forward, 5.0f, result))
+        {            
             renderer.DrawRay({.0f, 0.0f, -1.0f}, math::Vector3f::Forward * 5.0f, renderer::ColorRGBA::WHITE);
         }
         else
@@ -331,8 +334,7 @@ int main(int argc, char** argv)
 
 
 
-        aabsAroundPlayer.clear();
-
+        aabbsAroundPlayer.clear();
         math::Vector3f currentPlayerBlock = wiicraft::ChunkSection::WorldPositionToBlockPosition(perspectiveCamera.Position(), wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera.Position()));
         math::Vector3f start = {currentPlayerBlock.X() - 1.0f, currentPlayerBlock.Y() - 1.0f, currentPlayerBlock.Z() - 1.0f};
         for (uint8_t x = 0; x < 3; ++x)
@@ -343,13 +345,13 @@ int main(int argc, char** argv)
                 {
                     const math::Vector3f& pos = {start.X() +(x*blockHalfSize*2.0f), start.Y() +(y*blockHalfSize*2.0f), start.Z() +(z*blockHalfSize*2.0f)};
                     const wiicraft::ChunkPosition& chunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(pos);
-                    auto csIt = chunkSections.find(std::make_pair(chunkPos.x, chunkPos.y));
+                    auto csIt = chunkSections.find(chunkPos);
                     if (csIt != chunkSections.end())
                     {
                         const auto& blockPositionType = csIt->second->GetBlockTypeByWorldPosition(pos);
                         if (blockPositionType.second != wiicraft::BlockType::AIR)
                         {
-                            aabsAroundPlayer.push_back({blockPositionType.first, {blockHalfSize, blockHalfSize, blockHalfSize}});
+                            aabbsAroundPlayer.push_back({blockPositionType.first, {blockHalfSize, blockHalfSize, blockHalfSize}});
                         }
                     }
                 }
@@ -357,14 +359,14 @@ int main(int argc, char** argv)
         }
 
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT)
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_LEFT && movementEnabled)
         {
             //crosshairSprite.SetPosX(crosshairSprite.GetX() -1.0f);
             perspectiveCamera.Rotate(-1.0f, .0f);
             //perspectiveCamera.Move(renderer::CameraMovementDirection::LEFT);
         }
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT)
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_RIGHT && movementEnabled)
         {
             //crosshairSprite.SetPosX(crosshairSprite.GetX() + 1.0f);
             perspectiveCamera.Rotate(1.0f, .0f);
@@ -372,21 +374,21 @@ int main(int argc, char** argv)
         }
 
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP)
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_UP && movementEnabled)
             perspectiveCamera.Rotate(.0f, 1.0f);
             //perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN)
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_DOWN && movementEnabled)
             perspectiveCamera.Rotate(.0f, -1.0f);
             //perspectiveCamera.Move(renderer::CameraMovementDirection::BACKWARD);
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_A)
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_A && movementEnabled)
         {
             aabbsCollidedWithPlayer.clear();
             const math::Vector3f& currentForwardDirection = perspectiveCamera.Position() + perspectiveCamera.Forward();
              core::AABB playerAABB(currentForwardDirection, playerHitbox);
              bool collision = false;
-             for (const core::AABB& aabb : aabsAroundPlayer)
+             for (const core::AABB& aabb : aabbsAroundPlayer)
              {
                  if (playerAABB.CoolidesWith(aabb))
                  {
@@ -399,12 +401,12 @@ int main(int argc, char** argv)
                 perspectiveCamera.Move(renderer::CameraMovementDirection::FORWARD);
         }
 
-        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_B)
+        if (s_wpadButton.ButtonHeld & WPAD_BUTTON_B && movementEnabled)
         {
             aabbsCollidedWithPlayer.clear();
             core::AABB playerAABB(perspectiveCamera.Position() + (perspectiveCamera.Forward() * -1.0f) , playerHitbox);
             bool collision = false;
-            for (const core::AABB& aabb : aabsAroundPlayer)
+            for (const core::AABB& aabb : aabbsAroundPlayer)
             {
                 if (playerAABB.CoolidesWith(aabb))
                 {
@@ -424,7 +426,7 @@ int main(int argc, char** argv)
         renderer.DrawAABB(cube2AABB, renderer::ColorRGBA::BLUE);
         renderer.DrawAABB(cube1AABB, renderer::ColorRGBA::BLUE);
 
-        for (const auto& eAABBS : aabsAroundPlayer)
+        for (const auto& eAABBS : aabbsAroundPlayer)
             renderer.DrawAABB(eAABBS, renderer::ColorRGBA::WHITE);
 
         for (const auto& eAABBS : aabbsCollidedWithPlayer)
@@ -441,24 +443,42 @@ int main(int argc, char** argv)
         math::Vector3f crosshairWorldPosition = perspectiveCamera.ScreenSpaceToWorldSpace(
                     crosshairSprite.GetX(), crosshairSprite.GetY(),
                     renderer.GetWidth(), renderer.GetHeight());
-        bool hasBlockInFocus = core::Raycast({&cube2AABB, &cube1AABB}, crosshairWorldPosition, perspectiveCamera.Forward(),  10.0f, focusedBlock);
+        std::vector<core::AABB> aabbsForward;
+
+        static math::Vector3f pos = crosshairWorldPosition;
+        static math::Vector3f forward = perspectiveCamera.Forward();
+        //std::vector<math::Vector3f> blockPos;
+        bool hasBlockInFocus = core::Raycast(/*aabbs,*/ chunkSections, perspectiveCamera.Position(), perspectiveCamera.Forward(),
+                                             10.0f, focusedBlock);
         if (hasBlockInFocus)
+        {
             crosshairSprite.SetColor(renderer::ColorRGBA::RED);
+            /*for (auto& block : blockPos)
+            {
+                renderer.DrawAABB({block, {blockHalfSize, blockHalfSize, blockHalfSize}}, renderer::ColorRGBA::GREEN);
+            }*/
+            renderer.SetLineWidth(26);
+            renderer.DrawAABB(focusedBlock.Entity, renderer::ColorRGBA::BLACK);
+            renderer.SetLineWidth(12);
+
+        }
         else
+        {
             crosshairSprite.SetColor(renderer::ColorRGBA::WHITE);
+        }
 
         renderer.DrawRay(perspectiveCamera.Position(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
         renderer.DrawRay(perspectiveCamera.Position(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
         renderer.DrawRay(perspectiveCamera.Position(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
 
         const wiicraft::ChunkPosition currentChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera.Position());
-        /*if (currentChunkPos.x != oldChunkPos.x || currentChunkPos.y != oldChunkPos.y)
+        if (currentChunkPos != oldChunkPos)
         {
             chunkCache.clear();
             auto chunkmap = wiicraft::ChunkSection::GenerateChunkMap(perspectiveCamera.Position());
             for (auto chunkMapIt = chunkmap.begin(); chunkMapIt != chunkmap.end();)
             {
-                auto chunkIt = chunkSections.find(std::make_pair(chunkMapIt->x, chunkMapIt->y));
+                auto chunkIt = chunkSections.find(*chunkMapIt);
                 if (chunkIt != chunkSections.end() && chunkIt->second->IsLoaded())
                 {
                     chunkCache[chunkIt->first] = chunkIt->second;
@@ -473,7 +493,7 @@ int main(int argc, char** argv)
             std::vector<std::shared_ptr<wiicraft::ChunkSection>> loadingList;
             for (auto& cs : chunkSections)
             {
-                auto cacheIt = chunkCache.find(cs.second->GetPositionPair());
+                auto cacheIt = chunkCache.find(cs.second->GetPosition());
                 if (cacheIt == chunkCache.end())
                 {
                     const wiicraft::ChunkPosition& newChunkPos = chunkmap.back();
@@ -488,15 +508,15 @@ int main(int argc, char** argv)
             chunkSections.clear();
             for(auto& cs : loadingList)
             {
-                chunkSections[cs->GetPositionPair()] = cs;
+                chunkSections[cs->GetPosition()] = cs;
             }
             for(auto& cs : chunkCache)
             {
-                chunkSections[cs.second->GetPositionPair()] = cs.second;
+                chunkSections[cs.second->GetPosition()] = cs.second;
             }
             ASSERT(chunkmap.size() == 0);
             oldChunkPos = currentChunkPos;
-        }*/
+        }
 
         //renderer.EnableFog(40.0f, 50.0f, { 192, 216, 255, 0 });
         for (auto& c : chunkCache)
@@ -526,15 +546,17 @@ int main(int argc, char** argv)
         cameraBuffer << camerapos.Z();
         renderer.DrawText(120, 375, cameraBuffer.str(), renderer::ColorRGBA::RED);
 
-        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());
-        /*std::wstringstream spriteBuffer;
-        spriteBuffer << L"SX: ";
-        spriteBuffer << blockPositionType.X();
-        spriteBuffer << L" SY: ";
-        spriteBuffer << blockPositionType.Y();
-        spriteBuffer << L" SZ: ";
-        spriteBuffer << blockPositionType.Z();
-        renderer.DrawText(120, 395, spriteBuffer.str(), renderer::ColorRGBA::RED);*/
+        renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());       
+        std::wstringstream spriteBuffer;
+        //spriteBuffer << L"D: ";
+        //spriteBuffer << brokenPos.x;
+        //spriteBuffer << L" SX: ";
+        //spriteBuffer << brokenPos.x;
+        //spriteBuffer << L" SY: ";
+        //spriteBuffer << brokenPos.y;
+        //spriteBuffer << L" SZ: ";
+        //spriteBuffer << focusedBlock.Entity.GetCenter().Z();
+        //renderer.DrawText(120, 395, spriteBuffer.str(), renderer::ColorRGBA::RED);
 
         /*std::wstringstream str2;
         str2 << L"LBX: ";
@@ -577,16 +599,16 @@ int main(int argc, char** argv)
 
         std::wstringstream chunkPos;
         chunkPos << L"Chunk Pos: X:";
-        chunkPos << currentChunkPos.x;
+        chunkPos << currentChunkPos.first;
         chunkPos << L" Y: ";
-        chunkPos << currentChunkPos.y;
+        chunkPos << currentChunkPos.second;
         renderer.DrawText(380, 130, chunkPos.str(), renderer::ColorRGBA::RED);
 
         std::wstringstream oldchunkPos;
         oldchunkPos << L"Old Chunk Pos: X:";
-        oldchunkPos << oldChunkPos.x;
+        oldchunkPos << oldChunkPos.first;
         oldchunkPos << L" Y: ";
-        oldchunkPos << oldChunkPos.y;
+        oldchunkPos << oldChunkPos.second;
         renderer.DrawText(380, 150, oldchunkPos.str(), renderer::ColorRGBA::RED);
 
         renderer.DisplayBuffer();

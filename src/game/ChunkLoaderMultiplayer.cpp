@@ -11,9 +11,9 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
 
 	std::ostringstream filename;
     filename << "apps/WoxelCraft/world/";
-    filename << static_cast<int32_t>(chunkData->GetPosition().x);
+    filename << static_cast<int32_t>(chunkData->GetPosition().first);
 	filename << '_';
-    filename << static_cast<int32_t>(chunkData->GetPosition().y);
+    filename << static_cast<int32_t>(chunkData->GetPosition().second);
 	filename << ".data";    
 
 	std::ifstream fstream(filename.str(), std::ios::in | std::ios::binary);

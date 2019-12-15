@@ -24,10 +24,7 @@ constexpr uint8_t BLOCK_BACK_FACE = (BLOCK_FRONT_FACE << 1);
 constexpr uint8_t BLOCK_TOP_FACE = (BLOCK_BACK_FACE << 1);
 constexpr uint8_t BLOCK_BOTTOM_FACE = (BLOCK_TOP_FACE << 1);
 
-struct ChunkPosition
-{
-    int32_t x = 0, y = 0;
-};
+using ChunkPosition = std::pair<int32_t, int32_t>;
 
 struct BlockPosition
 {
@@ -93,8 +90,7 @@ public:
     inline bool IsLoaded() const;
     inline void SetPosition(const ChunkPosition &position);
     inline math::Vector3f GetWorldPosition() const;
-    inline ChunkPosition GetPosition() const;
-    inline const std::pair<int32_t, int32_t>& GetPositionPair() const;
+    inline const ChunkPosition& GetPosition() const;
     inline BlockType *** GetBlocks();
     inline const BlockType * const * const * GetBlocks() const;
 
@@ -105,7 +101,7 @@ private:
 
 private:
     std::vector<std::unique_ptr<renderer::DisplayList>> mChunkDisplayList;
-    std::pair<int32_t, int32_t> mPosition; // Top Left Corner
+    ChunkPosition mPosition; // Top Left Corner
     BlockType*** mBlocks;
     bool mLoaded, mDirty;
 };
@@ -129,7 +125,7 @@ inline bool ChunkSection::IsLoaded() const
 
 inline void ChunkSection::SetPosition(const ChunkPosition &position)
 {
-    mPosition = std::make_pair(position.x, position.y);
+    mPosition = position;
 }
 
 inline math::Vector3f ChunkSection::GetWorldPosition() const
@@ -138,12 +134,7 @@ inline math::Vector3f ChunkSection::GetWorldPosition() const
                 static_cast<float>(mPosition.second * static_cast<int32_t>(CHUNK_SIZE))};
 }
 
-inline ChunkPosition ChunkSection::GetPosition() const
-{
-    return {mPosition.first, mPosition.second};
-}
-
-const std::pair<int32_t, int32_t> &ChunkSection::GetPositionPair() const
+inline const ChunkPosition& ChunkSection::GetPosition() const
 {
     return mPosition;
 }

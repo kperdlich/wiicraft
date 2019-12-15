@@ -214,8 +214,8 @@ int main(int argc, char** argv)
     wiicraft::ChunkLoaderMultiplayer chunkLoaderJob;
     chunkLoaderJob.Start();
 
-    std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkSections;
-    std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>> chunkCache;
+    std::map<wiicraft::ChunkPosition, std::shared_ptr<wiicraft::ChunkSection>> chunkSections;
+    std::map<wiicraft::ChunkPosition, std::shared_ptr<wiicraft::ChunkSection>> chunkCache;
 
     for (int32_t x = 0; x < 7; ++x)
     {
@@ -283,8 +283,12 @@ int main(int argc, char** argv)
             deleteFocusedBlock = true;
         }
 
+        bool addBlock = false;
         if (s_wpadButton.ButtonDown & WPAD_BUTTON_PLUS)
-            movementEnabled = !movementEnabled;
+        {
+            //movementEnabled = !movementEnabled;
+            addBlock = true;
+        }
 
 
         skybox.Render(renderer);
@@ -448,17 +452,14 @@ int main(int argc, char** argv)
 
         static math::Vector3f pos = crosshairWorldPosition;
         static math::Vector3f forward = perspectiveCamera.Forward();
-        bool hasBlockInFocus = core::Raycast(/*aabbs,*/ chunkSections, perspectiveCamera.Position(), perspectiveCamera.Forward(),
+        bool hasBlockInFocus = core::Raycast(chunkSections, perspectiveCamera.Position(), perspectiveCamera.Forward(),
                                              10.0f, focusedBlock);
         if (hasBlockInFocus)
         {
             crosshairSprite.SetColor(renderer::ColorRGBA::RED);
-            /*for (auto& block : blockPos)
-            {
-                renderer.DrawAABB({block, {blockHalfSize, blockHalfSize, blockHalfSize}}, renderer::ColorRGBA::GREEN);
-            }*/
             renderer.SetLineWidth(26);
             renderer.DrawAABB(focusedBlock.Entity, renderer::ColorRGBA::BLACK);
+            renderer.DrawRay(focusedBlock.Entity.GetCenter(), focusedBlock.Normal, renderer::ColorRGBA::GREEN);
             renderer.SetLineWidth(12);
             if (deleteFocusedBlock)
             {
@@ -468,10 +469,22 @@ int main(int argc, char** argv)
                 {
                     chunkBlockIt->second->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(focusedBlock.Entity.GetCenter()),
                                                    wiicraft::BlockType::AIR);
-                    deleteFocusedBlock = false;
                 }
+                deleteFocusedBlock = false;
             }
-
+            if (addBlock)
+            {
+                const math::Vector3f newBlockPosition = focusedBlock.Entity.GetCenter() + focusedBlock.Normal;
+                const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(newBlockPosition);
+                renderer.DrawAABB({newBlockPosition, {blockHalfSize, blockHalfSize, blockHalfSize}}, renderer::ColorRGBA::RED);
+                const auto& chunkBlockIt = chunkSections.find(chunkPosition);
+                if (chunkBlockIt != chunkSections.end())
+                {
+                    chunkBlockIt->second->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(newBlockPosition),
+                                                   wiicraft::BlockType::DIRT);
+                }
+                addBlock = false;
+            }
         }
         else
         {
@@ -559,15 +572,15 @@ int main(int argc, char** argv)
 
         renderer.LoadModelViewMatrix(math::Matrix3x4::Identity());       
         std::wstringstream spriteBuffer;
-        //spriteBuffer << L"D: ";
-        //spriteBuffer << brokenPos.x;
-        //spriteBuffer << L" SX: ";
-        //spriteBuffer << brokenPos.x;
-        //spriteBuffer << L" SY: ";
-        //spriteBuffer << brokenPos.y;
-        //spriteBuffer << L" SZ: ";
-        //spriteBuffer << focusedBlock.Entity.GetCenter().Z();
-        //renderer.DrawText(120, 395, spriteBuffer.str(), renderer::ColorRGBA::RED);
+        spriteBuffer << L"D: ";
+        spriteBuffer << focusedBlock.Distance;
+        spriteBuffer << L" SX: ";
+        spriteBuffer << focusedBlock.Normal.X();
+        spriteBuffer << L" SY: ";
+        spriteBuffer << focusedBlock.Normal.Y();
+        spriteBuffer << L" SZ: ";
+        spriteBuffer << focusedBlock.Normal.Z();
+        renderer.DrawText(120, 395, spriteBuffer.str(), renderer::ColorRGBA::RED);
 
         /*std::wstringstream str2;
         str2 << L"LBX: ";

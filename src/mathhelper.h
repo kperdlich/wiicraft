@@ -6,41 +6,58 @@ namespace math {
 
 constexpr double PI = 3.14159265358979323846;
 
-inline float DegToRadians(float v);
-inline double DegToRadians(double v);
-inline float Clamp(float value, float minValue, float maxValue);
-inline float Min(float value1, float value2);
-inline float Max(float value1, float value2);
-inline float Mod(float x, float y);
+template<typename T>
+inline T DegToRadians(T v);
 
-inline float DegToRadians(float v)
-{
-    return v * (static_cast<float>(PI) / 180.0f);
-}
+template<typename T>
+inline T Clamp(T value, T minValue, T maxValue);
 
-inline double DegToRadians(double v)
+template<typename T>
+inline T Min(T value1, T value2);
+
+template<typename T>
+inline T Max(T value1, T value2);
+
+template<typename T>
+inline T Mod(T x, T y);
+
+template <typename T>
+inline int Sign(T val);
+
+template<typename T>
+inline T DegToRadians(T v)
 {
     return v * (PI / 180);
 }
 
-inline float Clamp(float value, float minValue, float maxValue)
+template<typename T>
+inline T Clamp(T value, T minValue, T maxValue)
 {
     return Max(minValue, Min(value, maxValue));
 }
 
-inline float Min(float value1, float value2)
+template<typename T>
+inline T Min(T value1, T value2)
 {
     return (value1 < value2) ? (value1) : (value2);
 }
 
-inline float Max(float value1, float value2)
+template<typename T>
+inline T Max(T value1, T value2)
 {
     return (value1 > value2) ? (value1) : (value2);
 }
 
-inline float Mod(float x, float y)
+template<typename T>
+inline T Mod(T x, T y)
 {
     return x - y * floor(x / y);
+}
+
+template <typename T>
+inline int Sign(T val)
+{
+    return (T(0) < val) - (val < T(0));
 }
 
 }

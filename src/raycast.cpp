@@ -1,6 +1,8 @@
 #include <float.h>
+#include <limits>
 #include "raycast.h"
 #include <cmath>
+#include "mathhelper.h"
 #include <sstream>
 #include <algorithm>
 
@@ -44,6 +46,8 @@ bool core::Raycast(std::vector<core::AABB>& entites, const math::Vector3f& origi
 
         hitResult.Entity = entity;
         hitResult.Distance = tmin;
+        hitResult.HitLocation = (origin + direction * tmin);
+        hitResult.Normal = GetAABBIntersectionPointSurfaceNormal(hitResult.HitLocation, entity);
         return true;
     }
 
@@ -96,9 +100,38 @@ bool core::Raycast(const std::map<std::pair<int32_t, int32_t>, std::shared_ptr<w
 
             hitResult.Entity = entity;
             hitResult.Distance = tmin;
+            hitResult.HitLocation = (origin + direction * tmin);
+            hitResult.Normal = GetAABBIntersectionPointSurfaceNormal(hitResult.HitLocation, entity);
             return true;
         }
     }
 
     return false;
+}
+
+math::Vector3f core::GetAABBIntersectionPointSurfaceNormal(const math::Vector3f &intersectionPoint, const core::AABB &aabb)
+{
+    const math::Vector3f relativeInternPoint = intersectionPoint - aabb.GetCenter();
+    const math::Vector3f distance = {std::abs(aabb.GetHalfWidth().X() - std::abs(relativeInternPoint.X())),
+                                    std::abs(aabb.GetHalfWidth().Y() -  std::abs(relativeInternPoint.Y())),
+                                    std::abs(aabb.GetHalfWidth().Z() - std::abs(relativeInternPoint.Z()))};
+    math::Vector3f normal;
+    float min = std::numeric_limits<float>::max();
+    if (distance.X() < min)
+    {
+        min = distance.X();
+        normal = math::Vector3f::Left * math::Sign(relativeInternPoint.X() * -1.0f);
+    }
+    if (distance.Y() < min)
+    {
+        min = distance.Y();
+        normal = math::Vector3f::Up * math::Sign(relativeInternPoint.Y());
+    }
+    if (distance.Z() < min)
+    {
+        min = distance.Z();
+        normal = math::Vector3f::Forward * math::Sign(relativeInternPoint.Z() * -1.0f);
+    }
+
+    return normal;
 }

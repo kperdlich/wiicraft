@@ -271,6 +271,7 @@ int main(int argc, char** argv)
         renderer.SetCamera(&perspectiveCamera);
 
 
+        bool deleteFocusedBlock = false;
         if (s_wpadButton.ButtonDown & WPAD_BUTTON_MINUS)
         {
             drawSpriteRay = true;
@@ -279,6 +280,7 @@ int main(int argc, char** argv)
                         renderer.GetWidth(), renderer.GetHeight());
             spriteRayPos = world;
             spriteRayForward = perspectiveCamera.Forward();
+            deleteFocusedBlock = true;
         }
 
         if (s_wpadButton.ButtonDown & WPAD_BUTTON_PLUS)
@@ -442,12 +444,10 @@ int main(int argc, char** argv)
         core::RayHitResult focusedBlock;
         math::Vector3f crosshairWorldPosition = perspectiveCamera.ScreenSpaceToWorldSpace(
                     crosshairSprite.GetX(), crosshairSprite.GetY(),
-                    renderer.GetWidth(), renderer.GetHeight());
-        std::vector<core::AABB> aabbsForward;
+                    renderer.GetWidth(), renderer.GetHeight());        
 
         static math::Vector3f pos = crosshairWorldPosition;
         static math::Vector3f forward = perspectiveCamera.Forward();
-        //std::vector<math::Vector3f> blockPos;
         bool hasBlockInFocus = core::Raycast(/*aabbs,*/ chunkSections, perspectiveCamera.Position(), perspectiveCamera.Forward(),
                                              10.0f, focusedBlock);
         if (hasBlockInFocus)
@@ -460,6 +460,17 @@ int main(int argc, char** argv)
             renderer.SetLineWidth(26);
             renderer.DrawAABB(focusedBlock.Entity, renderer::ColorRGBA::BLACK);
             renderer.SetLineWidth(12);
+            if (deleteFocusedBlock)
+            {
+                const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(focusedBlock.Entity.GetCenter());
+                const auto& chunkBlockIt = chunkSections.find(chunkPosition);
+                if (chunkBlockIt != chunkSections.end())
+                {
+                    chunkBlockIt->second->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(focusedBlock.Entity.GetCenter()),
+                                                   wiicraft::BlockType::AIR);
+                    deleteFocusedBlock = false;
+                }
+            }
 
         }
         else

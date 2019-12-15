@@ -406,6 +406,15 @@ math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(const math::
     return {chunkWorldPos.X() + blockPosition.x, static_cast<float>(blockPosition.y), chunkWorldPos.Z() + blockPosition.z};
 }
 
+wiicraft::BlockPosition wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(const math::Vector3f &worldPosition)
+{
+    BlockPosition blockPosition;
+    blockPosition.x = static_cast<uint32_t>(std::round(math::Mod(worldPosition.X(), CHUNK_SECTION_SIZE_X)));
+    blockPosition.y = static_cast<uint32_t>(std::round(math::Mod(worldPosition.Y(), CHUNK_SECTION_SIZE_Y)));
+    blockPosition.z = static_cast<uint32_t>(std::round(math::Mod(worldPosition.Z(), CHUNK_SECTION_SIZE_Z)));
+    return blockPosition;
+}
+
 math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(const math::Vector3f &worldPosition) const
 {
     BlockPosition blockPosition;
@@ -423,6 +432,12 @@ std::pair<math::Vector3f, wiicraft::BlockType> wiicraft::ChunkSection::GetBlockT
     blockPosition.z = static_cast<uint32_t>(std::round(math::Mod(worldPosition.Z(), CHUNK_SECTION_SIZE_Z)));
     return std::make_pair(WorldPositionToBlockPosition(worldPosition),
                           mBlocks[blockPosition.x][blockPosition.y][blockPosition.z]);
+}
+
+void wiicraft::ChunkSection::SetBlock(const BlockPosition& position, const wiicraft::BlockType &blockType)
+{
+    mBlocks[position.x][position.y][position.z] = blockType;
+    mChunkDisplayList[position.y / CHUNK_SIZE]->Clear();
 }
 
 std::vector<wiicraft::ChunkPosition> wiicraft::ChunkSection::GenerateChunkMap(const math::Vector3f &worldPosition)

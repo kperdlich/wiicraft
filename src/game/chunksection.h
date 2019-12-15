@@ -64,6 +64,7 @@ public:
     static ChunkPosition WorldPositionToChunkPosition(const math::Vector3f &worldPosition);
     static math::Vector3f ChunkPositionToWorldPosition(const ChunkPosition& chunkPosition);
     static math::Vector3f WorldPositionToBlockPosition(const math::Vector3f& worldPosition, const ChunkPosition& chunkPosition);
+    static BlockPosition BlockWorldPositionToLocalChunkPosition(const math::Vector3f& worldPosition);
     static std::vector<ChunkPosition> GenerateChunkMap(const math::Vector3f &worldPosition);
 
     ChunkSection();
@@ -93,6 +94,7 @@ public:
     inline const ChunkPosition& GetPosition() const;
     inline BlockType *** GetBlocks();
     inline const BlockType * const * const * GetBlocks() const;
+    void SetBlock(const BlockPosition &position, const BlockType& blockType);
 
 private:
     void GenerateChunk(uint32_t chunkIndex, renderer::Renderer& renderer, BlockManager &blockmanager);

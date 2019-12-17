@@ -52,6 +52,7 @@ void wiicraft::ChunkSection::SetTo(const BlockType& blockType)
         }
     }
     mLoaded = true;
+    mDirty = true;
 }
 
 void wiicraft::ChunkSection::Render(renderer::Renderer& renderer, wiicraft::BlockManager& blockmanager)
@@ -144,14 +145,14 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
                 {
                     math::Vector3f vertices[8] =
                     {
-                            { (float)block.BlockPosition.x - BlockHalfSize, (float)block.BlockPosition.y + BlockHalfSize, (float)block.BlockPosition.z + BlockHalfSize},// v1
-                            { (float)block.BlockPosition.x - BlockHalfSize, (float)block.BlockPosition.y - BlockHalfSize, (float)block.BlockPosition.z + BlockHalfSize}, //v2
-                            { (float)block.BlockPosition.x + BlockHalfSize, (float)block.BlockPosition.y - BlockHalfSize, (float)block.BlockPosition.z + BlockHalfSize}, //v3
-                            { (float)block.BlockPosition.x + BlockHalfSize, (float)block.BlockPosition.y + BlockHalfSize, (float)block.BlockPosition.z + BlockHalfSize}, // v4
-                            { (float)block.BlockPosition.x - BlockHalfSize, (float)block.BlockPosition.y + BlockHalfSize, (float)block.BlockPosition.z - BlockHalfSize}, //v5
-                            { (float)block.BlockPosition.x + BlockHalfSize, (float)block.BlockPosition.y + BlockHalfSize, (float)block.BlockPosition.z - BlockHalfSize}, // v6
-                            { (float)block.BlockPosition.x + BlockHalfSize, (float)block.BlockPosition.y - BlockHalfSize, (float)block.BlockPosition.z - BlockHalfSize}, // v7
-                            { (float)block.BlockPosition.x - BlockHalfSize, (float)block.BlockPosition.y - BlockHalfSize, (float)block.BlockPosition.z - BlockHalfSize} // v8
+                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE},// v1
+                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE}, //v2
+                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE}, //v3
+                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE}, // v4
+                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE}, //v5
+                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE}, // v6
+                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE}, // v7
+                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE} // v8
 
                     };
 
@@ -440,22 +441,4 @@ void wiicraft::ChunkSection::SetBlock(const BlockPosition& position, const wiicr
     mChunkDisplayList[position.y / CHUNK_SIZE]->Clear();
 }
 
-std::vector<wiicraft::ChunkPosition> wiicraft::ChunkSection::GenerateChunkMap(const math::Vector3f &worldPosition)
-{
-    const ChunkPosition& chunkPosition = WorldPositionToChunkPosition(worldPosition);
-    std::vector<ChunkPosition> chunkList;
 
-    int32_t x = chunkPosition.first - (7 / 2);
-    int32_t z = chunkPosition.second + (7 / 2);
-
-    for (int32_t i = 0; i < 7; i++)
-    {
-        for (int32_t j = 0; j < 7; j++)
-        {
-            chunkList.push_back({x + i, z - j});
-        }
-    }
-
-    ASSERT(chunkList.size() == 49);
-    return chunkList;
-}

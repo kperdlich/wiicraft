@@ -23,7 +23,32 @@ namespace core {
             ASSERT(initStatus == Z_OK);
 
             int status = inflate(&infstream, Z_FINISH);
-            ASSERT(status == Z_STREAM_END);
+            if (status != Z_STREAM_END)
+            {
+                if (status == Z_MEM_ERROR)
+                    ASSERT(false);
+
+                if (status == Z_OK)
+                    ASSERT(false);
+
+                if (status == Z_STREAM_ERROR)
+                    ASSERT(false);
+
+                if (status == Z_NEED_DICT)
+                    ASSERT(false);
+
+                if (status == Z_ERRNO)
+                    ASSERT(false);
+
+                if (status == Z_DATA_ERROR)
+                    ASSERT(false);
+
+                if (status == Z_BUF_ERROR)
+                    ASSERT(false);
+
+                ASSERT(false);
+            }
+            //ASSERT(status == Z_STREAM_END);
 
             inflateEnd(&infstream);
             return infstream.total_out;

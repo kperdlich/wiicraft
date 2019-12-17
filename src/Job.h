@@ -43,7 +43,7 @@ public:
 			Resume();
 		}
 	}
-	uint32_t GetQueueCount()
+    uint32_t GetQueueCount()
 	{
 		return m_queue.GetCount();
 	}

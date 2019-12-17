@@ -13,6 +13,18 @@ renderer::Sprite::Sprite(const Image2D& image)
     GX_InitTexObjLOD(&mTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
 }
 
+math::Matrix3x4 renderer::Sprite::GetModelMatrix() const
+{
+    math::Matrix3x4 translation, scale, rotation;
+    translation.SetIdentity();
+    scale.SetIdentity();
+    rotation.SetIdentity();
+    scale.Scale(mScaleX, mScaleY, 0.0f);
+    translation.Translate(mPosX, mPosY, mPosZ);
+    rotation.Rotate('Z', mRotationDeg);
+    return translation * rotation * scale;
+}
+
 void renderer::Sprite::Bind(const uint8_t unit)
 {
     GX_SetNumTevStages(1);

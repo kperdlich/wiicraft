@@ -5,3 +5,5 @@ assets
 build
 src/third-party
 src/game
+src/game/packet
+src/game/event

@@ -164,7 +164,7 @@ void renderer::Renderer::DisplayBuffer()
     }
 }
 
-void renderer::Renderer::SetCamera(renderer::Camera* camera)
+void renderer::Renderer::SetCamera(std::shared_ptr<renderer::Camera> camera)
 {
     ASSERT(camera != nullptr);
     mCamera = camera;
@@ -243,6 +243,7 @@ void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text
     GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     mRenderData->mDefaultFontVertexFormat.Bind();   
+    LoadModelViewMatrix(mCamera->GetViewMatrix3x4());
     mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
 }
 
@@ -314,6 +315,7 @@ void renderer::Renderer::Draw(renderer::Sprite &sprite)
     const float height = sprite.Height() * .5f;
     const ColorRGBA& color = sprite.GetColor();
 
+    LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * sprite.GetModelMatrix());
     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
         GX_Position3f32(-width, -height, 0);
         GX_Color1u32(color.Color());
@@ -359,6 +361,7 @@ void renderer::Renderer::DrawLine(const math::Vector3f& from, const math::Vector
     GX_SetNumTevStages(1);
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORDNULL, GX_TEXMAP_NULL, GX_COLOR0A0);
     GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
+    LoadModelViewMatrix(mCamera->GetViewMatrix3x4());
     GX_Begin(GX_LINES, mRenderData->mDefaultLineVertexFormat.GetFormatIndex(), 2);
         GX_Position3f32(from.X(), from.Y(), from.Z());
         GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
@@ -377,7 +380,7 @@ void renderer::Renderer::DrawRay(const math::Vector3f &from, const math::Vector3
     GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 
     const math::Vector3f& end = from + direction;
-
+    LoadModelViewMatrix(mCamera->GetViewMatrix3x4());
     GX_Begin(GX_LINES, mRenderData->mDefaultLineVertexFormat.GetFormatIndex(), 2);
         GX_Position3f32(from.X(), from.Y(), from.Z());
         GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
@@ -408,6 +411,7 @@ void renderer::Renderer::DrawAABB(const core::AABB &aabb, const renderer::ColorR
             { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() - blockHalfSize.Y(), (float)blockPosition.Z() - blockHalfSize.Z() } // v8
         };
 
+    LoadModelViewMatrix(mCamera->GetViewMatrix3x4());
     GX_Begin(GX_LINESTRIP, GX_VTXFMT0, 16);
             GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
             GX_Color1u32(color.Color());

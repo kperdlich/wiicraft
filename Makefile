@@ -19,11 +19,15 @@ TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
 SOURCES		:=	src \
 				src/third-party \
-				src/game
+				src/game \
+				src/game/event \
+				src/game/packet
 DATA		:=	assets
 INCLUDES	:= 	src \
 				src/third-party \
-				src/game
+				src/game \
+				src/game/event \
+				src/game/packet				
 #---------------------------------------------------------------------------------
 # path to .dol debugger
 #---------------------------------------------------------------------------------
@@ -41,7 +45,7 @@ LDFLAGS	=	-g $(MACHDEP) -mrvl -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	-lgrrlib -lfreetype -lpngu -lpng -ljpeg -lz -lfat -lwiiuse -lbte -logc -lm
+LIBS	:=	-lfreetype -lpngu -lpng -ljpeg -lz -lfat -lwiiuse -lbte -logc -lm
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing

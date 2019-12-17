@@ -40,12 +40,14 @@ struct BlockRenderData
 };
 
 
-enum class BlockType : uint8_t
+enum class BlockType : int8_t
 {
-    AIR = 0,
-    STONE = 4,
+    AIR = 0,    
+    STONE = 1,
     GRASS = 2,
     DIRT = 3,
+    COBBLESTONE = 4,
+    PLANKS = 5,
     WOOD = 17,
     LEAF = 18
 };
@@ -53,8 +55,8 @@ enum class BlockType : uint8_t
 class ChunkSection
 {
 public:
-    static constexpr float BlockHalfSize = 0.5f;
-    static constexpr float BlockSize = BlockHalfSize * 2.0f;
+    static constexpr float BLOCK_HALF_SIZE = 0.5f;
+    static constexpr float BLOCK_SIZE = BLOCK_HALF_SIZE * 2.0f;
     static constexpr uint32_t CHUNK_SECTION_SIZE_X = 16;
     static constexpr uint32_t CHUNK_SECTION_SIZE_Y = 256;
     static constexpr uint32_t CHUNK_SECTION_SIZE_Z = 16;
@@ -95,6 +97,9 @@ public:
     inline BlockType *** GetBlocks();
     inline const BlockType * const * const * GetBlocks() const;
     void SetBlock(const BlockPosition &position, const BlockType& blockType);
+
+    static float getBlockHalfSize();
+    static void setBlockHalfSize(float value);
 
 private:
     void GenerateChunk(uint32_t chunkIndex, renderer::Renderer& renderer, BlockManager &blockmanager);

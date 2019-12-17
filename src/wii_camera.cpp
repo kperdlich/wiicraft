@@ -98,21 +98,21 @@ math::Matrix4x4 renderer::Camera::GetProjectionMatrix4x4() const
     return mtx;
 }
 
-void renderer::Camera::Move(const CameraMovementDirection& direction)
+void renderer::Camera::Move(const CameraMovementDirection& direction, float scale)
 {
     switch (direction)
     {
         case CameraMovementDirection::FORWARD:
-            mPosition += mLookAt * 0.1f;
+            mPosition += mLookAt * scale;
             break;
         case CameraMovementDirection::BACKWARD:
-            mPosition -= mLookAt * 0.1f;
+            mPosition -= mLookAt * scale;
             break;
         case CameraMovementDirection::LEFT:
-            mPosition -= mRight * 0.1f;
+            mPosition -= mRight * scale;
             break;
         case CameraMovementDirection::RIGHT:
-            mPosition += mRight * 0.1f;
+            mPosition += mRight * scale;
             break;
         default:
             ASSERT(false);
@@ -129,6 +129,19 @@ void renderer::Camera::Rotate(float x, float y)
     UpdateCameraVectors();
 }
 
+void renderer::Camera::SetYaw(float yaw)
+{
+    mYaw = yaw;
+    UpdateCameraVectors();
+}
+
+void renderer::Camera::SetPitch(float pitch)
+{
+    mPitch = pitch;
+    mPitch = math::Clamp(mPitch, -89.0f, 89.0f);
+    UpdateCameraVectors();
+}
+
 void renderer::Camera::UpdateCameraVectors()
 {
     mLookAt.SetX(cos(math::DegToRadians(mYaw)) * cos(math::DegToRadians(mPitch)));
@@ -141,3 +154,4 @@ void renderer::Camera::UpdateCameraVectors()
     mUp = mRight.Cross(mLookAt);
     mUp.Normalize();
 }
+

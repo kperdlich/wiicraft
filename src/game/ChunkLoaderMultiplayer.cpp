@@ -31,6 +31,10 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
 		fstream.read((char*)& primaryBitMap, sizeof(primaryBitMap));
 		fstream.read((char*)& addBitMap, sizeof(addBitMap));
 		fstream.read((char*)& compressedSize, sizeof(compressedSize));
+
+        if (compressedSize <= 0)
+            return;
+
 		compressedData = new unsigned char[compressedSize];
 		ASSERT(compressedData != nullptr);
 		fstream.read((char*)compressedData, compressedSize);
@@ -45,6 +49,8 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
 		size_t size = sections * sectionSize;
 		if (bGroundUpCon)
 			size += 256;
+
+        ASSERT(compressedSize > 0);
 
 		unsigned char* cdata = new unsigned char[size];
         size_t s = core::Zip::Decompress(compressedData, compressedSize, cdata, size);

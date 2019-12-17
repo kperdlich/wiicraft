@@ -40,18 +40,24 @@ public:
     math::Matrix3x4 GetViewMatrix3x4() const;
     math::Matrix4x4 GetProjectionMatrix4x4() const;
 
-    void Move(const CameraMovementDirection& direction);
-    void Rotate(float x, float y);
+    void Move(const CameraMovementDirection& direction, float scale);
+    void Rotate(float x, float y);    
+    void SetYaw(float yaw);
+    void SetPitch(float pitch);
 
+    inline void SetPosition(const math::Vector3f position);
     inline bool IsPerspective() const;
     inline float GetFrustrumNear() const;
     inline float GetFrustrumFar() const;
     inline float GetFrustrumTop() const;
     inline float GetFrustrumBottom() const;
     inline float GetFrustrumLeft() const;
-    inline float GetFrustrumRight() const;    
+    inline float GetFrustrumRight() const;
+    inline float GetYaw() const;
+    inline float GetPitch() const;
     inline const math::Vector3f& Position() const;
     inline const math::Vector3f& Forward() const;
+    inline const math::Vector3f& Right() const;
 
 private:
     void UpdateCameraVectors();
@@ -67,6 +73,11 @@ private:
     float mYaw, mPitch;
     bool mIsPerspective;
 };
+
+inline void Camera::SetPosition(const math::Vector3f position)
+{
+    mPosition = position;
+}
 
 inline bool Camera::IsPerspective() const
 {
@@ -103,14 +114,29 @@ inline float Camera::GetFrustrumRight() const
     return mFrustrumRight;
 }
 
+inline float Camera::GetYaw() const
+{
+    return mYaw;
+}
+
+inline float Camera::GetPitch() const
+{
+   return mPitch;
+}
+
 inline const math::Vector3f& Camera::Position() const
 {
     return mPosition;
 }
 
-const math::Vector3f &Camera::Forward() const
+inline const math::Vector3f &Camera::Forward() const
 {
     return mLookAt;
+}
+
+inline const math::Vector3f &Camera::Right() const
+{
+    return mRight;
 }
 
 }

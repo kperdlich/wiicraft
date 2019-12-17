@@ -57,7 +57,7 @@ public:
 		return bIsEmpty;
 	}
 
-	uint32_t GetCount()
+    uint32_t GetCount()
 	{
 		lock_guard guard(m_mutex);
 		uint32_t count = m_queue.size();

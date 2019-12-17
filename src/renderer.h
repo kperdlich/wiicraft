@@ -37,7 +37,7 @@ public:
     void SetClearColor(const ColorRGBA& clearColor);
     void PreDraw();
     void DisplayBuffer();
-    void SetCamera(Camera *camera);
+    void SetCamera(std::shared_ptr<Camera> camera);
 
     void SetZModeEnabled(bool isEnabled);
     void SetCullMode(const CullMode& mode);
@@ -62,7 +62,7 @@ public:
     uint32_t GetWidth() const;
     uint32_t GetHeight() const;
 
-    inline Camera* GetCamera() const;
+    inline std::shared_ptr<renderer::Camera> GetCamera() const;
     inline RenderData* GetRenderData();
     inline Statistics& GetStatistics();
     inline const Statistics& GetStatistics() const;
@@ -71,10 +71,10 @@ public:
 private:
     Statistics mStatistics;
     RenderData* mRenderData;    
-    Camera* mCamera;
+    std::shared_ptr<renderer::Camera> mCamera;
 };
 
-inline Camera *Renderer::GetCamera() const
+inline std::shared_ptr<Camera> Renderer::GetCamera() const
 {
     return mCamera;
 }

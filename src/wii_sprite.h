@@ -21,6 +21,8 @@ public:
     void operator=(const Sprite&) = delete;
     void operator=(Sprite&&) = delete;    
 
+    math::Matrix3x4 GetModelMatrix() const;
+
     inline uint32_t Width() const;
     inline uint32_t Height() const;
 

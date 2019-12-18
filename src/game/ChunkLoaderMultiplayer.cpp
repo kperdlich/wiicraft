@@ -7,7 +7,7 @@
 
 void wiicraft::ChunkLoaderMultiplayer::Execute()
 {
-    ChunkSection* chunkData = m_queue.Pop();
+    std::shared_ptr<ChunkSection> chunkData = m_queue.Pop();
 
 	std::ostringstream filename;
     filename << "apps/WoxelCraft/world/";
@@ -33,7 +33,11 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
 		fstream.read((char*)& compressedSize, sizeof(compressedSize));
 
         if (compressedSize <= 0)
+        {
+            // Chunk not completely loaded -> push back into queue
+            m_queue.Push(chunkData);
             return;
+        }
 
 		compressedData = new unsigned char[compressedSize];
 		ASSERT(compressedData != nullptr);
@@ -108,18 +112,15 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
 							}
 						}
 					}
-				}
-                //chunk->SetDirty(true);
-                //chunk->SetLoaded(true);
+				}                
                 chunkData->SetLoaded(true);
 			}
 		}
 		delete[] cdata;
 	}
 	else
-	{
-        //ASSERT(false);
-        //WARNING("ChunkLoaderMultiplayer: Found no chunk file for %d %d", chunk->GetPosition().X, chunk->GetPosition().Y);
-        //m_queue.Push(chunkData);
+	{        
+        chunkData->SetTo(wiicraft::BlockType::AIR);
+        chunkData->SetLoaded(true);
 	}
 }

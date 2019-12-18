@@ -30,6 +30,7 @@ public:
     void Render(renderer::Renderer& renderer);
     bool Raycast(const math::Vector3f &origin, math::Vector3f direction, const float maxDistance, core::RayHitResult &hitResult) const;
     std::shared_ptr<wiicraft::ChunkSection> GetChunk(const ChunkPosition &chunkPosition);
+    std::vector<core::AABB> GetCollidableBlockAABBsAround(const math::Vector3f& position) const;
     std::vector<core::AABB> GetBlockAABBsAround(const math::Vector3f& position) const;
     std::vector<wiicraft::ChunkPosition> GenerateChunkMap(const math::Vector3f &worldPosition) const;
     inline uint32_t GetLoaderQueueCount();
@@ -41,7 +42,7 @@ private:
 
 private:
     wiicraft::BlockManager mBlockManager;
-    std::map<ChunkPosition, std::shared_ptr<ChunkSection>> mChunkSections;
+    std::map<ChunkPosition, std::shared_ptr<ChunkSection>> mChunksInLoadingProgress;
     std::map<ChunkPosition, std::shared_ptr<ChunkSection>> mChunkCache;
     wiicraft::ChunkLoaderMultiplayer mChunkLoaderJob;
     wiicraft::SerializationJob mChunkSerializationJob;

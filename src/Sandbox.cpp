@@ -57,6 +57,7 @@
 #include "game/ChunkLoaderMultiplayer.h"
 #include "game/BlockManager.h"
 #include "game/player.h"
+#include "game/EntityManager.h"
 #include "eventmanager.h"
 #include "EventDataSpawnPlayer.h"
 #include "networkManager.h"
@@ -78,6 +79,7 @@ int main(int argc, char** argv)
     core::EventManager eventManager(true);
 
     wiicraft::NetworkManager::Get().Init();
+    wiicraft::EntityManager entityManager;
 
     auto perspectiveCamera = std::make_shared<renderer::Camera>(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, -1.0f}, true);
     perspectiveCamera->SetFrustrum(0.1f, 200.0f, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight());
@@ -327,6 +329,7 @@ int main(int argc, char** argv)
         chunkManager.UpdateChunks(perspectiveCamera->Position());
         chunkManager.Render(renderer);
         player.OnRender3D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);
+        entityManager.Render(renderer);
         eventManager.TickUpdate();
 
         renderer.EnableFog(20.0f, 30.0f, { 192, 216, 255, 0 });

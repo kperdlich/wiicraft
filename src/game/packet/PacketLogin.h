@@ -49,7 +49,7 @@ public:
 
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataServerConnected>());
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataServerConnected>());        
     }
 
     Packet* CreateInstance() const override

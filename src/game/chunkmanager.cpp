@@ -2,7 +2,7 @@
 #include "camera.h"
 #include "core.h"
 #include "EventDataSerializeChunk.h"
-#include "EventDataRemoveBlock.h"
+#include "EventDataChangeBlock.h"
 
 wiicraft::ChunkManager::ChunkManager()
 {
@@ -23,13 +23,13 @@ wiicraft::ChunkManager::ChunkManager()
     mChunkSerializationJob.Start();
 
    core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
-   core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataRemoveBlock::EventType);
+   core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
 }
 
 wiicraft::ChunkManager::~ChunkManager()
 {
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
-    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataRemoveBlock::EventType);
+    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
     mChunkLoaderJob.Stop();
     mChunkSerializationJob.Stop();
 }
@@ -168,7 +168,7 @@ void wiicraft::ChunkManager::OnSerializeChunk(core::IEventDataPtr eventData)
 
 void wiicraft::ChunkManager::OnBlockChange(core::IEventDataPtr eventData)
 {
-    std::shared_ptr<EventDataRemoveBlock> blockData = std::static_pointer_cast<EventDataRemoveBlock>(eventData);
+    std::shared_ptr<EventDataChangeBlock> blockData = std::static_pointer_cast<EventDataChangeBlock>(eventData);
     math::Vector3f worldPos = math::Vector3f(blockData->GetX(), blockData->GetY(), blockData->GetZ());
     wiicraft::ChunkPosition cp = wiicraft::ChunkSection::WorldPositionToChunkPosition(worldPos);
     auto chunkSection = GetChunk(cp);

@@ -5,12 +5,12 @@
 namespace wiicraft {
 
 
-class EventDataRemoveBlock : public core::BaseEventData
+class EventDataChangeBlock : public core::BaseEventData
 {
 public:
     static constexpr core::EventType EventType = 0x5840b587;
 
-    EventDataRemoveBlock(int32_t x, int8_t y, int32_t z, int8_t blockType);
+    EventDataChangeBlock(int32_t x, int8_t y, int32_t z, int8_t blockType);
 
     virtual const core::EventType& GetEventType() const override;
     virtual core::IEventDataPtr Copy() const override;
@@ -28,22 +28,22 @@ private:
     int8_t mBlockType;
 };
 
-inline int32_t EventDataRemoveBlock::GetX() const
+inline int32_t EventDataChangeBlock::GetX() const
 {
     return mX;
 }
 
-inline int32_t EventDataRemoveBlock::GetZ() const
+inline int32_t EventDataChangeBlock::GetZ() const
 {
     return mZ;
 }
 
-inline int8_t EventDataRemoveBlock::GetBlockType() const
+inline int8_t EventDataChangeBlock::GetBlockType() const
 {
     return mBlockType;
 }
 
-inline int8_t EventDataRemoveBlock::GetY() const
+inline int8_t EventDataChangeBlock::GetY() const
 {
     return mY;
 }

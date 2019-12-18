@@ -2,6 +2,8 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "eventmanager.h"
+#include "EventDataEntityRelativeMove.h"
 
 class PacketEntityLook : public Packet
 {
@@ -11,12 +13,13 @@ public:
     void Read(const net::Socket &socket) override
     {
         m_EID = socket.Read<int32_t>();
-        m_Yaw = socket.Read<char>();
-        m_Pitch = socket.Read<char>();
+        m_Yaw = socket.Read<int8_t>();
+        m_Pitch = socket.Read<int8_t>();
     }
 
     void Action() override
     {
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataEntityRelativeMove>(m_EID, m_Yaw, m_Pitch, 0, 0, 0));
     }
 
     Packet* CreateInstance() const override
@@ -30,7 +33,7 @@ protected:
     }
 
     int32_t m_EID = 0;
-    char m_Yaw = 0, m_Pitch = 0;
+    int8_t m_Yaw = 0, m_Pitch = 0;
 
 };
 

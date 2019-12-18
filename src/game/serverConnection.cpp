@@ -124,7 +124,7 @@ void wiicraft::ServerConnection::InitPacketMap()
 	s_PacketMap[PACKET_PLAYER_LOOK] = new PacketPlayerLook();
 	s_PacketMap[PACKET_PLAYER_POSITION_AND_LOOK] = new PacketPlayerPositionAndLook();
 	s_PacketMap[PACKET_PLAYER_DIGGING] = new PacketPlayerDigging();
-	//s_PacketMap[PACKET_PLAYER_BLOCK_PLACEMENT] = new PacketPlayerBlockPlacement();
+    //s_PacketMap[PACKET_PLAYER_BLOCK_PLACEMENT] = new PacketPlayerBlockPlacement();
 	s_PacketMap[PACKET_HELD_ITEM_CHANGE] = new PacketHeldItemChange();
 	s_PacketMap[PACKET_USE_BED] = new PacketUseBed();
 	s_PacketMap[PACKET_ANIMATION] = new PacketAnimation();
@@ -230,7 +230,7 @@ void wiicraft::ServerConnection::PreExecute()
 
 void wiicraft::ServerConnection::Execute()
 {
-	char packetID = m_socket.Read<char>();
+    uint8_t packetID = m_socket.Read<uint8_t>();
 	Packet* p = CreatePacketByID(packetID);
 	if (p && packetID != PACKET_DISCONNECT)
 	{
@@ -242,7 +242,10 @@ void wiicraft::ServerConnection::Execute()
 	{
 		//m_Socket.Close();
 		if (packetID == PACKET_DISCONNECT)
+        {
             ASSERT(false);//ERROR("Disconnected by server. Stop Packet reader");
+            exit(0);
+        }
 		else
 		{
 			/*char buffer[20];

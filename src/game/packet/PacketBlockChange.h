@@ -3,7 +3,7 @@
 #include "Packet.h"
 #include "PacketGlobals.h"
 #include "eventmanager.h"
-#include "EventDataRemoveBlock.h"
+#include "EventDataChangeBlock.h"
 
 class PacketBlockChange : public Packet
 {
@@ -21,7 +21,7 @@ public:
 
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataRemoveBlock>(m_X, m_Y, m_Z, m_BlockType));
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataChangeBlock>(m_X, m_Y, m_Z, m_BlockType));
     }
 
     Packet* CreateInstance() const override

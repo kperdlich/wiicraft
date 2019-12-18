@@ -2,6 +2,7 @@
 #include "networkManager.h"
 #include "filesystem.h"
 #include "PacketHandshake.h"
+#include "PacketChatMessage.h"
 #include "EventDataSendPlayerPosition.h"
 
 
@@ -53,4 +54,6 @@ void wiicraft::WorldLoader::OnServerConnected(core::IEventDataPtr eventData)
     //std::shared_ptr<EventDataServerConnected> serverConnectedDta = std::static_pointer_cast<EventDataServerConnected>(eventData);
     //core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &WorldLoader::OnServerConnected), EventDataServerConnected::EventType);
     mState = WorldLoaderState::CONNECTED_TO_SERVER;
+    PacketChatMessage packet("WiiCraft_Login");
+    packet.Send();
 }

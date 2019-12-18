@@ -17,12 +17,14 @@
  *
 ***/
 
+#include <sstream>
 #include <network.h>
 #include "networkManager.h"
 #include "core.h"
 #include "packet/PacketHandshake.h"
 #include "Thread.h"
 #include "SafeQueue.h"
+#include "PacketChatMessage.h"
 
 void wiicraft::NetworkManager::Init()
 {
@@ -69,7 +71,7 @@ void wiicraft::NetworkManager::Update()
         Packet* p = m_ServerConnection->PopPacket();
 		if (p)
 		{
-			p->Action();
+			p->Action();            
 			delete p;
 		}
 	}

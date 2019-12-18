@@ -2,11 +2,13 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "eventmanager.h"
+#include "EventDataDestroyEntity.h"
 
 class PacketDestroyEntity : public Packet
 {
 public:
-    PacketDestroyEntity() : Packet(PACKET_DESTROY_ENTITY) {}
+    PacketDestroyEntity() : Packet(PACKET_DESTROY_ENTITY) {}    
 
     void Read(const net::Socket &socket) override
     {
@@ -14,6 +16,7 @@ public:
     }
     void Action() override
     {
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataDestroyEntity>(m_EID));
     }
     Packet *CreateInstance() const override
     {
@@ -24,7 +27,6 @@ protected:
     void SendContent(const net::Socket &socket) const override
     {
     }
-
     int32_t m_EID = 0;
 };
 

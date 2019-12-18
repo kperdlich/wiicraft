@@ -10,8 +10,9 @@ public:
 
     void Read(const net::Socket &socket) override
     {
+        // Send twice by server - Retarded???
         m_CollectedID = socket.Read<int32_t>();
-        m_CollectorID = socket.Read<int32_t>();
+        m_CollectedID = socket.Read<int32_t>();
     }
     void Action() override
     {
@@ -28,7 +29,7 @@ protected:
 
     }
 
-    int32_t m_CollectedID = 0, m_CollectorID = 0;
+    int32_t m_CollectedID;
 };
 
 #pragma once

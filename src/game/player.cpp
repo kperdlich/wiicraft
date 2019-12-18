@@ -9,10 +9,11 @@
 #include "PacketPlayerPositionAndLook.h"
 #include "PacketPlayerDigging.h"
 #include "PacketKeepAlive.h"
+#include "PacketPlayerBlockPlacement.h"
 #include "EventDataSpawnPlayer.h"
 #include "EventDataSetPlayerPositionAndLook.h"
 #include "EventDataSendPlayerPosition.h"
-#include "EventDataRemoveBlock.h"
+#include "EventDataChangeBlock.h"
 
 constexpr float ROTATION_SPEED = 70.0f;
 constexpr float MOVEMENT_SPEED = 4.0f;
@@ -184,17 +185,10 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
                 else if(focusedBlock.Normal.X() < 0)
                     face = 5;
 
+                // Only enough for creative mode
                 PacketPlayerDigging packetStart(focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
                                            0, face);
                 packetStart.Send();
-                PacketPlayerDigging packetEnd(focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
-                                           2, face);
-                packetEnd.Send();
-
-
-
-                //chunkSection->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(focusedBlock.Entity.GetCenter()),
-                //                       wiicraft::BlockType::AIR);
             }
         }
         if (mPad->ButtonsDown() & WPAD_BUTTON_A)
@@ -205,8 +199,26 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
             const auto chunkSection = world.GetChunk(chunkPosition);
             if (chunkSection)
             {                
-                chunkSection->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(newBlockPosition),
-                                       wiicraft::BlockType::DIRT);
+                int8_t face;
+                if (focusedBlock.Normal.Y() < 0)
+                    face = 0;
+                else if (focusedBlock.Normal.Y() > 0)
+                    face = 1;
+                else if(focusedBlock.Normal.Z() < 0)
+                    face = 2;
+                else if (focusedBlock.Normal.Z() > 0)
+                    face = 3;
+                else if (focusedBlock.Normal.X() > 0)
+                    face = 4;
+                else if(focusedBlock.Normal.X() < 0)
+                    face = 5;
+
+                PacketPlayerBlockPlacement packet(
+                            focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(), face, (int8_t) wiicraft::BlockType::DIRT);
+
+                packet.Send();
+                //chunkSection->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(newBlockPosition),
+                //                       wiicraft::BlockType::DIRT);
             }
         }
     }

@@ -9,6 +9,17 @@ class PacketPlayerBlockPlacement : public Packet
 {
 public:
     PacketPlayerBlockPlacement() : Packet(PACKET_PLAYER_BLOCK_PLACEMENT) {}
+    PacketPlayerBlockPlacement(int32_t x, uint8_t y, int32_t z, int8_t direction, int8_t blockType)
+        : Packet(PACKET_PLAYER_BLOCK_PLACEMENT),
+          mX(x),
+          mZ(z),
+          mDirection(direction),
+          mY(y)
+    {
+        memset(&mSlotData, 0, sizeof(SlotData));
+        mSlotData.ItemCount = 1;
+        mSlotData.BlockID = blockType;
+    }
 
     void Read(const net::Socket &socket) override
     {
@@ -26,6 +37,17 @@ public:
 protected:
     void SendContent(const net::Socket &socket) const override
     {
+        socket.Send<int32_t>(mX);
+        socket.Send<uint8_t>(mY);
+        socket.Send<int32_t>(mZ);
+        socket.Send<int8_t>(mDirection);
+        socket.Send<int16_t>(mSlotData.BlockID);
+        socket.Send<int8_t>(mSlotData.ItemCount);
+        socket.Send<int16_t>(0);
+    }    
 
-    }
+    SlotData mSlotData;
+    int32_t mX, mZ;
+    int8_t mDirection;
+    uint8_t mY;
 };

@@ -27,9 +27,9 @@
 struct SlotData
 {
 	int16_t BlockID;
-	char ItemCount;
+    int8_t ItemCount;
 	int16_t ItemDamage;
-	char NBT;
+    int8_t NBT;
 };
 
 
@@ -47,6 +47,12 @@ public:
     virtual void Read(const net::Socket& socket) = 0;
 	virtual void Action() = 0;
 	virtual Packet* CreateInstance() const = 0;
+
+    inline uint8_t GetPacketID() const
+    {
+        return m_ID;
+    }
+
 protected:
     virtual void SendContent(const net::Socket& socket) const = 0;
 
@@ -73,6 +79,6 @@ protected:
 		}
 	}
 
-	char m_ID;
+    uint8_t m_ID;
 
 };

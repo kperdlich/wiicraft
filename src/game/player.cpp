@@ -201,51 +201,23 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
             const auto chunkSection = world.GetChunk(chunkPosition);
             if (chunkSection)
             {
-                int8_t face;
-                if (focusedBlock.Normal.Y() < 0)
-                    face = 0;
-                else if (focusedBlock.Normal.Y() > 0)
-                    face = 1;
-                else if(focusedBlock.Normal.Z() < 0)
-                    face = 2;
-                else if (focusedBlock.Normal.Z() > 0)
-                    face = 3;
-                else if (focusedBlock.Normal.X() < 0)
-                    face = 4;
-                else if(focusedBlock.Normal.X() > 0)
-                    face = 5;
-
                 // Only enough for creative mode
                 PacketPlayerDigging packetStart(focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
-                                           0, face);
+                                           0, focusedBlock.Normal);
                 packetStart.Send();
             }
         }
         if (mPad->ButtonsDown() & WPAD_BUTTON_A)
         {
-            const math::Vector3f newBlockPosition = focusedBlock.Entity.GetCenter() + focusedBlock.Normal;
+            const math::Vector3f newBlockPosition = focusedBlock.Entity.GetCenter();
             const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(newBlockPosition);
-            renderer.DrawAABB({newBlockPosition, {wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f}}, renderer::ColorRGBA::RED);
+            //renderer.DrawAABB({newBlockPosition, {wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f}}, renderer::ColorRGBA::RED);
             const auto chunkSection = world.GetChunk(chunkPosition);
             if (chunkSection)
-            {                
-                int8_t face;
-                if (focusedBlock.Normal.Y() < 0)
-                    face = 0;
-                else if (focusedBlock.Normal.Y() > 0)
-                    face = 1;
-                else if(focusedBlock.Normal.Z() < 0)
-                    face = 2;
-                else if (focusedBlock.Normal.Z() > 0)
-                    face = 3;
-                else if (focusedBlock.Normal.X() < 0)
-                    face = 4;
-                else if(focusedBlock.Normal.X() > 0)
-                    face = 5;
-
+            {                                
                 PacketPlayerBlockPlacement packet(
-                            focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(), face, (int8_t) wiicraft::BlockType::DIRT);
-
+                            focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
+                            focusedBlock.Normal, mHotbar[mCurrenHotbarIndex]);
                 packet.Send();               
             }
         }

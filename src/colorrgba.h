@@ -25,6 +25,7 @@ public:
     static const ColorRGBA BLUE;
     static const ColorRGBA BLACK;
     static const ColorRGBA WHITE;
+    static const ColorRGBA YELLOW;
 
 private:
     uint8_t mChannels[4];

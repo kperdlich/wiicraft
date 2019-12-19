@@ -5,6 +5,7 @@ const renderer::ColorRGBA renderer::ColorRGBA::BLACK = {0, 0, 0, 255};
 const renderer::ColorRGBA renderer::ColorRGBA::RED = {255, 0, 0, 255};
 const renderer::ColorRGBA renderer::ColorRGBA::GREEN = {0, 255, 0, 255};
 const renderer::ColorRGBA renderer::ColorRGBA::BLUE = {0, 0, 255, 255};
+const renderer::ColorRGBA renderer::ColorRGBA::YELLOW = {255, 255, 0, 255};
 
 renderer::ColorRGBA::ColorRGBA()
 {

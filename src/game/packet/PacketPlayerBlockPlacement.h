@@ -2,24 +2,46 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "vector3f.h"
 #include "slotdata.h"
-
-// todo implement
 
 class PacketPlayerBlockPlacement : public Packet
 {
 public:
     PacketPlayerBlockPlacement() : Packet(PACKET_PLAYER_BLOCK_PLACEMENT) {}
-    PacketPlayerBlockPlacement(int32_t x, uint8_t y, int32_t z, int8_t direction, int8_t blockType)
+    PacketPlayerBlockPlacement(int32_t x, uint8_t y, int32_t z, const math::Vector3f& faceNormal, const wiicraft::SlotData& slotData)
         : Packet(PACKET_PLAYER_BLOCK_PLACEMENT),
+          mSlotData(slotData),
           mX(x),
           mZ(z),
-          mDirection(direction),
           mY(y)
     {
-        memset(&mSlotData, 0, sizeof(wiicraft::SlotData));
-        mSlotData.ItemCount = 1;
-        mSlotData.ItemID = blockType;
+
+        if (faceNormal.Y() < 0)
+        {
+            mDirection = 0;
+        }
+        else if (faceNormal.Y() > 0)
+        {
+            mDirection = 1;
+        }
+        else if(faceNormal.Z() < 0)
+        {
+            mDirection = 2;
+        }
+        else if (faceNormal.Z() > 0)
+        {
+            mDirection = 3;
+        }
+        else if (faceNormal.X() < 0)
+        {
+            mDirection = 4;
+        }
+        else if(faceNormal.X() > 0)
+        {
+            mDirection = 5;
+        }
+
     }
 
     void Read(const net::Socket &socket) override
@@ -43,8 +65,11 @@ protected:
         socket.Send<int32_t>(mZ);
         socket.Send<int8_t>(mDirection);
         socket.Send<int16_t>(mSlotData.ItemID);
-        socket.Send<int8_t>(mSlotData.ItemCount);
-        socket.Send<int16_t>(0);
+        if (mSlotData.ItemID != -1)
+        {
+            socket.Send<int8_t>(mSlotData.ItemCount);
+            socket.Send<int16_t>(mSlotData.ItemDamage);
+        }
     }    
 
     wiicraft::SlotData mSlotData;

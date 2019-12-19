@@ -2,22 +2,46 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "vector3f.h"
 
-// todo implement
 
 class PacketPlayerDigging : public Packet
 {
 public:
     PacketPlayerDigging() : Packet(PACKET_PLAYER_DIGGING) {}
 
-    PacketPlayerDigging(int32_t x, int8_t y, int32_t z, int8_t status, int8_t face) :
+    PacketPlayerDigging(int32_t x, int8_t y, int32_t z, int8_t status, const math::Vector3f& faceNormal) :
         Packet(PACKET_PLAYER_DIGGING),
         mStatus(status),
         mY(y),
-        mFace(face),
         mX(x),
         mZ(z)
-    {}
+    {
+        if (faceNormal.Y() < 0)
+        {
+            mFace = 0;
+        }
+        else if (faceNormal.Y() > 0)
+        {
+            mFace = 1;
+        }
+        else if(faceNormal.Z() < 0)
+        {
+            mFace = 2;
+        }
+        else if (faceNormal.Z() > 0)
+        {
+            mFace = 3;
+        }
+        else if (faceNormal.X() < 0)
+        {
+            mFace = 4;
+        }
+        else if(faceNormal.X() > 0)
+        {
+            mFace = 5;
+        }
+    }
 
     void Read(const net::Socket &socket) override
     {

@@ -3,7 +3,7 @@
 #include "Packet.h"
 #include "PacketGlobals.h"
 #include "eventmanager.h"
-#include "EventDataSpawnEntity.h"
+#include "EventDataSpawnPlayerEntity.h"
 
 class PacketSpawnNamedEntity : public Packet
 {
@@ -23,8 +23,8 @@ public:
     }
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnEntity>(
-                                                     std::make_shared<wiicraft::Entity>(
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnPlayerEntity>(
+                                                     std::make_shared<wiicraft::PlayerEntity>(
                                                          m_EID, m_PlayerName,m_X, m_Y, m_Z, m_CurrentItem, m_Yaw, m_Pitch)));
     }
     Packet *CreateInstance() const override

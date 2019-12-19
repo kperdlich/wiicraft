@@ -7,22 +7,22 @@
 
 namespace wiicraft {
 
-class EventDataSpawnEntity : public core::BaseEventData
+class EventDataSpawnPlayerEntity : public core::BaseEventData
 {
 public:
     static constexpr core::EventType EventType = 0x5f39a9c4;
-    EventDataSpawnEntity(std::shared_ptr<wiicraft::Entity> entity);
+    EventDataSpawnPlayerEntity(std::shared_ptr<wiicraft::PlayerEntity> entity);
     virtual const core::EventType& GetEventType() const override;
     virtual core::IEventDataPtr Copy() const override;
     virtual const char* GetName() const override;
 
-    inline std::shared_ptr<wiicraft::Entity> GetEntity();
+    inline std::shared_ptr<wiicraft::PlayerEntity> GetEntity();
 
 private:
-    std::shared_ptr<wiicraft::Entity> mEntity;
+    std::shared_ptr<wiicraft::PlayerEntity> mEntity;
 };
 
-inline std::shared_ptr<Entity> EventDataSpawnEntity::GetEntity()
+inline std::shared_ptr<PlayerEntity> EventDataSpawnPlayerEntity::GetEntity()
 {
     return mEntity;
 }

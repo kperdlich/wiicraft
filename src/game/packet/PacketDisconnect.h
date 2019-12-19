@@ -23,10 +23,11 @@ public:
         return new PacketDisconnect();
     }
 
+    std::string m_Reason;
+
 protected:
     void SendContent(const net::Socket &socket) const override
     {
     }
 
-    std::string m_Reason;
 };

@@ -2,6 +2,8 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "eventmanager.h"
+#include "EventDataUpdatePlayerListItem.h"
 
 class PacketPlayerListItem : public Packet
 {
@@ -16,7 +18,9 @@ public:
     }
     void Action() override
     {
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataUpdatePlayerListItem>(m_PlayerName, m_Ping));
     }
+
     Packet *CreateInstance() const override
     {
         return new PacketPlayerListItem();
@@ -28,7 +32,7 @@ protected:
     }
 
     std::string m_PlayerName;
-    bool m_bOnline = false;
-    int16_t m_Ping = 0;
+    int16_t m_Ping;
+    bool m_bOnline;
 };
 

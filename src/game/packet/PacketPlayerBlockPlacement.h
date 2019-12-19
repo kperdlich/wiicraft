@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "slotdata.h"
 
 // todo implement
 
@@ -16,9 +17,9 @@ public:
           mDirection(direction),
           mY(y)
     {
-        memset(&mSlotData, 0, sizeof(SlotData));
+        memset(&mSlotData, 0, sizeof(wiicraft::SlotData));
         mSlotData.ItemCount = 1;
-        mSlotData.BlockID = blockType;
+        mSlotData.ItemID = blockType;
     }
 
     void Read(const net::Socket &socket) override
@@ -41,12 +42,12 @@ protected:
         socket.Send<uint8_t>(mY);
         socket.Send<int32_t>(mZ);
         socket.Send<int8_t>(mDirection);
-        socket.Send<int16_t>(mSlotData.BlockID);
+        socket.Send<int16_t>(mSlotData.ItemID);
         socket.Send<int8_t>(mSlotData.ItemCount);
         socket.Send<int16_t>(0);
     }    
 
-    SlotData mSlotData;
+    wiicraft::SlotData mSlotData;
     int32_t mX, mZ;
     int8_t mDirection;
     uint8_t mY;

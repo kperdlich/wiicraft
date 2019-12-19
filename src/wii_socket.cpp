@@ -60,7 +60,7 @@ void net::Socket::Write(const char* data, size_t size) const
 	int32_t bytesWrote = 0;
     while (size > 0 && mConnected)
 	{
-        int32_t ret = net_send(mSocket, data + bytesWrote, size, 0);
+        int32_t ret = net_write(mSocket, data + bytesWrote, size);
 		if (ret < 0) // todo handle ret == 0, remote host closed the socket.
 		{
 			ASSERT(ret > 0);
@@ -78,7 +78,7 @@ void net::Socket::Read(void* data, size_t size) const
 	int32_t bytesRead = 0;
     while (size > 0 && mConnected)
 	{
-        int32_t ret = net_recv(mSocket, data + bytesRead, size, 0);
+        int32_t ret = net_read(mSocket, data + bytesRead, size);
 		if (ret < 0) // todo handle ret == 0, remote host closed the socket.
 		{			
 			ASSERT(ret > 0);

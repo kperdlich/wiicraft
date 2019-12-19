@@ -24,6 +24,7 @@
 #include "texture2d.h"
 #include "image2d.h"
 #include "chunksection.h"
+#include "staticmesh.h"
 
 namespace wiicraft {
 
@@ -40,6 +41,8 @@ enum class BlockFace : uint8_t
 
 class BlockManager {
 public:
+    static constexpr float BLOCK_HALF_SIZE = 0.5f;
+    static constexpr float BLOCK_SIZE = BLOCK_HALF_SIZE * 2.0f;
     BlockManager();
     ~BlockManager();
 	BlockManager(const BlockManager&) = delete;
@@ -48,6 +51,7 @@ public:
 	void operator=(BlockManager&&) = delete;		
 
     const std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>& GetTextureFacesList(const BlockType& blockType) const;
+    void GenerateMultiTexturedBlockMesh(BlockType blockType, renderer::DisplayList& displayList);
 
 private:
     void LoadBlocks();

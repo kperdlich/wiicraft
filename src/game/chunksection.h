@@ -54,9 +54,7 @@ enum class BlockType : int8_t
 
 class ChunkSection
 {
-public:
-    static constexpr float BLOCK_HALF_SIZE = 0.5f;
-    static constexpr float BLOCK_SIZE = BLOCK_HALF_SIZE * 2.0f;
+public:    
     static constexpr uint32_t CHUNK_SECTION_SIZE_X = 16;
     static constexpr uint32_t CHUNK_SECTION_SIZE_Y = 256;
     static constexpr uint32_t CHUNK_SECTION_SIZE_Z = 16;

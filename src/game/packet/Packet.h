@@ -23,15 +23,8 @@
 #include <vector>
 #include <cstdio>
 #include "socket.h"
-
-struct SlotData
-{
-	int16_t BlockID;
-    int8_t ItemCount;
-	int16_t ItemDamage;
-    int8_t NBT;
-};
-
+#include "core.h"
+#include "slotdata.h"
 
 class Packet
 {
@@ -56,10 +49,10 @@ public:
 protected:
     virtual void SendContent(const net::Socket& socket) const = 0;
 
-    void ReadSlotData(std::vector<SlotData>& slotData, int16_t count, const net::Socket& socket) const
+    void ReadSlotData(std::vector<wiicraft::SlotData>& slotData, int16_t count, const net::Socket& socket) const
 	{
 		slotData.clear();
-		SlotData data;
+        wiicraft::SlotData data;
 		for (int16_t i = 0; i < count; ++i)
 		{
 			ReadSlotData(data, socket);
@@ -67,15 +60,15 @@ protected:
 		}
 	}
 
-    void ReadSlotData(SlotData& data, const net::Socket& socket) const
+    void ReadSlotData(wiicraft::SlotData& data, const net::Socket& socket) const
 	{
 		memset(&data, 0, sizeof(data));
-		data.BlockID = socket.Read<int16_t>();
-		if (data.BlockID != -1)
+        data.ItemID = socket.Read<int16_t>();
+        if (data.ItemID != -1)
 		{
-			data.ItemCount = socket.Read<char>();
+            data.ItemCount = socket.Read<int8_t>();
 			data.ItemDamage = socket.Read<int16_t>();
-			data.NBT = socket.Read<char>(); // todo handle nbt correctly
+            ASSERT_TEXT(data.ItemDamage == 0, "NBT not implemented!!!");
 		}
 	}
 

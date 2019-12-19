@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 class PacketEntityMetadata : public Packet
 {
@@ -12,6 +13,7 @@ public:
     {
         m_EID = socket.Read<int32_t>();
         // todo implement metadata
+        ASSERT(false);
     }
     void Action() override
     {

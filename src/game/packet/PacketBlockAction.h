@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 class PacketBlockAction : public Packet
 {

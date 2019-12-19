@@ -24,7 +24,7 @@ public:
 	template<typename T>
 	T Read() const
 	{
-		T value;
+        T value = 0;
 		Read(&value, sizeof(T));
 		return value;
 	}

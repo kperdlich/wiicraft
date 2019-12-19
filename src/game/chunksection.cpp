@@ -145,14 +145,14 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
                 {
                     math::Vector3f vertices[8] =
                     {
-                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE},// v1
-                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE}, //v2
-                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE}, //v3
-                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BLOCK_HALF_SIZE}, // v4
-                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE}, //v5
-                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE}, // v6
-                            { (float)block.BlockPosition.x + BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE}, // v7
-                            { (float)block.BlockPosition.x - BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BLOCK_HALF_SIZE} // v8
+                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE},// v1
+                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v2
+                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v3
+                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, // v4
+                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, //v5
+                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v6
+                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v7
+                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE} // v8
 
                     };
 

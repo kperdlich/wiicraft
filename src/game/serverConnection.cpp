@@ -145,7 +145,7 @@ void wiicraft::ServerConnection::InitPacketMap()
 	s_PacketMap[PACKET_ENTITY_HEAD_LOOK] = new PacketEntityHeadLook();
 	s_PacketMap[PACKET_ENTITY_STATUS] = new PacketEntityStatus();
 	s_PacketMap[PACKET_ATTACH_ENTITY] = new PacketAttachEntity();
-	//s_PacketMap[PACKET_ENTITY_METADATA] = new PacketEntityMetadata();
+    s_PacketMap[PACKET_ENTITY_METADATA] = new PacketEntityMetadata();
 	s_PacketMap[PACKET_ENTITY_EFFECT] = new PacketEntityEffect();
 	s_PacketMap[PACKET_REMOVE_ENTITY_EFFECT] = new PacketRemoveEntityEffect();
 	s_PacketMap[PACKET_SET_EXPERIENCE] = new PacketSetExperience();
@@ -230,10 +230,12 @@ void wiicraft::ServerConnection::PreExecute()
 
 void wiicraft::ServerConnection::Execute()
 {
+    static uint8_t lastValidPacket = 0;
     uint8_t packetID = m_socket.Read<uint8_t>();
 	Packet* p = CreatePacketByID(packetID);
 	if (p && packetID != PACKET_DISCONNECT)
 	{
+        lastValidPacket = packetID;
 		//LOG("Parse packetID %x", packetID);
 		p->Read(m_socket);
 		m_queue.Push(p);
@@ -243,8 +245,14 @@ void wiicraft::ServerConnection::Execute()
 		//m_Socket.Close();
 		if (packetID == PACKET_DISCONNECT)
         {
-            ASSERT(false);//ERROR("Disconnected by server. Stop Packet reader");
-            exit(0);
+            PacketDisconnect* disconnect = dynamic_cast<PacketDisconnect*>(p);
+            if (disconnect->m_Reason.size() > 0)
+            {
+                //ASSERT(false);
+            }
+            ASSERT_TEXT(false, "PacketId: %d, LastValidPacket: %d", packetID, lastValidPacket);
+            //ASSERT(false);//ERROR("Disconnected by server. Stop Packet reader");
+            //exit(0);
         }
 		else
 		{

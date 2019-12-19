@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 // todo implement
 
@@ -12,8 +13,10 @@ public:
 
     void Read(const net::Socket &socket) override
     {
-
+        mEID = socket.Read<int32_t>();
+        mActionID = socket.Read<int8_t>();
     }
+
     void Action() override
     {
 
@@ -28,4 +31,6 @@ protected:
     {
 
     }
+    int32_t mEID;
+    int8_t mActionID;
 };

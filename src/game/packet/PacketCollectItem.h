@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 class PacketCollectItem : public Packet
 {
@@ -12,7 +13,7 @@ public:
     {
         // Send twice by server - Retarded???
         m_CollectedID = socket.Read<int32_t>();
-        m_CollectedID = socket.Read<int32_t>();
+        m_CollectedID = socket.Read<int32_t>();        
     }
     void Action() override
     {
@@ -31,5 +32,3 @@ protected:
 
     int32_t m_CollectedID;
 };
-
-#pragma once

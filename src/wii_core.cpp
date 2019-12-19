@@ -2,8 +2,9 @@
 #include "wii_defines.h"
 #include "renderer.h"
 #include "renderdata.h"
+#include <stdarg.h>
 
-void core::Assert(const char* expression, const char* file, int32_t line)
+void core::Assert(const char* expression, const char* file, int32_t line, const char* format, ...)
 {
     renderer::Renderer* renderer = renderer::Renderer::s_Renderer;
     if (!renderer)
@@ -28,6 +29,16 @@ void core::Assert(const char* expression, const char* file, int32_t line)
 
     printf("\x1b[7;0H");
     printf("Assertion failed:\nFile: %s,\n Line %d\nExpression: %s\n\n", file, line, expression);
+
+    if (format)
+    {
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+        printf("\n");
+    }
+
     printf("Press 'A' to exit.");
 
     do

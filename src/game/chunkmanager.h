@@ -4,20 +4,22 @@
 #include <vector>
 #include "aabb.h"
 #include "BlockManager.h"
-#include "eventmanager.h"
 #include "chunksection.h"
 #include "ChunkLoaderMultiplayer.h"
-#include "serializationJob.h"
+#include "eventmanager.h"
 #include "raycast.h"
 #include "renderer.h"
+#include "serializationJob.h"
 
 namespace wiicraft {
+
+class Player;
 
 class ChunkManager
 {
 public:
-    static constexpr int8_t CHUNK_CASH_X = 5;
-    static constexpr int8_t CHUNK_CASH_Y = 5;
+    static constexpr int8_t CHUNK_CACHE_X = 5;
+    static constexpr int8_t CHUNK_CACHE_Y = 5;
 
     ChunkManager();
     ~ChunkManager();
@@ -26,7 +28,7 @@ public:
     ChunkManager(ChunkManager&&) = delete;
     ChunkManager& operator = (ChunkManager&&) = delete;
 
-    void UpdateChunks(const math::Vector3f& currentPlayerPosition);
+    void UpdateChunksAround(const math::Vector3f &position);
     void Render(renderer::Renderer& renderer);
     bool Raycast(const math::Vector3f &origin, math::Vector3f direction, const float maxDistance, core::RayHitResult &hitResult) const;
     std::shared_ptr<wiicraft::ChunkSection> GetChunk(const ChunkPosition &chunkPosition);
@@ -35,6 +37,7 @@ public:
     std::vector<wiicraft::ChunkPosition> GenerateChunkMap(const math::Vector3f &worldPosition) const;
     inline uint32_t GetLoaderQueueCount();
     inline uint32_t GetSerializationQueueCount();
+    inline wiicraft::BlockManager& GetBlockManager();
 
 private:
     void OnSerializeChunk(core::IEventDataPtr eventData);
@@ -46,7 +49,8 @@ private:
     std::map<ChunkPosition, std::shared_ptr<ChunkSection>> mChunkCache;
     wiicraft::ChunkLoaderMultiplayer mChunkLoaderJob;
     wiicraft::SerializationJob mChunkSerializationJob;
-    wiicraft::ChunkPosition mPreviousUpdatedChunkPosition = {-1, -1};
+    math::Vector3f mPreviousPlayerPos;
+    bool mInitialMapLoaded;
 };
 
 inline uint32_t ChunkManager::GetLoaderQueueCount()
@@ -57,6 +61,10 @@ inline uint32_t ChunkManager::GetLoaderQueueCount()
 inline uint32_t ChunkManager::GetSerializationQueueCount()
 {
     return mChunkSerializationJob.GetQueueCount();
+}
+inline BlockManager& ChunkManager::GetBlockManager()
+{
+    return mBlockManager;
 }
 
 }

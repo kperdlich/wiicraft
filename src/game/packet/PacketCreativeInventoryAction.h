@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "slotdata.h"
 
 class PacketCreativeInventoryAction : public Packet
 {
@@ -27,7 +28,7 @@ protected:
     }
 
     int16_t m_Slot = 0;
-    SlotData m_SlotData;
+    wiicraft::SlotData m_SlotData;
 };
 
 

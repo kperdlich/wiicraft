@@ -4,16 +4,22 @@
 #include "image2d.h"
 #include "wii_sprite.h"
 #include "crosshair_png.h"
+#include "Hotbar_png.h"
+#include "hobtbar_small_png.h"
+#include "HotbarIndex_png.h"
 #include "eventmanager.h"
 #include "PacketPlayerPosition.h"
 #include "PacketPlayerPositionAndLook.h"
 #include "PacketPlayerDigging.h"
-#include "PacketKeepAlive.h"
 #include "PacketPlayerBlockPlacement.h"
+#include "PacketHeldItemChange.h"
 #include "EventDataSpawnPlayer.h"
 #include "EventDataSetPlayerPositionAndLook.h"
 #include "EventDataSendPlayerPosition.h"
 #include "EventDataChangeBlock.h"
+#include "EventDataUpdatePlayerListItem.h"
+#include "EventDataUpdatePlayerAbilities.h"
+#include "EventDataUpdatePlayerHotbarData.h"
 
 constexpr float ROTATION_SPEED = 70.0f;
 constexpr float MOVEMENT_SPEED = 4.0f;
@@ -26,22 +32,48 @@ wiicraft::Player::Player(std::shared_ptr<renderer::Camera> playerCamera, std::sh
       mPad(pad),
       mCamera(playerCamera),
       mStance(0.0),
+      mPing(0),
+      mCurrenHotbarIndex(0),
+      mInvulnerability(false),
+      mIsFlying(false),
+      mCanFly(false),
+      mInstantDestroy(false),
       mOnGround(false),
       mSpawned(false)
+
 {
     mCrossHairImage = std::make_unique<renderer::Image2D>(crosshair_png);
     mCrossHairSprite = std::make_unique<renderer::Sprite>(*mCrossHairImage);
+    mCrossHairSprite->SetScaleX(0.01f);
+    mCrossHairSprite->SetScaleY(0.01f);
+
+    mHotbarImage = std::make_unique<renderer::Image2D>(hobtbar_small_png);
+    mHotbarSprite = std::make_unique<renderer::Sprite>(*mHotbarImage);
+
+    mHotbarIndexImage = std::make_unique<renderer::Image2D>(HotbarIndex_png);
+    mHotbarIndexSprite = std::make_unique<renderer::Sprite>(*mHotbarIndexImage);
+
+    mPlayerItemDisplayList = std::make_unique<renderer::DisplayList>();
+
+    mName = "DaeFennek"; // TODO read from config
 
     core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnPlayerSpawn), EventDataSpawnPlayer::EventType);
     core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnSetPlayerPositionAndLook), EventDataSetPlayerPositionAndLook::EventType);
     core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnSendPlayerPosition), EventDataSendPlayerPosition::EventType);
+    core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnUpdatePlayerListItem), EventDataUpdatePlayerListItem::EventType);
+    core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnUpdatePlayerAbilities), EventDataUpdatePlayerAbilities::EventType);
+    core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnUpdateHotbarData), EventDataUpdatePlayerHotbarData::EventType);
 }
+
 
 wiicraft::Player::~Player()
 {
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &Player::OnPlayerSpawn), EventDataSpawnPlayer::EventType);
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &Player::OnSetPlayerPositionAndLook), EventDataSetPlayerPositionAndLook::EventType);
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &Player::OnSendPlayerPosition), EventDataSendPlayerPosition::EventType);
+    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &Player::OnUpdatePlayerListItem), EventDataUpdatePlayerListItem::EventType);
+    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &Player::OnUpdatePlayerAbilities), EventDataUpdatePlayerAbilities::EventType);
+    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &Player::OnUpdateHotbarData), EventDataUpdatePlayerHotbarData::EventType);
 }
 
 static core::RayHitResult sfocusedBlock;
@@ -70,13 +102,14 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
 
     std::vector<core::AABB> aabbsCollidedWithPlayer;
 
+    bool collision = false;
     math::Vector3f playerHitBoxPosition = mPosition + math::Vector3f(0.0f, mHitbox.Y(), 0.0f);
-    std::vector<core::AABB> aabbsAroundPlayer = world.GetBlockAABBsAround(playerHitBoxPosition); // Around center of hitbox
+    std::vector<core::AABB> allAABBsAroundPlayer = world.GetBlockAABBsAround(playerHitBoxPosition);
+    std::vector<core::AABB> collidableAABBsAroundPlayer = world.GetCollidableBlockAABBsAround(playerHitBoxPosition); // Around center of hitbox
     if (mPad->GetNunchukAngleY() > 0.0f)
     {
-        core::AABB playerAABB(playerHitBoxPosition + mCamera->Forward(), mHitbox);
-         bool collision = false;
-         for (const core::AABB& aabb : aabbsAroundPlayer)
+        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * 0.1f), mHitbox);
+         for (const core::AABB& aabb : collidableAABBsAroundPlayer)
          {
              if (playerAABB.CoolidesWith(aabb))
              {
@@ -91,9 +124,8 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
 
     if (mPad->GetNunchukAngleY() < 0.0f)
     {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * -1.0f) , mHitbox);
-        bool collision = false;
-        for (const core::AABB& aabb : aabbsAroundPlayer)
+        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * -.1f) , mHitbox);
+        for (const core::AABB& aabb : collidableAABBsAroundPlayer)
         {
             if (playerAABB.CoolidesWith(aabb))
             {
@@ -108,9 +140,8 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
 
     if (mPad->GetNunchukAngleX() < 0.0f)
     {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * -1.0f) , mHitbox);
-        bool collision = false;
-        for (const core::AABB& aabb : aabbsAroundPlayer)
+        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * -.1f) , mHitbox);
+        for (const core::AABB& aabb : collidableAABBsAroundPlayer)
         {
             if (playerAABB.CoolidesWith(aabb))
             {
@@ -125,9 +156,8 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
 
     if (mPad->GetNunchukAngleX() > 0.0f)
     {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right()) , mHitbox);
-        bool collision = false;
-        for (const core::AABB& aabb : aabbsAroundPlayer)
+        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * .1f) , mHitbox);
+        for (const core::AABB& aabb : collidableAABBsAroundPlayer)
         {
             if (playerAABB.CoolidesWith(aabb))
             {
@@ -138,9 +168,9 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
         }
        if (!collision)
              mCamera->Move(renderer::CameraMovementDirection::RIGHT, MOVEMENT_SPEED * deltaSeconds);
-    }
+    }    
 
-    for (const auto& eAABBS : aabbsAroundPlayer)
+    for (const auto& eAABBS : allAABBsAroundPlayer)
     {
         renderer.DrawAABB(eAABBS, renderer::ColorRGBA::WHITE);
     }
@@ -180,9 +210,9 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
                     face = 2;
                 else if (focusedBlock.Normal.Z() > 0)
                     face = 3;
-                else if (focusedBlock.Normal.X() > 0)
+                else if (focusedBlock.Normal.X() < 0)
                     face = 4;
-                else if(focusedBlock.Normal.X() < 0)
+                else if(focusedBlock.Normal.X() > 0)
                     face = 5;
 
                 // Only enough for creative mode
@@ -195,7 +225,7 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
         {
             const math::Vector3f newBlockPosition = focusedBlock.Entity.GetCenter() + focusedBlock.Normal;
             const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(newBlockPosition);
-            renderer.DrawAABB({newBlockPosition, {wiicraft::ChunkSection::BLOCK_HALF_SIZE + 0.1f, wiicraft::ChunkSection::BLOCK_HALF_SIZE + 0.1f, wiicraft::ChunkSection::BLOCK_HALF_SIZE + 0.1f}}, renderer::ColorRGBA::RED);
+            renderer.DrawAABB({newBlockPosition, {wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f}}, renderer::ColorRGBA::RED);
             const auto chunkSection = world.GetChunk(chunkPosition);
             if (chunkSection)
             {                
@@ -208,23 +238,31 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
                     face = 2;
                 else if (focusedBlock.Normal.Z() > 0)
                     face = 3;
-                else if (focusedBlock.Normal.X() > 0)
+                else if (focusedBlock.Normal.X() < 0)
                     face = 4;
-                else if(focusedBlock.Normal.X() < 0)
+                else if(focusedBlock.Normal.X() > 0)
                     face = 5;
 
                 PacketPlayerBlockPlacement packet(
                             focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(), face, (int8_t) wiicraft::BlockType::DIRT);
 
-                packet.Send();
-                //chunkSection->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(newBlockPosition),
-                //                       wiicraft::BlockType::DIRT);
+                packet.Send();               
             }
         }
     }
     else
     {
         mCrossHairSprite->SetColor(renderer::ColorRGBA::WHITE);
+    }
+
+
+    if (mPad->ButtonsDown() & WPAD_BUTTON_LEFT)
+    {
+        SetActiveHotbarSlot(mCurrenHotbarIndex -1);
+    }
+    if (mPad->ButtonsDown() & WPAD_BUTTON_RIGHT)
+    {
+        SetActiveHotbarSlot(mCurrenHotbarIndex + 1);
     }
 
 
@@ -236,9 +274,18 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
     playerCubeTranslation.SetIdentity();
     playerCubeTranslation.Translate(0.35f, -0.42f, -0.6f);
     renderer.LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * mCamera->GetViewMatrix3x4().Inverse() * playerCubeTranslation * playerCubeRotation * playerCubeScale);
-    renderer.SetZModeEnabled(false);
-    //renderer.Draw(cube); TODO Draw
-    renderer.SetZModeEnabled(true);
+
+    if (mHotbar[mCurrenHotbarIndex].ItemID > 0)
+    {
+        if (mPlayerItemDisplayList->GetBufferSize() == 0)
+        {
+            world.GetBlockManager().GenerateMultiTexturedBlockMesh(static_cast<BlockType>(mHotbar[mCurrenHotbarIndex].ItemID), *mPlayerItemDisplayList);
+        }
+
+        renderer.SetZModeEnabled(false);
+        mPlayerItemDisplayList->Render();
+        renderer.SetZModeEnabled(true);
+    }
 
     if (mSpawned)
     {
@@ -249,23 +296,57 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
 void wiicraft::Player::OnRender2D(float deltaSeconds, renderer::Renderer &renderer)
 {
     //mCrossHairSprite->SetPosX(renderer.GetWidth() * 0.5f);
-    //mCrossHairSprite->SetPosY(renderer.GetHeight() * 0.5f);
-    mCrossHairSprite->SetScaleX(0.01f);
-    mCrossHairSprite->SetScaleY(0.01f);
+    //mCrossHairSprite->SetPosY(renderer.GetHeight() * 0.5f);    
+    renderer.SetZModeEnabled(false);
+    mHotbarSprite->SetPosX(renderer.GetWidth() * .5f);
+    mHotbarSprite->SetPosY(renderer.GetHeight() - (mHotbarImage->Height() * .5f));
+    renderer.Draw(*mHotbarSprite);
+
+    mHotbarIndexSprite->SetPosX((mHotbarSprite->GetX() - (mHotbarImage->Width() * .5f) + (mHotbarIndexSprite->Width() * .5f) - 2
+                                 + mCurrenHotbarIndex * 40.0f));
+    mHotbarIndexSprite->SetPosY(mHotbarSprite->GetY() -2);
+    renderer.Draw(*mHotbarIndexSprite);
+
     renderer.Draw(*mCrossHairSprite);
 
+    renderer.SetZModeEnabled(true);
+
+    std::wstringstream ping;
+    ping << "Ping: " << mPing << "ms";
+    renderer.DrawText(30, 30, ping.str(), renderer::ColorRGBA::WHITE);
+
     std::wstringstream blockPos;
-    blockPos << "Block: X: " << sfocusedBlock.Entity.GetCenter().X();
-    blockPos << " Y: " << sfocusedBlock.Entity.GetCenter().Y();
-    blockPos << " Z: " << sfocusedBlock.Entity.GetCenter().Z();
-    renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4());
-    renderer.DrawText(200, 200, blockPos.str(), renderer::ColorRGBA::BLUE);
+    blockPos << "Block: XYZ: " << sfocusedBlock.Entity.GetCenter().X()
+             << "/" << sfocusedBlock.Entity.GetCenter().Y()
+             << "/" << sfocusedBlock.Entity.GetCenter().Z();
+    renderer.DrawText(30, 50, blockPos.str(), renderer::ColorRGBA::WHITE);
+
+    std::wstringstream playerAbilities;
+    playerAbilities << "IV:" << mInvulnerability << " / IF:" << mIsFlying << " / CF:" << mCanFly
+                    << " / ID:" << mInstantDestroy;
+    renderer.DrawText(30, 70, playerAbilities.str(), renderer::ColorRGBA::WHITE);
 }
 
 void wiicraft::Player::DrawAABB(renderer::Renderer &renderer) const
 {
     renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
     renderer.DrawAABB({mPosition + math::Vector3f(0.0f, mHitbox.Y(), 0.0f), mHitbox}, renderer::ColorRGBA::BLUE);
+}
+
+void wiicraft::Player::SetActiveHotbarSlot(int8_t slot)
+{
+    const int8_t newHotbarIndex = slot % static_cast<int8_t>(mHotbar.size());
+    if (newHotbarIndex != mCurrenHotbarIndex)
+    {
+        mPlayerItemDisplayList->Clear();
+        mCurrenHotbarIndex = newHotbarIndex;
+        if (mCurrenHotbarIndex < 0)
+        {
+            mCurrenHotbarIndex = static_cast<int8_t>(mHotbar.size()) - 1;
+        }
+        PacketHeldItemChange packet(mCurrenHotbarIndex);
+        packet.Send();
+    }
 }
 
 void wiicraft::Player::OnPlayerSpawn(core::IEventDataPtr eventData)
@@ -293,10 +374,44 @@ void wiicraft::Player::OnSendPlayerPosition(core::IEventDataPtr eventData)
     playerPositionPacket.Send();
 }
 
+void wiicraft::Player::OnUpdatePlayerListItem(core::IEventDataPtr eventData)
+{
+    std::shared_ptr<EventDataUpdatePlayerListItem> playerListItem = std::static_pointer_cast<EventDataUpdatePlayerListItem>(eventData);
+    if (playerListItem->GetPlayerName() == mName)
+    {
+        mPing = playerListItem->GetPing();
+    }
+}
+
+void wiicraft::Player::OnUpdatePlayerAbilities(core::IEventDataPtr eventData)
+{
+    std::shared_ptr<EventDataUpdatePlayerAbilities> playerAbilities = std::static_pointer_cast<EventDataUpdatePlayerAbilities>(eventData);
+    mInvulnerability = playerAbilities->GetInvulnerability();
+    mIsFlying = playerAbilities->GetIsFlying();
+    mCanFly = playerAbilities->GetCanFlying();
+    mInstantDestroy = playerAbilities->GetInstantDestroy();
+}
+
+void wiicraft::Player::OnUpdateHotbarData(core::IEventDataPtr eventData)
+{
+    std::shared_ptr<EventDataUpdatePlayerHotbarData> hotbarData = std::static_pointer_cast<EventDataUpdatePlayerHotbarData>(eventData);
+    if (hotbarData->GetWindowId() == -1 && hotbarData->GetSlot() == -1)
+    {
+        ASSERT(mCurrenHotbarIndex >= 0 && mCurrenHotbarIndex < mHotbar.size());
+        mHotbar[mCurrenHotbarIndex] = hotbarData->GetSlotData();
+        mPlayerItemDisplayList->Clear();
+    }
+    else
+    {
+        ASSERT(hotbarData->GetWindowId() == 0); // So far only support player hotbar inventory
+        ASSERT(hotbarData->GetSlot() >= 36 && hotbarData->GetSlot() <= 44); // hotbar slots are between 36 and 44
+        mHotbar[hotbarData->GetSlot() - 36] = hotbarData->GetSlotData();
+    }
+}
+
 void wiicraft::Player::SendPlayerPositionAndRotation() const
 {
     PacketPlayerPositionAndLook packet(mPosition.X(), mPosition.Y(), mPosition.Z(), mCamera->GetYaw(), -mCamera->GetPitch(), mStance, mOnGround);
     packet.Send();
 }
-
 

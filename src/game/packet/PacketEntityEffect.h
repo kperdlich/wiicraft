@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 class PacketEntityEffect : public Packet
 {
@@ -14,6 +15,7 @@ public:
         m_EffectID = socket.Read<char>();
         m_Amplifier = socket.Read<char>();
         m_Duration = socket.Read<int16_t>();
+        ASSERT(false);
     }
     void Action() override
     {

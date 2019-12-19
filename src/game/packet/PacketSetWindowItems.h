@@ -3,6 +3,8 @@
 #include <vector>
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "slotdata.h"
+#include "core.h"
 
 class PacketSetWindowItems : public Packet
 {
@@ -16,9 +18,9 @@ public:
 
      void Read(const net::Socket &socket) override
      {
-         m_WindowID = socket.Read<char>();
+         m_WindowID = socket.Read<int8_t>();
          m_Count = socket.Read<int16_t>();
-         ReadSlotData(m_SlotData, m_Count, socket);
+         ReadSlotData(m_SlotData, m_Count, socket);         
      }
 
      void Action() override
@@ -34,7 +36,7 @@ protected:
      {
      }
 
-     char m_WindowID = 0;
+     int8_t m_WindowID = 0;
      int16_t m_Count = 0;
-     std::vector<SlotData> m_SlotData;
+     std::vector<wiicraft::SlotData> m_SlotData;
 };

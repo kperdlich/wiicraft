@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 class PacketCloseWindow : public Packet
 {
@@ -11,6 +12,7 @@ public:
     void Read(const net::Socket &socket) override
     {
         m_WindowID = socket.Read<char>();
+        ASSERT(false);
     }
 
     void Action() override

@@ -2,6 +2,7 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "core.h"
 
 class PacketUpdateWindowProperty : public Packet
 {
@@ -10,6 +11,7 @@ public:
 
     void Read(const net::Socket &socket) override
     {
+        ASSERT(false);
         m_WindowID = socket.Read<char>();
         m_Property = socket.Read<int16_t>();
         m_Value = socket.Read<int16_t>();

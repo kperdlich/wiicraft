@@ -15,7 +15,7 @@ public:
         m_EID = socket.Read<int32_t>();
     }
     void Action() override
-    {
+    {        
         core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataDestroyEntity>(m_EID));
     }
     Packet *CreateInstance() const override

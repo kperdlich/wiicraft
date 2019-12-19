@@ -226,9 +226,6 @@ int main(int argc, char** argv)
 
 
 
-    bool movementEnabled = true;
-
-
     //core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnPlayer>(math::Vector3f(-74.56f, 73.73f, 111.28f)));
 
     wiicraft::WorldLoader worldLoader;
@@ -324,28 +321,15 @@ int main(int argc, char** argv)
         renderer.DrawRay(player.GetPosition(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
         renderer.DrawRay(player.GetPosition(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
 
-        const wiicraft::ChunkPosition currentChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(perspectiveCamera->Position());
+        const wiicraft::ChunkPosition currentChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(player.GetPosition());
 
-        chunkManager.UpdateChunks(perspectiveCamera->Position());
+        chunkManager.UpdateChunksAround(player.GetPosition());
         chunkManager.Render(renderer);
         player.OnRender3D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);
         entityManager.Render(renderer);
         eventManager.TickUpdate();
 
         renderer.EnableFog(20.0f, 30.0f, { 192, 216, 255, 0 });
-
-        // render player cube
-        math::Matrix3x4 playerCubeTranslation, playerCubeScale, playerCubeRotation;
-        playerCubeRotation.SetIdentity();
-        playerCubeRotation.Rotate('Y', 49.0f);
-        playerCubeScale.SetIdentity();
-        playerCubeScale.Scale(0.3f, 0.3f, 0.3f);
-        playerCubeTranslation.SetIdentity();
-        playerCubeTranslation.Translate(0.35f, -0.42f, -0.6f);
-        renderer.LoadModelViewMatrix(perspectiveCamera->GetViewMatrix3x4() * perspectiveCamera->GetViewMatrix3x4().Inverse() * playerCubeTranslation * playerCubeRotation * playerCubeScale);
-        renderer.SetZModeEnabled(false);
-        renderer.Draw(cube);
-        renderer.SetZModeEnabled(true);
 
         // Ortho camera
         renderer.SetCamera(orthographicCamera);

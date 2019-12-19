@@ -2,6 +2,8 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
+#include "eventmanager.h"
+#include "EventDataUpdatePlayerAbilities.h"
 
 class PacketPlayerAbilites : public Packet
 {
@@ -18,7 +20,7 @@ public:
 
     void Action() override
     {
-        // todo implement
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataUpdatePlayerAbilities>(m_bInvulnerability, m_bIsflying, m_bCanfly, m_bInstantDestroy));
     }
 
     Packet *CreateInstance() const override

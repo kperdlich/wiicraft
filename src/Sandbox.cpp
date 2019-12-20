@@ -44,7 +44,6 @@
 #include "Minecraft_ttf.h"
 #include "rursus_compact_mono_ttf.h"
 #include "Cursor_png.h"
-#include "Wood_tpl.h"
 #include "crosshair_png.h"
 #include "core.h"
 #include "aabb.h"
@@ -63,7 +62,6 @@
 #include "networkManager.h"
 #include "WorldLoader.h"
 #include "terrain_png.h"
-#include "terrain_tpl.h"
 #include "test_tpl.h"
 
 
@@ -100,7 +98,6 @@ int main(int argc, char** argv)
     renderer::Image2D backgroundImage(ClassicBackgroundSprite_png);
     renderer::Image2D cursorImage(Cursor_png);
     renderer::Image2D crosshairImage(crosshair_png);
-    renderer::Image2D woodImage(Wood_tpl, Wood_tpl_size);    
     std::shared_ptr<renderer::Texture2D> texture = std::make_shared<renderer::Texture2D>(terrainImage);
 
     renderer::Sprite terrainSprite(terrainImage);

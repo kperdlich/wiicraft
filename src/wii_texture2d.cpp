@@ -13,7 +13,7 @@ renderer::Texture2D::Texture2D(const Image2D& image)
         case ImageFormat::PNG:
         {
             GX_InitTexObj(&mTextureData->mTexObj, (void*) image.Data(), (uint16_t) image.Width(), (uint16_t) image.Height(), GX_TF_RGBA8, GX_REPEAT, GX_REPEAT, GX_FALSE);
-            GX_InitTexObjLOD(&mTextureData->mTexObj, GX_LINEAR, GX_LINEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
+            GX_InitTexObjLOD(&mTextureData->mTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_4);
             break;
         }
 
@@ -21,7 +21,7 @@ renderer::Texture2D::Texture2D(const Image2D& image)
         {
             const TPL_Texture* tplTexture = GetTPLTexture(const_cast<unsigned char*>(image.Data()));
             GX_InitTexObj(&mTextureData->mTexObj, (void*) (image.Data() + tplTexture->dataOffs), tplTexture->width, tplTexture->width,
-                          tplTexture->format, tplTexture->wrap_s, tplTexture->wrap_t, GX_FALSE);
+                          tplTexture->format, tplTexture->wrap_s, tplTexture->wrap_t, GX_TRUE);
             if (tplTexture->maxLod)
             {
                 GX_InitTexObjLOD(&mTextureData->mTexObj, tplTexture->minFilt, tplTexture->magFilt,

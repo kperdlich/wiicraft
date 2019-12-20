@@ -18,6 +18,7 @@ public:
     void End();
     void Clear();
     inline uint32_t GetBufferSize() const;
+    inline bool IsDirty() const;
 
 private:
     void* mDispList;
@@ -28,6 +29,12 @@ inline uint32_t DisplayList::GetBufferSize() const
 {
     return mBufferSize;
 }
+
+inline bool DisplayList::IsDirty() const
+{
+    return mBufferSize == 0 || !mDispList;
+}
+
 }
 
 

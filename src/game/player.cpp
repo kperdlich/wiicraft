@@ -7,6 +7,7 @@
 #include "Hotbar_png.h"
 #include "hobtbar_small_png.h"
 #include "HotbarIndex_png.h"
+#include "terraNew_png.h"
 #include "eventmanager.h"
 #include "PacketPlayerPosition.h"
 #include "PacketPlayerPositionAndLook.h"
@@ -54,6 +55,8 @@ wiicraft::Player::Player(std::shared_ptr<renderer::Camera> playerCamera, std::sh
     mHotbarIndexSprite = std::make_unique<renderer::Sprite>(*mHotbarIndexImage);
 
     mPlayerItemDisplayList = std::make_unique<renderer::DisplayList>();
+    mTerrainImage = std::make_unique<renderer::Image2D>(terraNew_png);
+    mTerrainSprite = std::make_unique<renderer::Sprite>(*mTerrainImage);
 
     mName = "DaeFennek"; // TODO read from config
 
@@ -104,7 +107,6 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
 
     bool collision = false;
     math::Vector3f playerHitBoxPosition = mPosition + math::Vector3f(0.0f, mHitbox.Y(), 0.0f);
-    std::vector<core::AABB> allAABBsAroundPlayer = world.GetBlockAABBsAround(playerHitBoxPosition);
     std::vector<core::AABB> collidableAABBsAroundPlayer = world.GetCollidableBlockAABBsAround(playerHitBoxPosition); // Around center of hitbox
     if (mPad->GetNunchukAngleY() > 0.0f)
     {
@@ -168,12 +170,7 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
         }
        if (!collision)
              mCamera->Move(renderer::CameraMovementDirection::RIGHT, MOVEMENT_SPEED * deltaSeconds);
-    }    
-
-    for (const auto& eAABBS : allAABBsAroundPlayer)
-    {
-        renderer.DrawAABB(eAABBS, renderer::ColorRGBA::WHITE);
-    }
+    }     
 
     for (const auto& eAABBS : aabbsCollidedWithPlayer)
     {
@@ -265,22 +262,34 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
     }
 }
 
-void wiicraft::Player::OnRender2D(float deltaSeconds, renderer::Renderer &renderer)
+void wiicraft::Player::OnRender2D(float deltaSeconds, renderer::Renderer &renderer, ChunkManager& world)
 {
     //mCrossHairSprite->SetPosX(renderer.GetWidth() * 0.5f);
-    //mCrossHairSprite->SetPosY(renderer.GetHeight() * 0.5f);    
-    renderer.SetZModeEnabled(false);
+    //mCrossHairSprite->SetPosY(renderer.GetHeight() * 0.5f);        
     mHotbarSprite->SetPosX(renderer.GetWidth() * .5f);
     mHotbarSprite->SetPosY(renderer.GetHeight() - (mHotbarImage->Height() * .5f));
-    renderer.Draw(*mHotbarSprite);
-
     mHotbarIndexSprite->SetPosX((mHotbarSprite->GetX() - (mHotbarImage->Width() * .5f) + (mHotbarIndexSprite->Width() * .5f) - 2
                                  + mCurrenHotbarIndex * 40.0f));
     mHotbarIndexSprite->SetPosY(mHotbarSprite->GetY() -2);
+    renderer.SetZModeEnabled(false);
+    renderer.Draw(*mHotbarSprite);   
+    renderer.SetZModeEnabled(true);
+
+    for (uint8_t i = 0; i < mHotbar.size(); ++i)
+    {
+        if (mHotbar[i].ItemID >= 0)
+        {
+            const auto& block = world.GetBlockManager().GetBlock(static_cast<BlockType>(mHotbar[i].ItemID));
+            int32_t x = mHotbarSprite->GetX() - mHotbarSprite->Width() * .5f + (32 * .5f) + 10;
+            int32_t y = mHotbarSprite->GetY();
+            renderer.DrawSpriteSheet(x + (32*i) + (i*7), y, *mTerrainSprite, block->GetTextureIndexForSide(BlockFace::Back),
+                                     32, 32 ,32 ,32);
+        }
+    }
+
+    renderer.SetZModeEnabled(false);
     renderer.Draw(*mHotbarIndexSprite);
-
     renderer.Draw(*mCrossHairSprite);
-
     renderer.SetZModeEnabled(true);
 
     std::wstringstream ping;

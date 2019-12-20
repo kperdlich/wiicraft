@@ -1,190 +1,106 @@
-/***
- *
- * Copyright (C) 2016 DaeFennek
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
-***/
-
 #include "BlockManager.h"
+#include "vertexformat.h"
+#include "renderer.h"
 #include "core.h"
 #include "image2d.h"
-#include "Dirt_tpl.h"
-#include "Grass_tpl.h"
-#include "Grass_Side_tpl.h"
-#include "Stone_tpl.h"
-#include "Wood_tpl.h"
-#include "Leaf_tpl.h"
-#include "Tree_tpl.h"
+#include "test_tpl.h"
+
+constexpr uint32_t TILE_HEIGHT = 32;
+constexpr uint32_t TILE_WIDTH = 32;
 
 wiicraft::BlockManager::BlockManager()
 {
-    LoadBlocks();
+    mBlockSheetImage = std::make_unique<renderer::Image2D>(test_tpl, test_tpl_size);
+    mBlockSheetTexture = std::make_unique<renderer::Texture2D>(*mBlockSheetImage);
+
+    RegisterBlock(std::make_shared<Block>(BlockType::STONE, 0));
+    RegisterBlock(std::make_shared<BlockGrass>(BlockType::GRASS, 3));
+    RegisterBlock(std::make_shared<Block>(BlockType::DIRT, 2));
+    RegisterBlock(std::make_shared<Block>(BlockType::COBBLESTONE, 16));
+    RegisterBlock(std::make_shared<Block>(BlockType::PLANKS, 5));
+    RegisterBlock(std::make_shared<Block>(BlockType::SAPLINGS, 6));
+    RegisterBlock(std::make_shared<Block>(BlockType::BEDROCK, 17));
+    RegisterBlock(std::make_shared<Block>(BlockType::STATIONARY_WATER, 12 * 16 + 13));
+    RegisterBlock(std::make_shared<Block>(BlockType::LAVA, 14 * 16 + 13));
+    RegisterBlock(std::make_shared<Block>(BlockType::STATIONARY_LAVA, 14 * 16 + 13));
+    RegisterBlock(std::make_shared<Block>(BlockType::WATER, 14));
+    RegisterBlock(std::make_shared<Block>(BlockType::GLASS, 49));
+    RegisterBlock(std::make_shared<Block>(BlockType::SAND, 18));
+    RegisterBlock(std::make_shared<Block>(BlockType::WOOD, 20));
+    RegisterBlock(std::make_shared<Block>(BlockType::BRICKS, 7));
+    RegisterBlock(std::make_shared<BlockLeaf>(BlockType::LEAF, 52));
+    RegisterBlock(std::make_shared<Block>(BlockType::TNT, 8));
 }
 
-wiicraft::BlockManager::~BlockManager()
+void wiicraft::BlockManager::BindTextureSheet(uint8_t slot)
 {
-    UnloadBlocks();
+    mBlockSheetTexture->Bind(slot);
 }
 
-void wiicraft::BlockManager::LoadBlocks()
+
+std::shared_ptr<wiicraft::Block> wiicraft::BlockManager::GetBlock(wiicraft::BlockType type)
 {
-    renderer::Texture2D* pDirtTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Dirt_tpl, Dirt_tpl_size));
-    renderer::Texture2D* pGrassTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Grass_tpl, Grass_tpl_size));
-    renderer::Texture2D* pGrassSideTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Grass_Side_tpl, Grass_Side_tpl_size));
-    renderer::Texture2D* pStoneTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Stone_tpl, Stone_tpl_size));
-    renderer::Texture2D* pWoodTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Wood_tpl, Wood_tpl_size));
-    renderer::Texture2D* pLeafTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Leaf_tpl, Leaf_tpl_size));
-    renderer::Texture2D* pTreeTexture = LoadImageAndAddToTextureList(new renderer::Image2D(Tree_tpl, Tree_tpl_size));
-
-    std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>> dirtTextureMap =
-	{
-		{
-		  pDirtTexture,
-		  {
-              BlockFace::Left,
-              BlockFace::Right,
-              BlockFace::Front,
-              BlockFace::Back,
-              BlockFace::Top,
-              BlockFace::Bottom,
-		  }
-		}
-	};
-
-    std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>> stoneTextureMap =
-	{
-		{
-		  pStoneTexture,
-		  {
-              BlockFace::Left,
-              BlockFace::Right,
-              BlockFace::Front,
-              BlockFace::Back,
-              BlockFace::Top,
-              BlockFace::Bottom,
-		  }
-		}
-	};
-
-    std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>> leafTextureMap =
-	{
-		{
-		  pLeafTexture,
-		  {
-              BlockFace::Left,
-              BlockFace::Right,
-              BlockFace::Front,
-              BlockFace::Back,
-              BlockFace::Top,
-              BlockFace::Bottom,
-		  }
-		}
-	};
-
-    std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>> grassTextureMap =
-	{
-		{
-			pGrassTexture,
-			{
-                  BlockFace::Top
-			}
-		},
-		{
-			pDirtTexture,
-			{
-                  BlockFace::Bottom
-			}
-		},
-		{
-			pGrassSideTexture,
-			{
-                BlockFace::Left,
-                BlockFace::Right,
-                BlockFace::Front,
-                BlockFace::Back
-			}
-		}
-	};
-
-    std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>> woodTextureMap =
-	{
-		{
-			pTreeTexture,
-			{
-                  BlockFace::Top,
-                  BlockFace::Bottom
-			}
-		},
-		{
-			pWoodTexture,
-			{
-                BlockFace::Left,
-                BlockFace::Right,
-                BlockFace::Front,
-                BlockFace::Back
-			}
-		}
-	};
-
-    m_blocks.insert(std::pair< BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>>(BlockType::AIR, {})); // no texture for air!
-    m_blocks.insert(std::pair< BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>>(BlockType::DIRT, dirtTextureMap));
-    m_blocks.insert(std::pair< BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>>(BlockType::GRASS,  grassTextureMap));
-    m_blocks.insert(std::pair< BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>>(BlockType::STONE, stoneTextureMap));
-    m_blocks.insert(std::pair< BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>>(BlockType::WOOD, woodTextureMap));
-    m_blocks.insert(std::pair< BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>>(BlockType::LEAF, leafTextureMap));
-}
-
-void wiicraft::BlockManager::UnloadBlocks()
-{
-	m_blocks.clear();
-    m_textures.clear();
-
-    for (auto image : m_images)
-	{
-        delete image;
-	}
-    m_images.clear();
-}
-
-const std::unordered_map<renderer::Texture2D *, std::vector<wiicraft::BlockFace>> &wiicraft::BlockManager::GetTextureFacesList(
-        const BlockType &blockType) const
-{
-    const auto& blockIterator = m_blocks.find(blockType);
-    if (blockIterator != m_blocks.end())
+    auto findIt = mBlockList.find(type);
+    if (findIt != mBlockList.end())
     {
-        return blockIterator->second;
+        return findIt->second;
     }
-
-    ASSERT(false);
+    ASSERT_TEXT(false, "BlockID: %d not implemented!", static_cast<uint8_t>(type));
+    return nullptr;
 }
 
-renderer::Texture2D* wiicraft::BlockManager::LoadImageAndAddToTextureList(const renderer::Image2D* image)
+void wiicraft::BlockManager::RegisterBlock(std::shared_ptr<wiicraft::Block> block)
 {
-    renderer::Texture2D* texture = new renderer::Texture2D(*image);
-    m_images.push_back(image);
-    m_textures.push_back(texture);
-    return texture;
+    mBlockList[block->GetBlockType()] = block;
 }
+
+std::array<float, 8> wiicraft::BlockManager::GetUVTextureCoordinates(int32_t index) const
+{
+    const int32_t width = mBlockSheetImage->Width();
+    const int32_t height = mBlockSheetImage->Height();
+    const int32_t rows = width / TILE_HEIGHT;
+    const int32_t columns = height / TILE_WIDTH;
+    const int32_t x = (index % columns) * TILE_WIDTH;
+    const int32_t y = (index / rows) * TILE_HEIGHT;
+
+    const float sTopLeft = static_cast<float>(x) / width;
+    const float tTopLeft = static_cast<float>(y) / height;
+
+    const float sTopRight = static_cast<float>(x + TILE_WIDTH) / width;
+    const float tTopRight = tTopLeft;
+
+    const float sBottomRight = sTopRight;
+    const float tBottomRight = static_cast<float>(y + TILE_HEIGHT) / height;
+
+    const float sBottomLeft = sTopLeft;
+    const float tBottomLeft = tBottomRight;
+
+    std::array<float, 8> coords;
+    coords[0] = sTopLeft;
+    coords[1] = tTopLeft;
+
+    coords[2] = sTopRight;
+    coords[3] = tTopRight;
+
+    coords[4] = sBottomRight;
+    coords[5] = tBottomRight;
+
+    coords[6] = sBottomLeft;
+    coords[7] = tBottomLeft;
+
+    return coords;
+}
+
 
 void wiicraft::BlockManager::GenerateMultiTexturedBlockMesh(wiicraft::BlockType blockType, renderer::DisplayList &displayList)
 {
-    auto findIt = m_blocks.find(blockType);
-    ASSERT(findIt != m_blocks.end());
+    auto findIt = mBlockList.find(blockType);
+    ASSERT(findIt != mBlockList.end());
 
     displayList.Clear();
     displayList.Begin(4000);
+
+    BindTextureSheet();
 
     renderer::VertexFormat chunkBlock(GX_VTXFMT0);
     chunkBlock.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
@@ -193,7 +109,6 @@ void wiicraft::BlockManager::GenerateMultiTexturedBlockMesh(wiicraft::BlockType 
     chunkBlock.Bind();
 
 
-    renderer::ColorRGBA color = renderer::ColorRGBA::WHITE;
     math::Vector3f blockPosition = {0.0f, 0.0f, 0.0f};
     math::Vector3f vertices[8] =
         {
@@ -207,146 +122,147 @@ void wiicraft::BlockManager::GenerateMultiTexturedBlockMesh(wiicraft::BlockType 
                 { blockPosition.X() - BLOCK_HALF_SIZE, blockPosition.Y() - BLOCK_HALF_SIZE, blockPosition.Z() - BLOCK_HALF_SIZE} // v8
         };
 
-    for (const auto& texture : findIt->second)
-    {
-        texture.first->Bind();
 
-        for (const auto& currentFace : texture.second)
+
+        for (uint8_t faceIndex = 0; faceIndex < 6; ++faceIndex)
         {
-                if (currentFace == BlockFace::Front)
-                {
-                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // front side
-                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 0.0f);
+            BlockFace currentFace = static_cast<BlockFace>(faceIndex);
+            int32_t textureIndex = findIt->second->GetTextureIndexForSide(currentFace);
+            const renderer::ColorRGBA& color = findIt->second->GetColorForSide(currentFace);
+            const std::array<float, 8> uvs = GetUVTextureCoordinates(textureIndex);
 
-                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 0.0f);
+            if (currentFace == BlockFace::Front)
+            {
+                GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                    // front side
+                    GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 1.0f);
+                    GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 1.0f);
-                    GX_End();
-                }
+                    GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                if (currentFace == BlockFace::Front)
-                {
-                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // back side
-                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 0.0f);
+                    GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
+                GX_End();
+            }
 
-                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 0.0f);
+            if (currentFace == BlockFace::Front)
+            {
+                GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                    // back side
+                    GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 1.0f);
+                    GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 1.0f);
-                    GX_End();
-                }
+                    GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                if (currentFace == BlockFace::Right)
-                {
-                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // right side
-                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 0.0f);
+                    GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
+                GX_End();
+            }
 
-                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 0.0f);
+            if (currentFace == BlockFace::Right)
+            {
+                GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                    // right side
+                    GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 1.0f);
+                    GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 1.0f);
-                    GX_End();
-                }
+                    GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                if (currentFace == BlockFace::Left)
-                {
-                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // left side
-                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 0.0f);
+                    GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
+                GX_End();
+            }
 
-                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 0.0f);
+            if (currentFace == BlockFace::Left)
+            {
+                GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                    // left side
+                    GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 1.0f);
+                    GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 1.0f);
-                    GX_End();
-                }
+                    GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                if (currentFace == BlockFace::Top)
-                {
-                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // top side
-                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 0.0f);
+                    GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
+                GX_End();
+            }
 
-                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 0.0f);
+            if (currentFace == BlockFace::Top)
+            {
+                GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                    // top side
+                    GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 1.0f);
+                    GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 1.0f);
-                    GX_End();
-                }
+                    GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                if (currentFace == BlockFace::Bottom)
-                {
-                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // bottom side
-                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 0.0f);
+                    GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
+                GX_End();
+            }
 
-                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 0.0f);
+            if (currentFace == BlockFace::Bottom)
+            {
+                GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                    // bottom side
+                    GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(1.0f, 1.0f);
+                    GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(0.0f, 1.0f);
-                    GX_End();
-                }
+                    GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
+                    GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
+                GX_End();
+            }
         }
-    }
 
     displayList.End();
 }

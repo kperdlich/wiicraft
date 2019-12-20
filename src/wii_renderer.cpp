@@ -247,6 +247,60 @@ void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text
     mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
 }
 
+void renderer::Renderer::DrawSpriteSheet(int32_t x, int32_t y, renderer::Sprite &sprite, uint32_t index, uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight)
+{
+    const uint32_t rows = sprite.Height() / tileHeight;
+    const uint32_t columns = sprite.Width() / tileWidth;
+    const uint32_t tileX = (index % columns) * tileWidth;
+    const uint32_t tileY = (index / rows) * tileHeight;
+    DrawSpriteSheet(x, y, sprite, tileX, tileY, tileWidth, tileHeight, finalSpriteWidth, finalSpriteHeight);
+}
+
+void renderer::Renderer::DrawSpriteSheet(int32_t x, int32_t y, renderer::Sprite &sprite, uint32_t tileX, uint32_t tileY, uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight)
+{
+    mRenderData->mDefaultSpriteVertexFormat.Bind();
+    sprite.Bind(0);
+
+    const float width = finalSpriteWidth * .5f;
+    const float height = finalSpriteHeight * .5f;
+
+    const ColorRGBA& color = sprite.GetColor();
+
+    const float sTopLeft = static_cast<float>(tileX) / sprite.Width();
+    const float tTopLeft = static_cast<float>(tileY) / sprite.Height();
+
+    const float sTopRight = static_cast<float>(tileX + tileWidth) / sprite.Width();
+    const float tTopRight = tTopLeft;
+
+    const float sBottomRight = sTopRight;
+    const float tBottomRight = static_cast<float>(tileY + tileHeight) / sprite.Height();
+
+    const float sBottomLeft = sTopLeft;
+    const float tBottomLeft = tBottomRight;
+
+    math::Matrix3x4 translation;
+    translation.SetIdentity();
+    translation.Translate(x, y, 0.0f);
+    LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * translation);
+    GX_Begin(GX_QUADS, mRenderData->mDefaultSpriteVertexFormat.mFormatIndex, 4);
+        GX_Position3f32(-width, -height, 0);
+        GX_Color1u32(color.Color());
+        GX_TexCoord2f32(sTopLeft, tTopLeft);
+
+        GX_Position3f32(width, -height, 0);
+        GX_Color1u32(color.Color());
+        GX_TexCoord2f32(sTopRight, tTopRight);
+
+        GX_Position3f32(width, height, 0);
+        GX_Color1u32(color.Color());
+        GX_TexCoord2f32(sBottomRight, tBottomRight);
+
+        GX_Position3f32(-width, height, 0);
+        GX_Color1u32(color.Color());
+        GX_TexCoord2f32(sBottomLeft, tBottomLeft);
+    GX_End();
+}
+
 void renderer::Renderer::Draw(Mesh &mesh)
 {
     mesh.GetVertexArray()->Bind();
@@ -316,7 +370,7 @@ void renderer::Renderer::Draw(renderer::Sprite &sprite)
     const ColorRGBA& color = sprite.GetColor();
 
     LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * sprite.GetModelMatrix());
-    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+    GX_Begin(GX_QUADS, mRenderData->mDefaultSpriteVertexFormat.mFormatIndex, 4);
         GX_Position3f32(-width, -height, 0);
         GX_Color1u32(color.Color());
         GX_TexCoord2f32(0, 0);
@@ -387,7 +441,7 @@ void renderer::Renderer::DrawRay(const math::Vector3f &from, const math::Vector3
 
         GX_Position3f32(end.X(), end.Y(), end.Z());
         GX_Color4u8(color.Red(), color.Green(), color.Blue(), color.Alpha());
-        GX_End();
+    GX_End();
 }
 
 void renderer::Renderer::DrawAABB(const core::AABB &aabb, const renderer::ColorRGBA &color)
@@ -478,3 +532,4 @@ uint32_t renderer::Renderer::GetHeight() const
 {
     return mRenderData->mHeight;
 }
+

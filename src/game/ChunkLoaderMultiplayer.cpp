@@ -77,35 +77,65 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
 							unsigned char block = (cdata[(iz * 16 * 16) + (iy * 16) + ix + (i * 16 * 16 * 16)]);
                             BlockType* blockPtr = &blocks[ix][iz + (i * 16)][iy];
 
-							switch (block)
+                            switch (block) // TODO remove when all blocks are implemented!
 							{
-							case 0:
-								*blockPtr = BlockType::AIR;
-								break;
-							case 1:
-								*blockPtr = BlockType::STONE;
-								break;
-							case 2:
-								*blockPtr = BlockType::GRASS;
-								break;
-							case 3:
-								*blockPtr = BlockType::DIRT;
-								break;
-							case 4:
-								*blockPtr = BlockType::STONE;
-								break;
-							case 5:
-								*blockPtr = BlockType::WOOD;
-								break;
-							case 17:
-								*blockPtr = BlockType::WOOD;
-								break;
-							case 18:
-								*blockPtr = BlockType::LEAF;
-								break;
+                            case 0:
+                                *blockPtr = BlockType::AIR;
+                                break;
+                            case 1:
+                                *blockPtr = BlockType::STONE;
+                                break;
+                            case 2:
+                                *blockPtr = BlockType::GRASS;
+                                break;
+                            case 3:
+                                *blockPtr = BlockType::DIRT;
+                                break;
+                            case 4:
+                                *blockPtr = BlockType::COBBLESTONE;
+                                break;
+                            case 5:
+                                *blockPtr = BlockType::PLANKS;
+                                break;
+                            case 6:
+                                *blockPtr = BlockType::SAPLINGS;
+                                break;
+                            case 7:
+                                *blockPtr = BlockType::BEDROCK;
+                                break;
+                            case 8:
+                                *blockPtr = BlockType::WATER;
+                                break;
+                            case 9:
+                                *blockPtr = BlockType::STATIONARY_WATER;
+                                break;
+                            case 10:
+                                *blockPtr = BlockType::LAVA;
+                                break;
+                            case 11:
+                                *blockPtr = BlockType::STATIONARY_LAVA;
+                                break;
+                            case 12:
+                                *blockPtr = BlockType::SAND;
+                                break;
+                            case 14:
+                                *blockPtr = BlockType::GLASS;
+                                break;
+                            case 17:
+                                *blockPtr = BlockType::WOOD;
+                                break;
+                            case 18:
+                                *blockPtr = BlockType::LEAF;
+                                break;
 							case 31:
-								*blockPtr = BlockType::AIR;
+                                *blockPtr = BlockType::AIR;
 								break;
+                            case 45:
+                                *blockPtr = BlockType::BRICKS;
+                                break;
+                            case 46:
+                                *blockPtr = BlockType::TNT;
+                                break;
 							default:
                                 *blockPtr = BlockType::DIRT;
 								break;

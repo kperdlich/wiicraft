@@ -27,6 +27,9 @@ renderer::Image2D::Image2D(const uint8_t *data, size_t imageSize)
     else if (IsTPLTexture(data))
     {
         ASSERT(imageSize > 0);
+        TPL_Texture* tplTexture = renderer::GetTPLTexture(data);
+        mWidth = tplTexture->width;
+        mHeight = tplTexture->height;
         mFormat = ImageFormat::TPL;
         mDataSize = imageSize;
         mData = (uint8_t*) memalign(32, mDataSize);

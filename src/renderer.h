@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <memory>
 #include "matrix3x4.h"
 #include "colorrgba.h"
@@ -25,6 +26,8 @@ class StaticMesh;
 class Sprite;
 class Camera;
 
+std::array<float, 8> GetUVTextureCoordinates(uint32_t index, uint32_t width, uint32_t height, uint32_t tileWidth, uint32_t tileHeight);
+
 class Renderer {
 public:
     explicit Renderer(bool useVSync);
@@ -49,6 +52,8 @@ public:
     void SetLineWidth(uint8_t width);
 
     void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color);
+    void DrawSpriteSheet(int32_t x, int32_t y, Sprite &sprite, uint32_t index,  uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight);
+    void DrawSpriteSheet(int32_t x, int32_t y, Sprite &sprite, uint32_t tileX, uint32_t tileY, uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight);
     void Draw(Mesh& mesh);
     void Draw(Sprite &sprite);
     void Draw(StaticMesh& mesh);

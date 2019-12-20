@@ -33,7 +33,6 @@ public:
     bool Raycast(const math::Vector3f &origin, math::Vector3f direction, const float maxDistance, core::RayHitResult &hitResult) const;
     std::shared_ptr<wiicraft::ChunkSection> GetChunk(const ChunkPosition &chunkPosition);
     std::vector<core::AABB> GetCollidableBlockAABBsAround(const math::Vector3f& position) const;
-    std::vector<core::AABB> GetBlockAABBsAround(const math::Vector3f& position) const;
     std::vector<wiicraft::ChunkPosition> GenerateChunkMap(const math::Vector3f &worldPosition) const;
     inline uint32_t GetLoaderQueueCount();
     inline uint32_t GetSerializationQueueCount();

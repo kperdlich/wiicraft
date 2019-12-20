@@ -75,6 +75,8 @@ src/game/EntityManager.cpp
 src/game/EntityManager.h
 src/game/WorldLoader.cpp
 src/game/WorldLoader.h
+src/game/block.cpp
+src/game/block.h
 src/game/chunkmanager.cpp
 src/game/chunkmanager.cpp
 src/game/chunkmanager.cpp
@@ -94,6 +96,8 @@ src/game/chunksection.h
 src/game/compressed_chunk_data.h
 src/game/compressed_chunk_data.h
 src/game/compressed_chunk_data.h
+src/game/entity.cpp
+src/game/entity.h
 src/game/event/EventDataAllChunksInQueueSerialized.cpp
 src/game/event/EventDataAllChunksInQueueSerialized.h
 src/game/event/EventDataChangeBlock.cpp
@@ -112,10 +116,18 @@ src/game/event/EventDataServerConnected.cpp
 src/game/event/EventDataServerConnected.h
 src/game/event/EventDataSetPlayerPositionAndLook.cpp
 src/game/event/EventDataSetPlayerPositionAndLook.h
-src/game/event/EventDataSpawnEntity.cpp
-src/game/event/EventDataSpawnEntity.h
+src/game/event/EventDataSpawnItemEntity.cpp
+src/game/event/EventDataSpawnItemEntity.h
 src/game/event/EventDataSpawnPlayer.cpp
 src/game/event/EventDataSpawnPlayer.h
+src/game/event/EventDataSpawnPlayerEntity.cpp
+src/game/event/EventDataSpawnPlayerEntity.h
+src/game/event/EventDataUpdatePlayerAbilities.cpp
+src/game/event/EventDataUpdatePlayerAbilities.h
+src/game/event/EventDataUpdatePlayerHotbarData.cpp
+src/game/event/EventDataUpdatePlayerHotbarData.h
+src/game/event/EventDataUpdatePlayerListItem.cpp
+src/game/event/EventDataUpdatePlayerListItem.h
 src/game/event_data.cpp
 src/game/event_data.cpp
 src/game/event_data.h
@@ -366,6 +378,7 @@ src/game/serverConnection.h
 src/game/serverConnection.h
 src/game/serverConnection.h
 src/game/serverConnection.h
+src/game/slotdata.h
 src/geometry_data.h
 src/geometry_data.h
 src/gxdisplaylist.cpp

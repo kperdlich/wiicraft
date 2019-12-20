@@ -244,27 +244,12 @@ void wiicraft::ServerConnection::Execute()
 	{
 		//m_Socket.Close();
 		if (packetID == PACKET_DISCONNECT)
-        {
-            PacketDisconnect* disconnect = dynamic_cast<PacketDisconnect*>(p);
-            if (disconnect->m_Reason.size() > 0)
-            {
-                //ASSERT(false);
-            }
-            ASSERT_TEXT(false, "PacketId: %d, LastValidPacket: %d", packetID, lastValidPacket);
-            //ASSERT(false);//ERROR("Disconnected by server. Stop Packet reader");
-            //exit(0);
+        {            
+            ASSERT_TEXT(false, "Disconnected by Server! PacketId: %d, LastValidPacket: %d", packetID, lastValidPacket);
         }
 		else
-		{
-			/*char buffer[20];
-			buffer[19] = '\0';
-			for (uint16_t i = 0; i < 19; ++i)
-				buffer[i] = m_Socket.Read<char>();*/
-
-            ASSERT(false);
-            //ASSERT(false);
-            //ERROR("Couldn't find/create instance of packetID %x. Stop Packet reader", packetID);
-			//ERROR("Data: %s", buffer);
+        {
+            ASSERT_TEXT(false, "Couldn't find/create instance of packetID %x. Stop Packet reader", packetID);
 		}
 
 		Suspend();

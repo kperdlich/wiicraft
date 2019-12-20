@@ -14,7 +14,7 @@ enum class ImageFormat : char
 class Image2D
 {
 public:
-    explicit Image2D(const unsigned char *data, size_t imageSize = 0);
+    explicit Image2D(const uint8_t *data, size_t imageSize = 0);
     ~Image2D();
     Image2D(const Image2D&) = delete;
     Image2D(Image2D&&) = delete;

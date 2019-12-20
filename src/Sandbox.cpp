@@ -62,6 +62,10 @@
 #include "EventDataSpawnPlayer.h"
 #include "networkManager.h"
 #include "WorldLoader.h"
+#include "terrain_png.h"
+#include "terrain_tpl.h"
+#include "test_tpl.h"
+
 
 void DrawFixedDummy3DTexturedCube(utils::Clock& clock, renderer::Renderer& renderer, math::Matrix3x4& translation, math::Matrix3x4& rotation);
 void DrawDummyColorTriangle(utils::Clock& clock);
@@ -92,11 +96,16 @@ int main(int argc, char** argv)
 
     auto pad = std::make_shared<core::WiiPad>(WPAD_CHAN_0, renderer.GetWidth(), renderer.GetHeight());
 
+    renderer::Image2D terrainImage(test_tpl, test_tpl_size);
     renderer::Image2D backgroundImage(ClassicBackgroundSprite_png);
     renderer::Image2D cursorImage(Cursor_png);
     renderer::Image2D crosshairImage(crosshair_png);
     renderer::Image2D woodImage(Wood_tpl, Wood_tpl_size);    
-    std::shared_ptr<renderer::Texture2D> texture = std::make_shared<renderer::Texture2D>(woodImage);
+    std::shared_ptr<renderer::Texture2D> texture = std::make_shared<renderer::Texture2D>(terrainImage);
+
+    renderer::Sprite terrainSprite(terrainImage);
+    terrainSprite.SetPosX(100.0f);
+    terrainSprite.SetPosY(100.0f);
 
     renderer::Sprite cursorSprite(cursorImage);
     cursorSprite.SetPosX(100.0f);
@@ -147,11 +156,30 @@ int main(int argc, char** argv)
         {vertices[7].x, vertices[7].y, vertices[7].z}
        }};
 
+
+    int x = 32 *3 , y = 0;
+
+    const float sTopLeft = static_cast<float>(x) / terrainImage.Width();
+    const float tTopLeft = static_cast<float>(y) / terrainImage.Height();
+
+    const float sTopRight = static_cast<float>(x + 16) / terrainImage.Width();
+    const float tTopRight = tTopLeft;
+
+    const float sBottomRight = sTopRight;
+    const float tBottomRight = static_cast<float>(y + 16) / terrainImage.Height();
+
+    const float sBottomLeft = sTopLeft;
+    const float tBottomLeft = tBottomRight;
+
     std::vector<float> tex = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        0.0f, 1.0f,
-        1.0f, 1.0f
+        sTopLeft, tTopLeft,
+        sTopRight, tTopRight,
+        sBottomRight, tBottomRight,
+        sBottomLeft, tBottomLeft
+        /*0.1f, 0.1f,
+        .2f, 0.1f,
+        0.1f, .2f,
+        .2f, .2f*/
     };
 
     uint32_t color = 0xFFFFFFFF;
@@ -176,37 +204,37 @@ int main(int argc, char** argv)
             std::make_shared<renderer::IndexBuffer>(std::initializer_list<uint16_t>{
                                      0,0,0,
                                      3,0,1,
-                                     2,0,3,
-                                     1,0,2,
+                                     2,0,2,
+                                     1,0,3,
 
                                      5,0,0,
                                      4,0,1,
-                                     7,0,3,
+                                     7,0,2,
                                      6,0,3,
 
                                      3,0,0,
                                      5,0,1,
-                                     6,0,3,
-                                     2,0,2,
+                                     6,0,2,
+                                     2,0,3,
 
                                      4,0,0,
                                      0,0,1,
                                      1,0,3,
-                                     7,0,2,
+                                     7,0,3,
 
                                      4,0,0,
                                      5,0,1,
-                                     3,0,3,
-                                     0,0,2,
+                                     3,0,2,
+                                     0,0,3,
 
                                      6,0,0,
                                      7,0,1,
-                                     1,0,3,
-                                     2,0,2,
+                                     1,0,2,
+                                     2,0,3,
                         });
 
     renderer::StaticMesh cube(indexBuffer, vertexArray, GX_QUADS);
-    cube.SetTexture(texture);
+    //cube.SetTexture(texture);
 
     renderer.LoadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 20);
 
@@ -219,18 +247,9 @@ int main(int argc, char** argv)
 
     uint64_t millisecondsLastFrame = 0;
 
-    bool drawSpriteRay = false;
-    math::Vector3f spriteRayPos;
-    math::Vector3f spriteRayForward;
-
-
-
-
     //core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnPlayer>(math::Vector3f(-74.56f, 73.73f, 111.28f)));
 
     wiicraft::WorldLoader worldLoader;
-
-
     while(true)
     {
         uint64_t startFrameTime = ticks_to_millisecs(gettime());
@@ -305,14 +324,6 @@ int main(int argc, char** argv)
         renderer.DrawAABB(cube2AABB, renderer::ColorRGBA::BLUE);
         renderer.DrawAABB(cube1AABB, renderer::ColorRGBA::BLUE);        
 
-
-        if (drawSpriteRay)
-        {
-            renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-            renderer.DrawRay(spriteRayPos, spriteRayForward * 10.0f, renderer::ColorRGBA::RED);
-        }
-
-
         renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
         renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
         renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
@@ -333,9 +344,13 @@ int main(int argc, char** argv)
 
         // Ortho camera
         renderer.SetCamera(orthographicCamera);
-        player.OnRender2D(millisecondsLastFrame / 1000.0f, renderer);
+        player.OnRender2D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);
         DrawDummySprite(cursorSprite, renderer, true);
 
+        terrainSprite.SetPosX(renderer.GetWidth() * .5f);
+        terrainSprite.SetPosY(renderer.GetHeight() * .5f);
+        //renderer.DrawSpriteSheet(terrainSprite, 32, 0, 16, 16, 64, 64);
+        //renderer.DrawSpriteSheet(terrainSprite, 2, 16, 16, 64, 64);
         renderer.LoadModelViewMatrix(orthographicCamera->GetViewMatrix3x4() * math::Matrix3x4::Identity());
         worldLoader.Update(renderer);
         wiicraft::NetworkManager::Get().Update();

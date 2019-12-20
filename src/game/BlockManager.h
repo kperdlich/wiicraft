@@ -20,47 +20,48 @@
 #pragma once
 
 #include <unordered_map>
-#include <vector>
+#include <array>
+#include <memory>
+#include "wii_displaylist.h"
 #include "texture2d.h"
 #include "image2d.h"
-#include "chunksection.h"
-#include "staticmesh.h"
+#include "block.h"
 
 namespace wiicraft {
-
-enum class BlockFace : uint8_t
-{
-    Left,
-    Right,
-    Front,
-    Back,
-    Top,
-    Bottom
-};
-
 
 class BlockManager {
 public:
     static constexpr float BLOCK_HALF_SIZE = 0.5f;
     static constexpr float BLOCK_SIZE = BLOCK_HALF_SIZE * 2.0f;
     BlockManager();
-    ~BlockManager();
 	BlockManager(const BlockManager&) = delete;
 	BlockManager(BlockManager&&) = delete;
 	void operator=(const BlockManager&) = delete;
 	void operator=(BlockManager&&) = delete;		
 
-    const std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>& GetTextureFacesList(const BlockType& blockType) const;
+    void BindTextureSheet(uint8_t slot = 0);
+    std::shared_ptr<Block> GetBlock(BlockType type);
     void GenerateMultiTexturedBlockMesh(BlockType blockType, renderer::DisplayList& displayList);
+    std::array<float, 8> GetUVTextureCoordinates(int32_t index) const;
 
-private:
-    void LoadBlocks();
-    void UnloadBlocks();
-    renderer::Texture2D *LoadImageAndAddToTextureList(const renderer::Image2D *image);
+    inline int32_t GetSheetWidth() const;
+    inline int32_t GetSheetHeight() const;
+
 private:    
-    std::unordered_map<BlockType, std::unordered_map<renderer::Texture2D*, std::vector<BlockFace>>> m_blocks;
-    std::vector<const renderer::Texture2D*> m_textures;
-    std::vector<const renderer::Image2D*> m_images;
-
+    void RegisterBlock(std::shared_ptr<Block> block);
+private:    
+    std::unordered_map<BlockType, std::shared_ptr<Block>> mBlockList;
+    std::unique_ptr<renderer::Image2D> mBlockSheetImage;
+    std::unique_ptr<renderer::Texture2D> mBlockSheetTexture;
 };
+
+inline int32_t BlockManager::GetSheetWidth() const
+{
+    return mBlockSheetImage->Width();
+}
+
+inline int32_t BlockManager::GetSheetHeight() const
+{
+    return mBlockSheetImage->Height();
+}
 }

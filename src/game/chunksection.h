@@ -8,6 +8,7 @@
 #include "colorrgba.h"
 #include "geometry_data.h"
 #include "wii_displaylist.h"
+#include "block.h"
 
 namespace renderer {
     class Renderer;
@@ -40,18 +41,6 @@ struct BlockRenderData
 };
 
 
-enum class BlockType : int8_t
-{
-    AIR = 0,    
-    STONE = 1,
-    GRASS = 2,
-    DIRT = 3,
-    COBBLESTONE = 4,
-    PLANKS = 5,
-    WOOD = 17,
-    LEAF = 18
-};
-
 class ChunkSection
 {
 public:    
@@ -79,8 +68,7 @@ public:
     void UpdateChunkDisplayList(uint32_t chunkIndex, size_t chunkFaceAmmount,
                                 const std::unordered_map<BlockType, std::vector<BlockRenderData>>& chunkBlockList,
                                 renderer::Renderer& renderer,
-                                wiicraft::BlockManager& blockmanager,
-                                const renderer::ColorRGBA& color = renderer::ColorRGBA::WHITE);
+                                wiicraft::BlockManager& blockmanager);
 
     math::Vector3f WorldPositionToBlockPosition(const math::Vector3f& worldPosition) const;
     std::pair<math::Vector3f, BlockType> GetBlockTypeByWorldPosition(const math::Vector3f& worldPosition) const;

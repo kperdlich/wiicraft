@@ -20,7 +20,7 @@ public:
     Player& operator = (Player&&) = delete;
 
     void OnRender3D(float deltaSeconds, renderer::Renderer& renderer, ChunkManager& world);
-    void OnRender2D(float deltaSeconds, renderer::Renderer& renderer);
+    void OnRender2D(float deltaSeconds, renderer::Renderer& renderer, ChunkManager &world);
 
     void DrawAABB(renderer::Renderer& renderer) const;
     inline double GetStance() const;
@@ -51,6 +51,8 @@ private:
     std::unique_ptr<renderer::Sprite> mHotbarSprite;
     std::unique_ptr<renderer::Image2D> mHotbarIndexImage;
     std::unique_ptr<renderer::Sprite> mHotbarIndexSprite;
+    std::unique_ptr<renderer::Image2D> mTerrainImage;
+    std::unique_ptr<renderer::Sprite> mTerrainSprite;
     std::shared_ptr<core::WiiPad> mPad;
     std::shared_ptr<renderer::Camera> mCamera;
     double mStance;

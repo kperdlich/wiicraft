@@ -99,8 +99,7 @@ void wiicraft::ChunkSection::Render(renderer::Renderer& renderer, wiicraft::Bloc
 void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t chunkFaceAmmount,
     const std::unordered_map<wiicraft::BlockType, std::vector<wiicraft::BlockRenderData> > &chunkBlockList,
     renderer::Renderer &renderer,
-    wiicraft::BlockManager& blockmanager,
-    const renderer::ColorRGBA& color)
+    wiicraft::BlockManager& blockmanager)
 {
     if (mChunkDisplayList.size() == 0 || chunkIndex > mChunkDisplayList.size() - 1)
     {
@@ -124,6 +123,8 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
 
     displayList.Begin(400000);
 
+    blockmanager.BindTextureSheet();
+
     renderer::VertexFormat chunkBlock(GX_VTXFMT0);
     chunkBlock.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
     chunkBlock.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
@@ -132,161 +133,160 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
 
     for (const auto& blockType : chunkBlockList)
     {
-        const auto& textureFaceList = blockmanager.GetTextureFacesList(blockType.first);
-
-        for (const auto& texture : textureFaceList)
+        const auto block = blockmanager.GetBlock(blockType.first);
+        const std::vector<BlockRenderData>& blockRenderData = blockType.second;
+        for (const auto& blockToRender : blockRenderData)
         {
-            texture.first->Bind();
-
-            for (const auto& currentFace : texture.second)
+            math::Vector3f vertices[8] =
             {
-                const std::vector<BlockRenderData>& blockRenderData = blockType.second;
-                for (const auto& block : blockRenderData)
+                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE},// v1
+                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v2
+                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v3
+                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, // v4
+                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, //v5
+                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v6
+                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v7
+                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE} // v8
+
+            };
+
+            for (uint8_t faceIndex = 0; faceIndex < 6; ++faceIndex)
+            {
+                BlockFace currentFace = static_cast<BlockFace>(faceIndex);
+                int32_t textureIndex = block->GetTextureIndexForSide(currentFace);
+                const renderer::ColorRGBA& color = block->GetColorForSide(currentFace);
+                const std::array<float, 8>& uvs = blockmanager.GetUVTextureCoordinates(textureIndex);
+
+                if ((blockToRender.FaceMask & BLOCK_FRONT_FACE) && currentFace == BlockFace::Front)
                 {
-                    math::Vector3f vertices[8] =
-                    {
-                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE},// v1
-                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v2
-                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v3
-                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, // v4
-                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, //v5
-                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v6
-                            { (float)block.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v7
-                            { (float)block.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)block.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE} // v8
+                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                        // front side
+                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                    };
+                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                    if ((block.FaceMask & BLOCK_FRONT_FACE) && currentFace == BlockFace::Front)
-                    {
-                        GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                            // front side
-                            GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 0.0f);
+                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                            GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 0.0f);
+                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_End();
+                }
 
-                            GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 1.0f);
+                if ((blockToRender.FaceMask & BLOCK_BACK_FACE) && currentFace == BlockFace::Front)
+                {
+                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                        // back side
+                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                            GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 1.0f);
-                        GX_End();
-                    }
+                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                    if ((block.FaceMask & BLOCK_BACK_FACE) && currentFace == BlockFace::Front)
-                    {
-                        GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                            // back side
-                            GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 0.0f);
+                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                            GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 0.0f);
+                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_End();
+                }
 
-                            GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 1.0f);
+                if ((blockToRender.FaceMask & BLOCK_RIGHT_FACE) && currentFace == BlockFace::Right)
+                {
+                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                        // right side
+                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                            GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 1.0f);
-                        GX_End();
-                    }
+                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                    if ((block.FaceMask & BLOCK_RIGHT_FACE) && currentFace == BlockFace::Right)
-                    {
-                        GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                            // right side
-                            GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 0.0f);
+                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                            GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 0.0f);
+                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_End();
+                }
 
-                            GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 1.0f);
+                if ((blockToRender.FaceMask & BLOCK_LEFT_FACE) && currentFace == BlockFace::Left)
+                {
+                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                        // left side
+                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                            GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 1.0f);
-                        GX_End();
-                    }
+                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                    if ((block.FaceMask & BLOCK_LEFT_FACE) && currentFace == BlockFace::Left)
-                    {
-                        GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                            // left side
-                            GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 0.0f);
+                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                            GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 0.0f);
+                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_End();
+                }
 
-                            GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 1.0f);
+                if ((blockToRender.FaceMask & BLOCK_TOP_FACE) && currentFace == BlockFace::Top)
+                {
+                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                        // top side
+                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                            GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 1.0f);
-                        GX_End();
-                    }
+                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                    if ((block.FaceMask & BLOCK_TOP_FACE) && currentFace == BlockFace::Top)
-                    {
-                        GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                            // top side
-                            GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 0.0f);
+                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                            GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 0.0f);
+                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_End();
+                }
 
-                            GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 1.0f);
+                if ((blockToRender.FaceMask & BLOCK_BOTTOM_FACE) && currentFace == BlockFace::Bottom)
+                {
+                    GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
+                        // bottom side
+                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                            GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 1.0f);
-                        GX_End();
-                    }
+                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                    if ((block.FaceMask & BLOCK_BOTTOM_FACE) && currentFace == BlockFace::Bottom)
-                    {
-                        GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                            // bottom side
-                            GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 0.0f);
+                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                            GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 0.0f);
-
-                            GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(1.0f, 1.0f);
-
-                            GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                            GX_Color1u32(color.Color());
-                            GX_TexCoord2f32(0.0f, 1.0f);
-                        GX_End();
-                    }
+                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                        GX_Color1u32(color.Color());
+                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_End();
                 }
             }
         }
@@ -324,7 +324,7 @@ void wiicraft::ChunkSection::GenerateChunk(uint32_t chunkIndex, renderer::Render
             }
         }
     }
-    UpdateChunkDisplayList(chunkIndex, chunkFaceAmount, chunkBlockRenderMap, renderer, blockmanager, renderer::ColorRGBA::WHITE);
+    UpdateChunkDisplayList(chunkIndex, chunkFaceAmount, chunkBlockRenderMap, renderer, blockmanager);
 }
 
 bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, wiicraft::BlockRenderData &blockRenderVO) const
@@ -338,9 +338,9 @@ bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, 
 
     BlockType top = y == CHUNK_SECTION_SIZE_Y - 1 ? BlockType::AIR : mBlocks[x][y + 1][z];
     BlockType bottom = y == 0 ? BlockType::AIR : mBlocks[x][y - 1][z];
-    BlockType north = z == CHUNK_SECTION_SIZE_Z - 1 ? BlockType::AIR : mBlocks[x][y][z + 1];
+    BlockType north = z == CHUNK_SIZE - 1 ? BlockType::AIR : mBlocks[x][y][z + 1];
     BlockType south = z == 0 ? BlockType::AIR : mBlocks[x][y][z - 1];
-    BlockType east = x == CHUNK_SECTION_SIZE_X - 1 ? BlockType::AIR : mBlocks[x + 1][y][z];
+    BlockType east = x == CHUNK_SIZE - 1 ? BlockType::AIR : mBlocks[x + 1][y][z];
     BlockType west = x == 0 ? BlockType::AIR : mBlocks[x - 1][y][z];
 
     if (top == BlockType::AIR)

@@ -171,31 +171,6 @@ std::vector<core::AABB> wiicraft::ChunkManager::GetCollidableBlockAABBsAround(co
     return aabbs;
 }
 
-std::vector<core::AABB> wiicraft::ChunkManager::GetBlockAABBsAround(const math::Vector3f &position) const
-{
-    std::vector<core::AABB> aabbs;
-    math::Vector3f blockPosition = wiicraft::ChunkSection::WorldPositionToBlockPosition(position, wiicraft::ChunkSection::WorldPositionToChunkPosition(position));
-    math::Vector3f start = {blockPosition.X() - 1.0f, blockPosition.Y() - 1.0f, blockPosition.Z() - 1.0f};
-    for (uint8_t x = 0; x < 3; ++x)
-    {
-        for (uint8_t y = 0; y < 3; ++y)
-        {
-            for (uint8_t z = 0; z < 3; ++z)
-            {
-                const math::Vector3f& pos = {start.X() +(x*BlockManager::BLOCK_HALF_SIZE*2.0f), start.Y() +(y*BlockManager::BLOCK_HALF_SIZE*2.0f), start.Z() +(z*BlockManager::BLOCK_HALF_SIZE*2.0f)};
-                const wiicraft::ChunkPosition& chunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(pos);
-                auto csIt = mChunkCache.find(chunkPos);
-                if (csIt != mChunkCache.end())
-                {
-                    const auto& blockPositionType = csIt->second->GetBlockTypeByWorldPosition(pos);
-                    aabbs.push_back({blockPositionType.first, {BlockManager::BLOCK_HALF_SIZE, BlockManager::BLOCK_HALF_SIZE, BlockManager::BLOCK_HALF_SIZE}});
-                }
-            }
-        }
-    }
-    return aabbs;
-}
-
 std::vector<wiicraft::ChunkPosition> wiicraft::ChunkManager::GenerateChunkMap(const math::Vector3f &worldPosition) const
 {
     const ChunkPosition& chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(worldPosition);

@@ -10,7 +10,7 @@ renderer::Sprite::Sprite(const Image2D& image)
     mHeight = (uint32_t) image.Height();       
 
     GX_InitTexObj(&mTexObj, (void*) image.Data(), (uint16_t) mWidth, (uint16_t) mHeight, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
-    GX_InitTexObjLOD(&mTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_1);
+    GX_InitTexObjLOD(&mTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_4);
 }
 
 math::Matrix3x4 renderer::Sprite::GetModelMatrix() const

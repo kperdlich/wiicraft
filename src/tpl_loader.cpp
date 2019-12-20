@@ -11,13 +11,13 @@ bool renderer::IsTPLTexture(const uint8_t *data)
     return (pHeader && pHeader->magic == 0x20af30);
 }
 
-renderer::TPL_Texture* renderer::GetTPLTexture(uint8_t *data)
+renderer::TPL_Texture* renderer::GetTPLTexture(const uint8_t *data)
 {
     if (!data)
     {
         return nullptr;
     }
-    return reinterpret_cast<TPL_Texture*>((data + sizeof(TPL_Header) + sizeof(TPL_Addr)));
+    return reinterpret_cast<TPL_Texture*>((const_cast<uint8_t*>(data) + sizeof(TPL_Header) + sizeof(TPL_Addr)));
 }
 
 size_t renderer::GetTPLTextureSize(const size_t imageSize)

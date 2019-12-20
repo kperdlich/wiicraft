@@ -22,7 +22,7 @@ void renderer::DisplayList::Render()
     if (mDispList)
     {
         GX_CallDispList(mDispList, mBufferSize);
-    }
+    }    
 }
 
 void renderer::DisplayList::Begin(const size_t bufferSize)

@@ -7,3 +7,5 @@ src/third-party
 src/game
 src/game/packet
 src/game/event
+src/engine/third-party
+src/engine

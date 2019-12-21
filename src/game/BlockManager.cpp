@@ -25,7 +25,7 @@ wiicraft::BlockManager::BlockManager()
     RegisterBlock(std::make_shared<Block>(BlockType::SAND, 18));
     RegisterBlock(std::make_shared<Block>(BlockType::WOOD, 20));
     RegisterBlock(std::make_shared<Block>(BlockType::BRICKS, 7));
-    RegisterBlock(std::make_shared<BlockLeaf>(BlockType::LEAF, 52));
+    RegisterBlock(std::make_shared<BlockLeaf>(BlockType::LEAF, 53));
     RegisterBlock(std::make_shared<Block>(BlockType::TNT, 8));
 }
 

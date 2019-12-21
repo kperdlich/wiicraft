@@ -1,10 +1,8 @@
-#include <sstream> // TODO remove
 #include "player.h"
 #include "camera.h"
 #include "image2d.h"
 #include "wii_sprite.h"
 #include "crosshair_png.h"
-#include "Hotbar_png.h"
 #include "hobtbar_small_png.h"
 #include "HotbarIndex_png.h"
 #include "terraNew_png.h"

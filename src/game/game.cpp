@@ -60,7 +60,6 @@
 #include "EventDataSpawnPlayer.h"
 #include "networkManager.h"
 #include "WorldLoader.h"
-#include "terrain_png.h"
 #include "test_tpl.h"
 #include "iniconfig.h"
 #include "globals.h"
@@ -141,11 +140,7 @@ int main(int argc, char** argv)
 
         if (pad->ButtonsDown() & WPAD_BUTTON_UP)
         {
-            showDebugStatistics = true;
-        }
-        if (pad->ButtonsDown() & WPAD_BUTTON_DOWN)
-        {
-            showDebugStatistics = false;
+            showDebugStatistics = !showDebugStatistics;
         }
 
         if (showDebugStatistics)

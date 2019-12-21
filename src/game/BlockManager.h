@@ -33,6 +33,9 @@ class BlockManager {
 public:
     static constexpr float BLOCK_HALF_SIZE = 0.5f;
     static constexpr float BLOCK_SIZE = BLOCK_HALF_SIZE * 2.0f;
+    static constexpr uint32_t TILE_HEIGHT = 32;
+    static constexpr uint32_t TILE_WIDTH = 32;
+
     BlockManager();
 	BlockManager(const BlockManager&) = delete;
 	BlockManager(BlockManager&&) = delete;

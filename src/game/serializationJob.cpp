@@ -8,6 +8,8 @@
 
 void wiicraft::SerializationJob::Execute()
 {
+    static uint32_t counter = 0;
+
     const CompressedChunkData& chunkData = m_queue.Pop();
 
 	if (chunkData.m_CompressedData[0] != 0x78 ||
@@ -41,8 +43,10 @@ void wiicraft::SerializationJob::Execute()
 
     //LOG("SerializationJob: Serialize Chunk %d %d", chunkData.m_X, chunkData.m_Z);
 
+    ++counter;
     if (m_queue.GetCount() == 0)
     {
+        counter = 0;
         core::IEventManager::Get()->ThreadSafeQueueEvent(std::make_shared<EventDataAllChunksInQueueSerialized>());
     }
 }

@@ -38,7 +38,7 @@ bool net::Socket::Connect()
     int32_t bindingState = net_connect(mSocket, (struct sockaddr*) & server, sizeof(server));
 	if (bindingState < 0)
 	{	
-        ASSERT(false);
+        ASSERT_TEXT(false, "Could not connect to %s:%d", mHost.c_str(), mPort);
 		return false;
 	}
 

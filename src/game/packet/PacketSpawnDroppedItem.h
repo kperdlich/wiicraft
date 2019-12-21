@@ -27,7 +27,6 @@ public:
     void Action() override
     {
         core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnItemEntity>(m_EID, m_X, m_Y, m_Z, m_Rotation, m_Pitch));
-
     }
 
     Packet *CreateInstance() const override

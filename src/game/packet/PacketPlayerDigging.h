@@ -8,12 +8,27 @@
 class PacketPlayerDigging : public Packet
 {
 public:
-    PacketPlayerDigging() : Packet(PACKET_PLAYER_DIGGING) {}
+    PacketPlayerDigging()
+        : Packet(PACKET_PLAYER_DIGGING),
+          mStatus(0),
+          mY(0),
+          mFace(0),
+          mX(0),
+          mZ(0)
+    {}
+    PacketPlayerDigging(int8_t status)
+        : Packet(PACKET_PLAYER_DIGGING),
+          mStatus(status),
+          mY(0),
+          mFace(0),
+          mX(0),
+          mZ(0)
+    {}
 
     PacketPlayerDigging(int32_t x, int8_t y, int32_t z, int8_t status, const math::Vector3f& faceNormal) :
         Packet(PACKET_PLAYER_DIGGING),
-        mStatus(status),
-        mY(y),
+        mStatus(status),        
+        mY(y),        
         mX(x),
         mZ(z)
     {

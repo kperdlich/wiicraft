@@ -25,7 +25,6 @@ private:
     int32_t mEntityID;
     int8_t mX, mY, mZ;
     int8_t mYaw, mPitch;
-
 };
 
 inline int32_t EventDataEntityRelativeMove::GetEntityID() const

@@ -43,61 +43,56 @@ void wiicraft::EntityManager::Render(renderer::Renderer &renderer)
 void wiicraft::EntityManager::OnPlayerEntitySpawn(core::IEventDataPtr eventData)
 {
     std::shared_ptr<EventDataSpawnPlayerEntity> spawnEntity = std::static_pointer_cast<EventDataSpawnPlayerEntity>(eventData);
-    mPlayerEntities[spawnEntity->GetEntity()->GetID()] = spawnEntity->GetEntity();
-    PacketChatMessage msg("PlayerEntitySpawn");
-    msg.Send();
+    ASSERT(spawnEntity);
+    mPlayerEntities[spawnEntity->GetEntity()->GetID()] = spawnEntity->GetEntity();    
 }
 
 void wiicraft::EntityManager::OnItemEntitySpawn(core::IEventDataPtr eventData)
 {
     std::shared_ptr<EventDataSpawnItemEntity> itemEntity = std::static_pointer_cast<EventDataSpawnItemEntity>(eventData);
+    ASSERT(itemEntity);
     mItemEntities[itemEntity->GetEntityID()] = std::make_shared<ItemEntity>(itemEntity->GetEntityID(), itemEntity->GetX(), itemEntity->GetY(),
                                                                       itemEntity->GetZ(), itemEntity->GetYaw(), itemEntity->GetPitch());
-    PacketChatMessage msg("ItemEntitySpawn");
-    msg.Send();
-
 }
 
 void wiicraft::EntityManager::OnEntityRemove(core::IEventDataPtr eventData)
 {
-    std::shared_ptr<EventDataDestroyEntity> entityData = std::static_pointer_cast<EventDataDestroyEntity>(eventData);
-    auto playerFindIt = mPlayerEntities.find(entityData->GetEntityId());
+    std::shared_ptr<EventDataDestroyEntity> eventRemoveData = std::static_pointer_cast<EventDataDestroyEntity>(eventData);
+    ASSERT(eventRemoveData);
+    auto playerFindIt = mPlayerEntities.find(eventRemoveData->GetEntityId());
     if (playerFindIt != mPlayerEntities.end())
     {
-        mPlayerEntities.erase(playerFindIt);
-        PacketChatMessage msg("EntityPlayerRemove");
-        msg.Send();
+        mPlayerEntities.erase(playerFindIt);        
         return;
     }
-   auto itemFindIt = mItemEntities.find(entityData->GetEntityId());
+   auto itemFindIt = mItemEntities.find(eventRemoveData->GetEntityId());
    if (itemFindIt != mItemEntities.end())
    {
-       mItemEntities.erase(itemFindIt);
-       PacketChatMessage msg("EntityItemRemove");
-       msg.Send();
+       mItemEntities.erase(itemFindIt);       
        return;
    }
 }
 
 void wiicraft::EntityManager::OnEntityMove(core::IEventDataPtr eventData)
 {
-    std::shared_ptr<EventDataEntityMove> entityData = std::static_pointer_cast<EventDataEntityMove>(eventData);
-    auto playerFindIt = mPlayerEntities.find(entityData->GetEntityID());
+    std::shared_ptr<EventDataEntityMove> entityMoveData = std::static_pointer_cast<EventDataEntityMove>(eventData);
+    ASSERT(entityMoveData);
+    auto playerFindIt = mPlayerEntities.find(entityMoveData->GetEntityID());
     if (playerFindIt != mPlayerEntities.end())
     {
         auto entity = playerFindIt->second;
-        entity->SetPosition(entityData->GetX(), entityData->GetY(), entityData->GetZ());
-        entity->SetYaw(entityData->GetYaw());
-        entity->SetPitch(entityData->GetPitch());
+        entity->SetPosition(entityMoveData->GetX(), entityMoveData->GetY(), entityMoveData->GetZ());
+        entity->SetYaw(entityMoveData->GetYaw());
+        entity->SetPitch(entityMoveData->GetPitch());
         return;
     }
-    auto itemFindIt = mItemEntities.find(entityData->GetEntityID());
+    auto itemFindIt = mItemEntities.find(entityMoveData->GetEntityID());
     if (itemFindIt != mItemEntities.end())
     {
-        auto entity = playerFindIt->second;
-        entity->SetPosition(entityData->GetX(), entityData->GetY(), entityData->GetZ());
-        entity->SetYaw(entityData->GetYaw());
-        entity->SetPitch(entityData->GetPitch());
+        auto entity = itemFindIt->second;
+        entity->SetPosition(entityMoveData->GetX(), entityMoveData->GetY(), entityMoveData->GetZ());
+        entity->SetYaw(entityMoveData->GetYaw());
+        entity->SetPitch(entityMoveData->GetPitch());
         return;
     }
 
@@ -105,17 +100,20 @@ void wiicraft::EntityManager::OnEntityMove(core::IEventDataPtr eventData)
 
 void wiicraft::EntityManager::OnEntityRelativeMove(core::IEventDataPtr eventData)
 {
-    std::shared_ptr<EventDataEntityRelativeMove> entityData = std::static_pointer_cast<EventDataEntityRelativeMove>(eventData);
-    auto playerFindIt = mPlayerEntities.find(entityData->GetEntityID());
+    std::shared_ptr<EventDataEntityRelativeMove> entityRelativeMove = std::static_pointer_cast<EventDataEntityRelativeMove>(eventData);
+    ASSERT(entityRelativeMove);
+    auto playerFindIt = mPlayerEntities.find(entityRelativeMove->GetEntityID());
     if (playerFindIt != mPlayerEntities.end())
     {
-        playerFindIt->second->UpdatePositionAndRotation(entityData->GetX(), entityData->GetY(), entityData->GetZ(), entityData->GetYaw(), entityData->GetPitch());
+        playerFindIt->second->UpdatePositionAndRotation(entityRelativeMove->GetX(), entityRelativeMove->GetY(), entityRelativeMove->GetZ(),
+                                                        entityRelativeMove->GetYaw(), entityRelativeMove->GetPitch());
         return;
     }
-    auto itemFindIt = mItemEntities.find(entityData->GetEntityID());
+    auto itemFindIt = mItemEntities.find(entityRelativeMove->GetEntityID());
     if (itemFindIt != mItemEntities.end())
     {
-        itemFindIt->second->UpdatePositionAndRotation(entityData->GetX(), entityData->GetY(), entityData->GetZ(), entityData->GetYaw(), entityData->GetPitch());
+        itemFindIt->second->UpdatePositionAndRotation(entityRelativeMove->GetX(), entityRelativeMove->GetY(), entityRelativeMove->GetZ(),
+                                                      entityRelativeMove->GetYaw(), entityRelativeMove->GetPitch());
         return;
     }
 }

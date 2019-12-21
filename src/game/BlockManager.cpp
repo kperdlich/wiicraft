@@ -5,9 +5,6 @@
 #include "image2d.h"
 #include "test_tpl.h"
 
-constexpr uint32_t TILE_HEIGHT = 32;
-constexpr uint32_t TILE_WIDTH = 32;
-
 wiicraft::BlockManager::BlockManager()
 {
     mBlockSheetImage = std::make_unique<renderer::Image2D>(test_tpl, test_tpl_size);
@@ -23,7 +20,7 @@ wiicraft::BlockManager::BlockManager()
     RegisterBlock(std::make_shared<Block>(BlockType::STATIONARY_WATER, 12 * 16 + 13));
     RegisterBlock(std::make_shared<Block>(BlockType::LAVA, 14 * 16 + 13));
     RegisterBlock(std::make_shared<Block>(BlockType::STATIONARY_LAVA, 14 * 16 + 13));
-    RegisterBlock(std::make_shared<Block>(BlockType::WATER, 14));
+    RegisterBlock(std::make_shared<Block>(BlockType::WATER, 12 * 16 + 13));
     RegisterBlock(std::make_shared<Block>(BlockType::GLASS, 49));
     RegisterBlock(std::make_shared<Block>(BlockType::SAND, 18));
     RegisterBlock(std::make_shared<Block>(BlockType::WOOD, 20));

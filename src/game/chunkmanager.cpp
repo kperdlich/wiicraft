@@ -4,9 +4,11 @@
 #include "core.h"
 #include "EventDataSerializeChunk.h"
 #include "EventDataChangeBlock.h"
+#include "EventDataAllChunksInQueueSerialized.h"
 
 wiicraft::ChunkManager::ChunkManager()
-    : mInitialMapLoaded(false)
+    : mInitialMapLoaded(false),
+      mEnabled(false)
 {
     for (int8_t x = 0; x < CHUNK_CACHE_X; ++x)
     {
@@ -28,12 +30,15 @@ wiicraft::ChunkManager::ChunkManager()
 
    core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
    core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
+   core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
 }
 
 wiicraft::ChunkManager::~ChunkManager()
 {
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
+    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
+
     mChunkLoaderJob.Stop();
     mChunkSerializationJob.Stop();
 }
@@ -210,4 +215,9 @@ void wiicraft::ChunkManager::OnBlockChange(core::IEventDataPtr eventData)
                                static_cast<BlockType>(blockData->GetBlockType()));
     }
 
+}
+
+void wiicraft::ChunkManager::OnWorldLoaded(core::IEventDataPtr eventData)
+{
+    mEnabled = true;
 }

@@ -10,6 +10,7 @@ public:
 
     void Read(const net::Socket &socket) override
     {
+        ASSERT_TEXT(false, "PacketSpawnObject not implemented!");
         m_EID = socket.Read<int32_t>();
         m_Type = socket.Read<char>();
         m_X = socket.Read<int32_t>();

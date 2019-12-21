@@ -10,8 +10,6 @@
 
 namespace wiicraft {
 
-
-
 class EntityManager
 {
 public:

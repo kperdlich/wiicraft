@@ -21,14 +21,18 @@ enum class WorldLoaderState : int8_t
 class WorldLoader
 {
 public:
+    WorldLoader(const std::string& playerName, const std::string& host, uint16_t port);
     ~WorldLoader();
     void Update(renderer::Renderer& renderer);
 private:
     void OnServerConnected(core::IEventDataPtr eventData);
+    void OnWorldLoaded(core::IEventDataPtr eventData);
 
 private:
-    WorldLoaderState mState = WorldLoaderState::CHECK_WORLD_CACHE;
-
+    std::string mPlayerName;
+    std::string mHost;
+    uint16_t mPort;
+    WorldLoaderState mState;
 };
 
 }

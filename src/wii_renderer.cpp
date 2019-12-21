@@ -444,7 +444,7 @@ void renderer::Renderer::DrawRay(const math::Vector3f &from, const math::Vector3
     GX_End();
 }
 
-void renderer::Renderer::DrawAABB(const core::AABB &aabb, const renderer::ColorRGBA &color)
+void renderer::Renderer::DrawAABB(const core::AABB &aabb, const renderer::ColorRGBA &color, float scale)
 {
     mRenderData->mDefaultLineVertexFormat.Bind();
     GX_SetNumTexGens(0);
@@ -453,7 +453,7 @@ void renderer::Renderer::DrawAABB(const core::AABB &aabb, const renderer::ColorR
     GX_SetTevOp(GX_TEVSTAGE0, GX_PASSCLR);
 
     math::Vector3f blockPosition = aabb.GetCenter();
-    const math::Vector3f& blockHalfSize = aabb.GetHalfWidth();
+    const math::Vector3f& blockHalfSize = aabb.GetHalfWidth() * scale;
     math::Vector3f vertices[8] = {
             { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() + blockHalfSize.Y(), (float)blockPosition.Z() + blockHalfSize.Z() },// v1
             { (float)blockPosition.X() - blockHalfSize.X(), (float)blockPosition.Y() - blockHalfSize.Y(), (float)blockPosition.Z() + blockHalfSize.Z() }, //v2

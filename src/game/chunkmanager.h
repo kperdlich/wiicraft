@@ -41,6 +41,7 @@ public:
 private:
     void OnSerializeChunk(core::IEventDataPtr eventData);
     void OnBlockChange(core::IEventDataPtr eventData);
+    void OnWorldLoaded(core::IEventDataPtr eventData);
 
 private:
     wiicraft::BlockManager mBlockManager;
@@ -50,6 +51,7 @@ private:
     wiicraft::SerializationJob mChunkSerializationJob;
     math::Vector3f mPreviousPlayerPos;
     bool mInitialMapLoaded;
+    bool mEnabled;
 };
 
 inline uint32_t ChunkManager::GetLoaderQueueCount()

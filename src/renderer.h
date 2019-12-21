@@ -4,13 +4,20 @@
 #include <memory>
 #include "matrix3x4.h"
 #include "colorrgba.h"
-#include "statistics.h"
 
 namespace core {
     class AABB;
 }
 
 namespace renderer {
+
+struct Statistics
+{
+    uint8_t FPS = 0;
+    uint32_t ChunksInFrustrum = 0;
+    uint32_t CulledChunks = 0;
+    float ChunkDisplayListSizeMB = 0;
+};
 
 enum class CullMode : uint8_t {
     None = 0,
@@ -59,7 +66,7 @@ public:
     void Draw(StaticMesh& mesh);
     void DrawLine(const math::Vector3f &from, const math::Vector3f& end, const renderer::ColorRGBA& color);
     void DrawRay(const math::Vector3f &from, const math::Vector3f &direction, const renderer::ColorRGBA& color);
-    void DrawAABB(const core::AABB& aabb, const renderer::ColorRGBA& color);
+    void DrawAABB(const core::AABB& aabb, const renderer::ColorRGBA& color, float scale = 1.0f);
 
     void ClearStatistics();
     void UpdateFPS();

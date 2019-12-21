@@ -336,8 +336,8 @@ bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, 
         return false;
     }
 
-    BlockType top = y == CHUNK_SECTION_SIZE_Y - 1 ? BlockType::AIR : mBlocks[x][y + 1][z];
-    BlockType bottom = y == 0 ? BlockType::AIR : mBlocks[x][y - 1][z];
+    BlockType top = ((y+1) % CHUNK_SIZE) == 0 ? BlockType::AIR : mBlocks[x][y + 1][z];
+    BlockType bottom = (y % CHUNK_SIZE) == 0 ? BlockType::AIR : mBlocks[x][y - 1][z];
     BlockType north = z == CHUNK_SIZE - 1 ? BlockType::AIR : mBlocks[x][y][z + 1];
     BlockType south = z == 0 ? BlockType::AIR : mBlocks[x][y][z - 1];
     BlockType east = x == CHUNK_SIZE - 1 ? BlockType::AIR : mBlocks[x + 1][y][z];

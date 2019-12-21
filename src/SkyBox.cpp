@@ -20,7 +20,7 @@ constexpr uint8_t SKY_LEFT = 2;
 constexpr uint8_t SKY_BACK = 3;
 constexpr uint8_t SKY_UP = 4;
 constexpr uint8_t SKY_DOWN = 5;
-constexpr float PLAYER_DISTANCE = 120.0f;
+constexpr float PLAYER_DISTANCE = 100.0f;
 
 renderer::SkyBox::SkyBox()
 {

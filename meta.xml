@@ -1,0 +1,9 @@
+ <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+  <app version="1">
+    <name>Wiicraft</name>
+    <coder>DaeFennek</coder>
+    <version>1.0.0</version>
+    <release_date>20191002000000</release_date>
+    <short_description>Minecraft Client for 1.2.5</short_description>
+    <long_description>Minecraft Client for 1.2.5</long_description>
+  </app>

@@ -53,7 +53,7 @@ private:
 private:
     std::array<SlotData, 9> mHotbar;
     const math::Vector3f mHitbox = {0.3f, .9f, 0.3f};
-    const math::Vector3f mCameraOffset = {0.0f, 1.62f, 0.0f};
+    const math::Vector3f mCameraOffset = {-0.6f, 1.0f, -0.6f};
     math::Vector3f mPosition;
     math::Vector3f mFocusedBlockPosition;
     std::string mName;

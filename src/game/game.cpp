@@ -100,6 +100,10 @@ int main(int argc, char** argv)
     utils::Clock clock;
     uint64_t millisecondsLastFrame = 0;
     bool showDebugStatistics = false;
+
+    SYS_SetResetCallback([](){ exit(0); });
+    SYS_SetPowerCallback([](){ exit(0); });
+
     while(true)
     {
         clock.Start();
@@ -122,10 +126,12 @@ int main(int argc, char** argv)
         //renderer.DrawRay(player.GetPosition(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
         //renderer.DrawRay(player.GetPosition(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
 
+
         chunkManager.UpdateChunksAround(player.GetPosition());
         chunkManager.Render(renderer);
         entityManager.Render(renderer);
-        player.OnRender3D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);        
+        player.OnRender3D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);
+        //player.DrawAABB(renderer);
         eventManager.TickUpdate();
 
         renderer.EnableFog(20.0f, 30.0f, { 192, 216, 255, 0 });
@@ -136,7 +142,7 @@ int main(int argc, char** argv)
 
         renderer.LoadModelViewMatrix(orthographicCamera->GetViewMatrix3x4() * math::Matrix3x4::Identity());
         worldLoader.Update(renderer);
-        wiicraft::NetworkManager::Get().Update();
+        wiicraft::NetworkManager::Get().Update();        
 
         if (pad->ButtonsDown() & WPAD_BUTTON_UP)
         {

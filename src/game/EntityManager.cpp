@@ -30,7 +30,7 @@ void wiicraft::EntityManager::Render(renderer::Renderer &renderer)
     for (const auto& entity : mPlayerEntities)
     {
         const math::Vector3f entityAABBPos = {static_cast<float>(entity.second->GetX() / 32.0f), static_cast<float>(entity.second->GetY() / 32.0f), static_cast<float>(entity.second->GetZ() / 32.0f)};
-        renderer.DrawAABB({entityAABBPos + math::Vector3f(0.0f, .9f, 0.0f), math::Vector3f(0.3f, .9f, 0.3f)}, renderer::ColorRGBA::RED);
+        renderer.DrawAABB({entityAABBPos + math::Vector3f(-0.6f, .9f, -0.6f), math::Vector3f(0.3f, .9f, 0.3f)}, renderer::ColorRGBA::RED);
     }
 
     for (const auto& entity : mItemEntities)

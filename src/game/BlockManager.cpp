@@ -15,7 +15,7 @@ wiicraft::BlockManager::BlockManager()
     RegisterBlock(std::make_shared<Block>(BlockType::DIRT, 2));
     RegisterBlock(std::make_shared<Block>(BlockType::COBBLESTONE, 16));
     RegisterBlock(std::make_shared<Block>(BlockType::PLANKS, 5));
-    RegisterBlock(std::make_shared<Block>(BlockType::SAPLINGS, 6));
+    RegisterBlock(std::make_shared<Block>(BlockType::SAPLINGS, 15));
     RegisterBlock(std::make_shared<Block>(BlockType::BEDROCK, 17));
     RegisterBlock(std::make_shared<Block>(BlockType::STATIONARY_WATER, 12 * 16 + 13));
     RegisterBlock(std::make_shared<Block>(BlockType::LAVA, 14 * 16 + 13));

@@ -2,7 +2,7 @@
 #include <cstring>
 #include "socket.h"
 #include "core.h"
-
+#include <debug.h>
 net::Socket::Socket(const std::string &host, uint16_t port)
     : mHost(host),
       mPort(port),
@@ -63,7 +63,7 @@ void net::Socket::Write(const char* data, size_t size) const
         int32_t ret = net_write(mSocket, data + bytesWrote, size);
 		if (ret < 0) // todo handle ret == 0, remote host closed the socket.
 		{
-			ASSERT(ret > 0);
+            ASSERT_TEXT(ret > 0, "Disconnected by Server");
 		}
 		else
 		{
@@ -81,8 +81,8 @@ void net::Socket::Read(void* data, size_t size) const
         int32_t ret = net_read(mSocket, data + bytesRead, size);
 		if (ret < 0) // todo handle ret == 0, remote host closed the socket.
 		{			
-			ASSERT(ret > 0);
-		}
+            ASSERT_TEXT(ret > 0, "Disconnected by Server");
+        }
 		else
 		{
 			size -= ret;

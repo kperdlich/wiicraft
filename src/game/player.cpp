@@ -1,3 +1,4 @@
+#include <sstream>
 #include "player.h"
 #include "camera.h"
 #include "image2d.h"
@@ -102,7 +103,7 @@ void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &render
     std::vector<core::AABB> aabbsCollidedWithPlayer;
 
     bool collision = false;
-    math::Vector3f playerHitBoxPosition = mPosition + math::Vector3f(0.0f, mHitbox.Y(), 0.0f);
+    math::Vector3f playerHitBoxPosition = mPosition + math::Vector3f(-0.6f, .3f, -0.6f);
     std::vector<core::AABB> collidableAABBsAroundPlayer = world.GetCollidableBlockAABBsAround(playerHitBoxPosition); // Around center of hitbox
     if (mPad->GetNunchukAngleY() > 0.0f)
     {
@@ -299,8 +300,7 @@ void wiicraft::Player::OnRender2D(float deltaSeconds, renderer::Renderer &render
 
 void wiicraft::Player::DrawAABB(renderer::Renderer &renderer) const
 {
-    renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-    renderer.DrawAABB({mPosition + math::Vector3f(0.0f, mHitbox.Y(), 0.0f), mHitbox}, renderer::ColorRGBA::BLUE);
+    renderer.DrawAABB({mPosition + math::Vector3f(-0.6f, .3f, -0.6f), mHitbox}, renderer::ColorRGBA::BLUE);
 }
 
 void wiicraft::Player::SetActiveHotbarSlot(int8_t slot)
@@ -391,8 +391,8 @@ void wiicraft::Player::OnWorldLoaded(core::IEventDataPtr eventData)
 
 void wiicraft::Player::SendPlayerPositionAndRotation() const
 {
-    PacketPlayerPositionAndLook packet(mPosition.X(), mPosition.Y(), mPosition.Z(), mCamera->GetYaw(), -mCamera->GetPitch(), mStance, mOnGround);
-    packet.Send();
+    PacketPlayerPositionAndLook packet(mPosition.X(), mPosition.Y(), mPosition.Z(), mCamera->GetYaw() - 100.0f, -mCamera->GetPitch(), mStance, mOnGround);
+    packet.Send();    
 }
 
 void wiicraft::Player::DropCurrentItem()

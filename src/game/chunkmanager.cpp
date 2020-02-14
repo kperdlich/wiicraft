@@ -7,8 +7,7 @@
 #include "EventDataAllChunksInQueueSerialized.h"
 
 wiicraft::ChunkManager::ChunkManager()
-    : mInitialMapLoaded(false),
-      mEnabled(false)
+    : mIsEnabled(false)
 {
     for (int8_t x = 0; x < CHUNK_CACHE_X; ++x)
     {
@@ -45,8 +44,10 @@ wiicraft::ChunkManager::~ChunkManager()
 
 void wiicraft::ChunkManager::UpdateChunksAround(const math::Vector3f& position)
 {
-    ASSERT(mChunkCache.size() + mChunksInLoadingProgress.size() == CHUNK_CACHE_X * CHUNK_CACHE_Y);
+    if (!mIsEnabled)
+        return;
 
+    ASSERT(mChunkCache.size() + mChunksInLoadingProgress.size() == CHUNK_CACHE_X * CHUNK_CACHE_Y);
     for (auto chunkIt = mChunksInLoadingProgress.begin(); chunkIt != mChunksInLoadingProgress.end();)
     {
         if (chunkIt->second->IsLoaded())
@@ -58,15 +59,10 @@ void wiicraft::ChunkManager::UpdateChunksAround(const math::Vector3f& position)
         {
             ++chunkIt;
         }
-    }
-
-    if (!mInitialMapLoaded)
-    {
-        mInitialMapLoaded = mChunkSerializationJob.GetQueueCount() > 0 && mChunkCache.size() == CHUNK_CACHE_X * CHUNK_CACHE_Y;
-    }
+    }   
 
     ASSERT(mChunkCache.size() + mChunksInLoadingProgress.size() == CHUNK_CACHE_X * CHUNK_CACHE_Y);
-    if (!mInitialMapLoaded || (mPreviousPlayerPos - position).Length() >= 5.0f)
+    if ((mPreviousPlayerPos - position).Length() >= 5.0f)
     {
         std::vector<std::shared_ptr<ChunkSection>> newChunkCache;
         std::vector<wiicraft::ChunkPosition> chunkmap = GenerateChunkMap(position);
@@ -219,5 +215,5 @@ void wiicraft::ChunkManager::OnBlockChange(core::IEventDataPtr eventData)
 
 void wiicraft::ChunkManager::OnWorldLoaded(core::IEventDataPtr eventData)
 {
-    mEnabled = true;
+    mIsEnabled = true;
 }

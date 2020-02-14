@@ -6,8 +6,8 @@
 #include "vertexformat.h"
 #include "BlockManager.h"
 
-wiicraft::ChunkSection::ChunkSection() :
-    mLoaded(false),
+wiicraft::ChunkSection::ChunkSection()
+    : mLoaded(false),
     mDirty(false)
 {
     for (uint32_t i = 0; i < CHUNK_SIZE; ++i)

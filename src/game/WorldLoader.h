@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include "renderer.h"
 #include "eventmanager.h"
+#include "image2d.h"
+#include "wii_sprite.h"
 
 namespace wiicraft {
 
@@ -18,12 +20,14 @@ enum class WorldLoaderState : int8_t
     DONE
 };
 
+class ChunkManager;
+
 class WorldLoader
 {
 public:
     WorldLoader(const std::string& playerName, const std::string& host, uint16_t port);
     ~WorldLoader();
-    void Update(renderer::Renderer& renderer);
+    void Update(renderer::Renderer& renderer, wiicraft::ChunkManager &chunkManager);
 private:
     void OnServerConnected(core::IEventDataPtr eventData);
     void OnWorldLoaded(core::IEventDataPtr eventData);
@@ -31,6 +35,8 @@ private:
 private:
     std::string mPlayerName;
     std::string mHost;
+    std::unique_ptr<renderer::Sprite> mBackgroundSprite;
+    std::unique_ptr<renderer::Image2D> mBackgroundImage;
     uint16_t mPort;
     WorldLoaderState mState;
 };

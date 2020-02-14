@@ -3,6 +3,7 @@
 #include <array>
 #include <memory>
 #include "matrix3x4.h"
+#include "freetypegx.h"
 #include "colorrgba.h"
 
 namespace core {
@@ -58,7 +59,7 @@ public:
     void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);
     void SetLineWidth(uint8_t width);
 
-    void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color);
+    void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color, uint16_t textStyle = FTGX_JUSTIFY_LEFT);
     void DrawSpriteSheet(int32_t x, int32_t y, Sprite &sprite, uint32_t index,  uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight);
     void DrawSpriteSheet(int32_t x, int32_t y, Sprite &sprite, uint32_t tileX, uint32_t tileY, uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight);
     void Draw(Mesh& mesh);

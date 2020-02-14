@@ -114,6 +114,7 @@ int main(int argc, char** argv)
             break;
 
         // Perspective camera
+        renderer.SetZModeEnabled(true);
         renderer.SetCamera(perspectiveCamera);
         skybox.Render(renderer);
         renderer.GetCamera()->GenerateFrustrumPlanes(true);
@@ -138,10 +139,11 @@ int main(int argc, char** argv)
 
         // Ortho camera
         renderer.SetCamera(orthographicCamera);
+        renderer.SetZModeEnabled(false);
         player.OnRender2D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);
 
         renderer.LoadModelViewMatrix(orthographicCamera->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-        worldLoader.Update(renderer);
+        worldLoader.Update(renderer, chunkManager);
         wiicraft::NetworkManager::Get().Update();        
 
         if (pad->ButtonsDown() & WPAD_BUTTON_UP)

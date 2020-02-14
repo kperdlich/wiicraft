@@ -17,3 +17,15 @@ bool core::AABB::CoolidesWith(const core::AABB &box) const
             mMax.Z() > box.mMin.Z() &&
             mMin.Z() < box.mMax.Z());
 }
+
+bool core::AABB::CollidesWith(const std::vector<core::AABB> &boxes)
+{
+    for (const core::AABB& aabb : boxes)
+    {
+        if (CoolidesWith(aabb))
+        {
+            return true;
+        }
+    }
+    return false;
+}

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "vector3f.h"
 
 namespace core {
@@ -16,6 +17,7 @@ public:
     AABB& operator=(AABB&&) = default;
 
     bool CoolidesWith(const AABB& box) const;
+    bool CollidesWith(const std::vector<core::AABB> &boxes);
 
     inline const math::Vector3f& GetMax() const;
     inline const math::Vector3f& GetMin() const;

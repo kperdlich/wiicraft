@@ -6,7 +6,7 @@
 #include "crosshair_png.h"
 #include "hobtbar_small_png.h"
 #include "HotbarIndex_png.h"
-#include "terraNew_png.h"
+#include "TexturSheet_png.h"
 #include "eventmanager.h"
 #include "PacketPlayerPosition.h"
 #include "PacketPlayerPositionAndLook.h"
@@ -25,7 +25,6 @@
 constexpr float ROTATION_SPEED = 70.0f;
 constexpr float MOVEMENT_SPEED = 4.0f;
 constexpr float PITCH_MAX = 90.0f;
-constexpr float MAX_JUMP_HEIGHT = 1.3f;
 constexpr float PLAYER_GRAVITY = 4.0f;
 
 wiicraft::Player::Player(std::shared_ptr<renderer::Camera> playerCamera, std::shared_ptr<core::WiiPad> pad, const std::string name)
@@ -46,8 +45,8 @@ wiicraft::Player::Player(std::shared_ptr<renderer::Camera> playerCamera, std::sh
 {
     mCrossHairImage = std::make_unique<renderer::Image2D>(crosshair_png);
     mCrossHairSprite = std::make_unique<renderer::Sprite>(*mCrossHairImage);
-    mCrossHairSprite->SetScaleX(0.01f);
-    mCrossHairSprite->SetScaleY(0.01f);
+    mCrossHairSprite->SetScaleX(0.5f);
+    mCrossHairSprite->SetScaleY(0.5f);
 
     mHotbarImage = std::make_unique<renderer::Image2D>(hobtbar_small_png);
     mHotbarSprite = std::make_unique<renderer::Sprite>(*mHotbarImage);
@@ -56,7 +55,7 @@ wiicraft::Player::Player(std::shared_ptr<renderer::Camera> playerCamera, std::sh
     mHotbarIndexSprite = std::make_unique<renderer::Sprite>(*mHotbarIndexImage);
 
     mPlayerItemDisplayList = std::make_unique<renderer::DisplayList>();
-    mTerrainImage = std::make_unique<renderer::Image2D>(terraNew_png);
+    mTerrainImage = std::make_unique<renderer::Image2D>(TexturSheet_png, TexturSheet_png_size);
     mTerrainSprite = std::make_unique<renderer::Sprite>(*mTerrainImage);
 
     core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &Player::OnPlayerSpawn), EventDataSpawnPlayer::EventType);
@@ -81,189 +80,175 @@ wiicraft::Player::~Player()
 }
 
 void wiicraft::Player::OnRender3D(float deltaSeconds, renderer::Renderer &renderer, ChunkManager& world)
-{    
-    if (mPad->GetY() <= 15.0f)
-    {
-        mCamera->Rotate(0.0f, ROTATION_SPEED * deltaSeconds);
-    }
-    else if (mPad->GetY() >= renderer.GetHeight() - 45.0f)
-    {
-         mCamera->Rotate(0.0f, -ROTATION_SPEED * deltaSeconds);
-    }
-
-    if (mPad->GetX() >= renderer.GetWidth() - 120.0f)
-    {
-         mCamera->Rotate(ROTATION_SPEED * deltaSeconds, 0.0f);
-    }
-    else if (mPad->GetX() <= 120.0f)
-    {
-         mCamera->Rotate(-ROTATION_SPEED * deltaSeconds, 0.0f);
-    }
-
-    std::vector<core::AABB> aabbsCollidedWithPlayer;
-
-    bool collision = false;
-    math::Vector3f playerHitBoxPosition = mPosition + math::Vector3f(-0.6f, .3f, -0.6f);
-    std::vector<core::AABB> collidableAABBsAroundPlayer = world.GetCollidableBlockAABBsAround(playerHitBoxPosition); // Around center of hitbox
-    if (mPad->GetNunchukAngleY() > 0.0f)
-    {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * 0.1f), mHitbox);
-         for (const core::AABB& aabb : collidableAABBsAroundPlayer)
-         {
-             if (playerAABB.CoolidesWith(aabb))
-             {
-                 aabbsCollidedWithPlayer.push_back(aabb);
-                 collision = true;
-                 break;
-             }
-         }
-       if (!collision)
-          mCamera->Move(renderer::CameraMovementDirection::FORWARD, MOVEMENT_SPEED * deltaSeconds);
-    }
-
-    if (mPad->GetNunchukAngleY() < 0.0f)
-    {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * -.1f) , mHitbox);
-        for (const core::AABB& aabb : collidableAABBsAroundPlayer)
-        {
-            if (playerAABB.CoolidesWith(aabb))
-            {
-                aabbsCollidedWithPlayer.push_back(aabb);
-                collision = true;
-                break;
-            }
-        }
-       if (!collision)
-             mCamera->Move(renderer::CameraMovementDirection::BACKWARD, MOVEMENT_SPEED * deltaSeconds);
-    }
-
-    if (mPad->GetNunchukAngleX() < 0.0f)
-    {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * -.1f) , mHitbox);
-        for (const core::AABB& aabb : collidableAABBsAroundPlayer)
-        {
-            if (playerAABB.CoolidesWith(aabb))
-            {
-                aabbsCollidedWithPlayer.push_back(aabb);
-                collision = true;
-                break;
-            }
-        }
-       if (!collision)
-             mCamera->Move(renderer::CameraMovementDirection::LEFT, MOVEMENT_SPEED * deltaSeconds);
-    }
-
-    if (mPad->GetNunchukAngleX() > 0.0f)
-    {
-        core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * .1f) , mHitbox);
-        for (const core::AABB& aabb : collidableAABBsAroundPlayer)
-        {
-            if (playerAABB.CoolidesWith(aabb))
-            {
-                aabbsCollidedWithPlayer.push_back(aabb);
-                collision = true;
-                break;
-            }
-        }
-       if (!collision)
-             mCamera->Move(renderer::CameraMovementDirection::RIGHT, MOVEMENT_SPEED * deltaSeconds);
-    }     
-
-    for (const auto& eAABBS : aabbsCollidedWithPlayer)
-    {
-        renderer.DrawAABB(eAABBS, renderer::ColorRGBA::RED);
-    }
-
-    mPosition = mCamera->Position() - mCameraOffset;
-    mStance = mPosition.Y() + 1.62f;
-
-    core::RayHitResult focusedBlock;
-    bool hasBlockInFocus = world.Raycast(mCamera->Position(), mCamera->Forward(),
-                                         7.0f, focusedBlock);
-    if (hasBlockInFocus)
-    {
-        mCrossHairSprite->SetColor(renderer::ColorRGBA::RED);
-        renderer.SetLineWidth(26);
-        renderer.LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-        renderer.DrawAABB(focusedBlock.Entity, renderer::ColorRGBA::BLACK, 1.01f);
-        //renderer.DrawRay(focusedBlock.Entity.GetCenter(), focusedBlock.Normal, renderer::ColorRGBA::GREEN);
-        renderer.SetLineWidth(12);
-        if (mPad->ButtonsDown() & WPAD_BUTTON_B)
-        {
-            const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(focusedBlock.Entity.GetCenter());
-            const auto chunkSection = world.GetChunk(chunkPosition);
-            if (chunkSection)
-            {
-                // Only enough for creative mode
-                PacketPlayerDigging packetStart(focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
-                                           0, focusedBlock.Normal);
-                packetStart.Send();
-            }
-        }
-        if (mPad->ButtonsDown() & WPAD_BUTTON_A)
-        {
-            const math::Vector3f newBlockPosition = focusedBlock.Entity.GetCenter();
-            const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(newBlockPosition);
-            //renderer.DrawAABB({newBlockPosition, {wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f}}, renderer::ColorRGBA::RED);
-            const auto chunkSection = world.GetChunk(chunkPosition);
-            if (chunkSection)
-            {                                
-                PacketPlayerBlockPlacement packet(
-                            focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
-                            focusedBlock.Normal, mHotbar[mCurrenHotbarIndex]);
-                packet.Send();               
-            }
-        }
-        mFocusedBlockPosition = focusedBlock.Entity.GetCenter();
-    }
-    else
-    {
-        mCrossHairSprite->SetColor(renderer::ColorRGBA::WHITE);
-    }
-
-
-    if (mPad->ButtonsDown() & WPAD_BUTTON_LEFT)
-    {
-        SetActiveHotbarSlot(mCurrenHotbarIndex -1);
-    }
-    if (mPad->ButtonsDown() & WPAD_BUTTON_RIGHT)
-    {
-        SetActiveHotbarSlot(mCurrenHotbarIndex + 1);
-    }
-    if (mPad->ButtonsDown() & WPAD_NUNCHUK_BUTTON_Z)
-    {
-        DropCurrentItem();
-    }
-
-    math::Matrix3x4 playerCubeTranslation, playerCubeScale, playerCubeRotation;
-    playerCubeRotation.SetIdentity();
-    playerCubeRotation.Rotate('Y', 49.0f);
-    playerCubeScale.SetIdentity();
-    playerCubeScale.Scale(0.3f, 0.3f, 0.3f);
-    playerCubeTranslation.SetIdentity();
-    playerCubeTranslation.Translate(0.35f, -0.42f, -0.6f);
-    renderer.LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * mCamera->GetViewMatrix3x4().Inverse() * playerCubeTranslation * playerCubeRotation * playerCubeScale);
-
-    if (mHotbar[mCurrenHotbarIndex].ItemID > 0)
-    {
-        if (mPlayerItemDisplayList->GetBufferSize() == 0)
-        {
-            world.GetBlockManager().GenerateMultiTexturedBlockMesh(static_cast<BlockType>(mHotbar[mCurrenHotbarIndex].ItemID), *mPlayerItemDisplayList);
-        }
-
-        renderer.SetZModeEnabled(false);
-        mPlayerItemDisplayList->Render();
-        renderer.SetZModeEnabled(true);
-    }
-
+{
     if (mSpawned)
     {
         SendPlayerPositionAndRotation();
     }
+
+    if (mEnabled)
+    {
+        if (mPad->GetY() <= 15.0f)
+        {
+            mCamera->Rotate(0.0f, ROTATION_SPEED * deltaSeconds);
+        }
+        else if (mPad->GetY() >= renderer.GetHeight() - 45.0f)
+        {
+             mCamera->Rotate(0.0f, -ROTATION_SPEED * deltaSeconds);
+        }
+
+        if (mPad->GetX() >= renderer.GetWidth() - 120.0f)
+        {
+             mCamera->Rotate(ROTATION_SPEED * deltaSeconds, 0.0f);
+        }
+        else if (mPad->GetX() <= 120.0f)
+        {
+             mCamera->Rotate(-ROTATION_SPEED * deltaSeconds, 0.0f);
+        }
+
+        //std::vector<core::AABB> aabbsCollidedWithPlayer;
+
+        bool collision = false;
+        math::Vector3f playerHitBoxPosition = mPosition + math::Vector3f(-0.6f, .3f, -0.6f);
+        std::vector<core::AABB> collidableAABBsAroundPlayer = world.GetCollidableBlockAABBsAround(playerHitBoxPosition); // Around center of hitbox
+        if (mPad->GetNunchukAngleY() > 0.0f)
+        {
+            core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * 0.1f), mHitbox);
+            if (!playerAABB.CollidesWith(collidableAABBsAroundPlayer))
+            {
+                mCamera->Move(renderer::CameraMovementDirection::FORWARD, MOVEMENT_SPEED * deltaSeconds);
+            }
+        }
+
+        if (mPad->GetNunchukAngleY() < 0.0f)
+        {
+            core::AABB playerAABB(playerHitBoxPosition + (mCamera->Forward() * -.1f) , mHitbox);
+            if (!playerAABB.CollidesWith(collidableAABBsAroundPlayer))
+            {
+                mCamera->Move(renderer::CameraMovementDirection::BACKWARD, MOVEMENT_SPEED * deltaSeconds);
+            }
+        }
+
+        if (mPad->GetNunchukAngleX() < 0.0f)
+        {
+            core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * -.1f) , mHitbox);
+            if (!playerAABB.CollidesWith(collidableAABBsAroundPlayer))
+            {
+                 mCamera->Move(renderer::CameraMovementDirection::LEFT, MOVEMENT_SPEED * deltaSeconds);
+            }
+        }
+
+        if (mPad->GetNunchukAngleX() > 0.0f)
+        {
+            core::AABB playerAABB(playerHitBoxPosition + (mCamera->Right() * .1f) , mHitbox);
+            if (!playerAABB.CollidesWith(collidableAABBsAroundPlayer))
+            {
+                 mCamera->Move(renderer::CameraMovementDirection::RIGHT, MOVEMENT_SPEED * deltaSeconds);
+            }
+        }
+
+        /*for (const auto& eAABBS : aabbsCollidedWithPlayer)
+        {
+            renderer.DrawAABB(eAABBS, renderer::ColorRGBA::RED);
+        }*/
+
+        mPosition = mCamera->Position() - mCameraOffset;
+        mStance = mPosition.Y() + 1.62f;
+
+        core::RayHitResult focusedBlock;
+        bool hasBlockInFocus = world.Raycast(mCamera->Position(), mCamera->Forward(),
+                                             6.0f, focusedBlock);
+        if (hasBlockInFocus)
+        {
+            mCrossHairSprite->SetColor(renderer::ColorRGBA::RED);
+            renderer.SetLineWidth(26);
+            renderer.LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * math::Matrix3x4::Identity());
+            renderer.DrawAABB(focusedBlock.Entity, renderer::ColorRGBA::BLACK, 1.01f);
+            //renderer.DrawRay(focusedBlock.Entity.GetCenter(), focusedBlock.Normal, renderer::ColorRGBA::GREEN);
+            renderer.SetLineWidth(12);
+            if (mPad->ButtonsDown() & WPAD_BUTTON_B)
+            {
+                const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(focusedBlock.Entity.GetCenter());
+                const auto chunkSection = world.GetChunk(chunkPosition);
+                if (chunkSection)
+                {
+                    // Only enough for creative mode
+                    PacketPlayerDigging packetStart(focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
+                                               0, focusedBlock.Normal);
+                    packetStart.Send();
+                    if (!mInstantDestroy)
+                    {
+                        PacketPlayerDigging packetEnd(focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
+                                                   2, focusedBlock.Normal);
+                        packetEnd.Send();
+                    }
+
+                }
+            }
+            if (mPad->ButtonsDown() & WPAD_BUTTON_A)
+            {
+                const math::Vector3f newBlockPosition = focusedBlock.Entity.GetCenter();
+                const wiicraft::ChunkPosition chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(newBlockPosition);
+                //renderer.DrawAABB({newBlockPosition, {wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f, wiicraft::BlockManager::BLOCK_HALF_SIZE + 0.1f}}, renderer::ColorRGBA::RED);
+                const auto chunkSection = world.GetChunk(chunkPosition);
+                if (chunkSection)
+                {
+                    PacketPlayerBlockPlacement packet(
+                                focusedBlock.Entity.GetCenter().X(), focusedBlock.Entity.GetCenter().Y(), focusedBlock.Entity.GetCenter().Z(),
+                                focusedBlock.Normal, mHotbar[mCurrenHotbarIndex]);
+                    packet.Send();
+                }
+            }
+            mFocusedBlockPosition = focusedBlock.Entity.GetCenter();
+        }
+        else
+        {
+            mCrossHairSprite->SetColor(renderer::ColorRGBA::WHITE);
+        }
+
+
+        if (mPad->ButtonsDown() & WPAD_BUTTON_LEFT)
+        {
+            SetActiveHotbarSlot(mCurrenHotbarIndex -1);
+        }
+        if (mPad->ButtonsDown() & WPAD_BUTTON_RIGHT)
+        {
+            SetActiveHotbarSlot(mCurrenHotbarIndex + 1);
+        }
+        if (mPad->ButtonsDown() & WPAD_NUNCHUK_BUTTON_Z)
+        {
+            DropCurrentItem();
+        }
+
+        math::Matrix3x4 playerCubeTranslation, playerCubeScale, playerCubeRotation;
+        playerCubeRotation.SetIdentity();
+        playerCubeRotation.Rotate('Y', 49.0f);
+        playerCubeScale.SetIdentity();
+        playerCubeScale.Scale(0.3f, 0.3f, 0.3f);
+        playerCubeTranslation.SetIdentity();
+        playerCubeTranslation.Translate(0.35f, -0.42f, -0.6f);
+        renderer.LoadModelViewMatrix(mCamera->GetViewMatrix3x4() * mCamera->GetViewMatrix3x4().Inverse() * playerCubeTranslation * playerCubeRotation * playerCubeScale);
+
+        if (mHotbar[mCurrenHotbarIndex].ItemID > 0)
+        {
+            if (mPlayerItemDisplayList->GetBufferSize() == 0)
+            {
+                world.GetBlockManager().GenerateMultiTexturedBlockMesh(static_cast<BlockType>(mHotbar[mCurrenHotbarIndex].ItemID), *mPlayerItemDisplayList);
+            }
+
+            renderer.SetZModeEnabled(false);
+            mPlayerItemDisplayList->Render();
+            renderer.SetZModeEnabled(true);
+        }
+    }
 }
 
 void wiicraft::Player::OnRender2D(float deltaSeconds, renderer::Renderer &renderer, ChunkManager& world)
-{
+{    
+    if (!mEnabled)
+    {
+        return;
+    }
 
     mCrossHairSprite->SetPosX(renderer.GetWidth() * 0.5f);
     mCrossHairSprite->SetPosY(renderer.GetHeight() * 0.5f);
@@ -357,7 +342,7 @@ void wiicraft::Player::OnUpdatePlayerAbilities(core::IEventDataPtr eventData)
 {
     std::shared_ptr<EventDataUpdatePlayerAbilities> playerAbilities = std::static_pointer_cast<EventDataUpdatePlayerAbilities>(eventData);
     mInvulnerability = playerAbilities->GetInvulnerability();
-    mIsFlying = playerAbilities->GetIsFlying();
+    mIsFlying = playerAbilities->IsFlying();
     mCanFly = playerAbilities->GetCanFlying();
     mInstantDestroy = playerAbilities->GetInstantDestroy();
 }
@@ -400,4 +385,6 @@ void wiicraft::Player::DropCurrentItem()
     PacketPlayerDigging packet(4);
     packet.Send();
 }
+
+
 

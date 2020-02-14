@@ -37,6 +37,7 @@ public:
     inline uint32_t GetLoaderQueueCount();
     inline uint32_t GetSerializationQueueCount();
     inline wiicraft::BlockManager& GetBlockManager();
+    inline bool IsEnabled() const;
 
 private:
     void OnSerializeChunk(core::IEventDataPtr eventData);
@@ -50,8 +51,7 @@ private:
     wiicraft::ChunkLoaderMultiplayer mChunkLoaderJob;
     wiicraft::SerializationJob mChunkSerializationJob;
     math::Vector3f mPreviousPlayerPos;
-    bool mInitialMapLoaded;
-    bool mEnabled;
+    bool mIsEnabled;
 };
 
 inline uint32_t ChunkManager::GetLoaderQueueCount()
@@ -66,6 +66,11 @@ inline uint32_t ChunkManager::GetSerializationQueueCount()
 inline BlockManager& ChunkManager::GetBlockManager()
 {
     return mBlockManager;
+}
+
+inline bool ChunkManager::IsEnabled() const
+{
+    return mIsEnabled;
 }
 
 }

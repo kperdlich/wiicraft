@@ -82,10 +82,7 @@ public:
     inline const ChunkPosition& GetPosition() const;
     inline BlockType *** GetBlocks();
     inline const BlockType * const * const * GetBlocks() const;
-    void SetBlock(const BlockPosition &position, const BlockType& blockType);
-
-    static float getBlockHalfSize();
-    static void setBlockHalfSize(float value);
+    void SetBlock(const BlockPosition &position, const BlockType& blockType);    
 
 private:
     void GenerateChunk(uint32_t chunkIndex, renderer::Renderer& renderer, BlockManager &blockmanager);

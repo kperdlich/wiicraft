@@ -3,6 +3,7 @@
 #include <fstream>
 #include "ChunkLoaderMultiplayer.h"
 #include "Zip.h"
+#include "globals.h"
 #include "core.h"
 
 void wiicraft::ChunkLoaderMultiplayer::Execute()
@@ -10,7 +11,7 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
     std::shared_ptr<ChunkSection> chunkData = m_queue.Pop();
 
 	std::ostringstream filename;
-    filename << "apps/WoxelCraft/world/";
+    filename << WORLD_PATH "/";
     filename << static_cast<int32_t>(chunkData->GetPosition().first);
 	filename << '_';
     filename << static_cast<int32_t>(chunkData->GetPosition().second);
@@ -135,6 +136,9 @@ void wiicraft::ChunkLoaderMultiplayer::Execute()
                                 break;
                             case 46:
                                 *blockPtr = BlockType::TNT;
+                                break;
+                            case 106: // Skip drawing Vines
+                                *blockPtr = BlockType::AIR;
                                 break;
 							default:
                                 *blockPtr = BlockType::DIRT;

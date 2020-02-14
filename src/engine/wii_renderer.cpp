@@ -235,7 +235,7 @@ void renderer::Renderer::SetLineWidth(uint8_t width)
     GX_SetLineWidth(width, mRenderData->mDefaultLineVertexFormat.GetFormatIndex());
 }
 
-void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color)
+void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color, uint16_t textStyle)
 {
     GX_SetNumTexGens(1);
     GX_SetNumTevStages(1);
@@ -244,7 +244,7 @@ void renderer::Renderer::DrawText(int32_t x, int32_t y, const std::wstring& text
     GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
     mRenderData->mDefaultFontVertexFormat.Bind();   
     LoadModelViewMatrix(mCamera->GetViewMatrix3x4());
-    mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, FTGX_JUSTIFY_LEFT);
+    mRenderData->mFreeType->drawText(x, y, text.data(), {color.Red(), color.Green(), color.Blue(), color.Alpha()}, textStyle);
 }
 
 void renderer::Renderer::DrawSpriteSheet(int32_t x, int32_t y, renderer::Sprite &sprite, uint32_t index, uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight)

@@ -3,11 +3,11 @@
 #include "renderer.h"
 #include "core.h"
 #include "image2d.h"
-#include "test_tpl.h"
+#include "TexturSheet_tpl.h"
 
 wiicraft::BlockManager::BlockManager()
 {
-    mBlockSheetImage = std::make_unique<renderer::Image2D>(test_tpl, test_tpl_size);
+    mBlockSheetImage = std::make_unique<renderer::Image2D>(TexturSheet_tpl, TexturSheet_tpl_size);
     mBlockSheetTexture = std::make_unique<renderer::Texture2D>(*mBlockSheetImage);
 
     RegisterBlock(std::make_shared<Block>(BlockType::STONE, 0));
@@ -33,7 +33,6 @@ void wiicraft::BlockManager::BindTextureSheet(uint8_t slot)
 {
     mBlockSheetTexture->Bind(slot);
 }
-
 
 std::shared_ptr<wiicraft::Block> wiicraft::BlockManager::GetBlock(wiicraft::BlockType type)
 {
@@ -92,7 +91,7 @@ std::array<float, 8> wiicraft::BlockManager::GetUVTextureCoordinates(int32_t ind
 void wiicraft::BlockManager::GenerateMultiTexturedBlockMesh(wiicraft::BlockType blockType, renderer::DisplayList &displayList)
 {
     auto findIt = mBlockList.find(blockType);
-    ASSERT(findIt != mBlockList.end());
+    ASSERT_TEXT(findIt != mBlockList.end(), "BlockID: %d not implemented!", static_cast<uint8_t>(blockType));
 
     displayList.Clear();
     displayList.Begin(4000);

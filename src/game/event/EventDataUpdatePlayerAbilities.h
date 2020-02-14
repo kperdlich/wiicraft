@@ -16,7 +16,7 @@ public:
     virtual const char* GetName() const override;
 
     inline bool GetInvulnerability() const;
-    inline bool GetIsFlying() const;
+    inline bool IsFlying() const;
     inline bool GetCanFlying() const;
     inline bool GetInstantDestroy() const;
 
@@ -32,7 +32,7 @@ inline bool EventDataUpdatePlayerAbilities::GetInvulnerability() const
     return mInvulnerability;
 }
 
-inline bool EventDataUpdatePlayerAbilities::GetIsFlying() const
+inline bool EventDataUpdatePlayerAbilities::IsFlying() const
 {
     return mIsFlying;
 }

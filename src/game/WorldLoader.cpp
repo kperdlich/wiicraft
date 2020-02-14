@@ -3,8 +3,10 @@
 #include "filesystem.h"
 #include "PacketHandshake.h"
 #include "PacketChatMessage.h"
+#include "chunkmanager.h"
 #include "EventDataSendPlayerPosition.h"
 #include "EventDataAllChunksInQueueSerialized.h"
+#include "LoadingBackground_png.h"
 
 
 wiicraft::WorldLoader::WorldLoader(const std::string &playerName, const std::string &host, uint16_t port)
@@ -13,6 +15,8 @@ wiicraft::WorldLoader::WorldLoader(const std::string &playerName, const std::str
       mPort(port),
       mState(WorldLoaderState::CHECK_WORLD_CACHE)
 {
+    mBackgroundImage = std::make_unique<renderer::Image2D>(LoadingBackground_png, LoadingBackground_png_size);
+    mBackgroundSprite = std::make_unique<renderer::Sprite>(*mBackgroundImage);
 }
 
 wiicraft::WorldLoader::~WorldLoader()
@@ -21,21 +25,31 @@ wiicraft::WorldLoader::~WorldLoader()
     core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &WorldLoader::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
 }
 
-void wiicraft::WorldLoader::Update(renderer::Renderer &renderer)
+void wiicraft::WorldLoader::Update(renderer::Renderer &renderer, wiicraft::ChunkManager& chunkManager)
 {    
+    if (mState == WorldLoaderState::DONE)
+        return;
+
+    const int32_t centerX = renderer.GetWidth() * 0.5f;
+    const int32_t centerY = renderer.GetHeight() * 0.5f;
+
+    mBackgroundSprite->SetPosX(centerX);
+    mBackgroundSprite->SetPosY(centerY);
+    renderer.Draw(*mBackgroundSprite);
+
     switch (mState)
     {
         case WorldLoaderState::CHECK_WORLD_CACHE:
-            renderer.DrawText(120, 120, L"Clean old world cache...", renderer::ColorRGBA::RED);
+            renderer.DrawText(centerX, centerY, L"Preparing World Cache...", renderer::ColorRGBA::WHITE, FTGX_JUSTIFY_CENTER);
             mState = WorldLoaderState::CLEAN_WORLD_CACHE;
             break;
         case WorldLoaderState::CLEAN_WORLD_CACHE:
-            //io::RemoveDirectory(WORLD_PATH);
+            io::RemoveDirectory(WORLD_PATH);
             mState = WorldLoaderState::TRY_CONNECTING_TO_SERVER;
+            renderer.DrawText(centerX, centerY, L"Connecting To Server...", renderer::ColorRGBA::WHITE, FTGX_JUSTIFY_CENTER);
             break;
         case WorldLoaderState::TRY_CONNECTING_TO_SERVER:
         {
-            renderer.DrawText(120, 120, L"Connecting to the server...", renderer::ColorRGBA::RED);
             core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &WorldLoader::OnServerConnected), EventDataServerConnected::EventType);
             NetworkManager::Get().Connect(mHost, mPort);
             PacketHandshake hs(mPlayerName, mHost, mPort);
@@ -44,27 +58,29 @@ void wiicraft::WorldLoader::Update(renderer::Renderer &renderer)
             break;
         }
         case WorldLoaderState::WAIT_FOR_SERVER_LOGIN:
-            renderer.DrawText(120, 120, L"Connecting to the server...", renderer::ColorRGBA::RED);
+            renderer.DrawText(centerX, centerY, L"Waiting For Login...", renderer::ColorRGBA::WHITE, FTGX_JUSTIFY_CENTER);
             break;
         case WorldLoaderState::CONNECTED_TO_SERVER:
-             renderer.DrawText(120, 120, L"Connected to the server...", renderer::ColorRGBA::RED);
+             renderer.DrawText(centerX, centerY, L"Connected To Server...", renderer::ColorRGBA::WHITE, FTGX_JUSTIFY_CENTER);
              core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &WorldLoader::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
              core::IEventManager::Get()->TriggerEvent(std::make_shared<EventDataSendPlayerPosition>());
              mState = WorldLoaderState::LOAD_CHUNK_DATA_FROM_SERVER;
             break;
         case WorldLoaderState::LOAD_CHUNK_DATA_FROM_SERVER:
-             //renderer.DrawText(120, 120, L"Caching Chunks...", renderer::ColorRGBA::RED);
-            //renderer.DrawText(renderer.GetWidth() * .5f, renderer.GetHeight() * .5f, L"Load Chunks...", renderer::ColorRGBA::RED);
+        {
+            std::wstringstream remainingChunksStream;
+            remainingChunksStream << L"Remaining Chunks To Cache: " << chunkManager.GetSerializationQueueCount();
+            renderer.DrawText(centerX, centerY, L"Downloading Terrain", renderer::ColorRGBA::WHITE, FTGX_JUSTIFY_CENTER);
+            renderer.DrawText(centerX, centerY + 30, remainingChunksStream.str(), renderer::ColorRGBA::WHITE, FTGX_JUSTIFY_CENTER);
             break;
+        }
         default:
             break;
     }
 }
 
 void wiicraft::WorldLoader::OnServerConnected(core::IEventDataPtr eventData)
-{
-    //std::shared_ptr<EventDataServerConnected> serverConnectedDta = std::static_pointer_cast<EventDataServerConnected>(eventData);
-    //core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &WorldLoader::OnServerConnected), EventDataServerConnected::EventType);
+{    
     mState = WorldLoaderState::CONNECTED_TO_SERVER;   
 }
 

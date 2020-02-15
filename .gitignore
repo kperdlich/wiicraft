@@ -1,6 +1,10 @@
 # Prerequisites
 *.d
 
+# build
+build
+world
+
 # Compiled Object files
 *.slo
 *.lo
@@ -30,3 +34,5 @@
 *.exe
 *.out
 *.app
+*.dol
+*.elf

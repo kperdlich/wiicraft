@@ -104,6 +104,8 @@ int main(int argc, char** argv)
     SYS_SetResetCallback([](){ exit(0); });
     SYS_SetPowerCallback([](){ exit(0); });
 
+    const bool fogEnabled = config.GetValue<bool>("Graphics", "EnableFog");
+
     while(true)
     {
         clock.Start();
@@ -117,6 +119,7 @@ int main(int argc, char** argv)
         renderer.SetZModeEnabled(true);
         renderer.SetCamera(perspectiveCamera);
         skybox.Render(renderer);
+
         renderer.GetCamera()->GenerateFrustrumPlanes(true);
 
         //renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
@@ -135,7 +138,10 @@ int main(int argc, char** argv)
         //player.DrawAABB(renderer);
         eventManager.TickUpdate();
 
-        renderer.EnableFog(20.0f, 30.0f, { 192, 216, 255, 0 });
+        if (fogEnabled)
+        {
+            renderer.EnableFog(20.0f, 30.0f, { 192, 216, 255, 0 });
+        }
 
         // Ortho camera
         renderer.SetCamera(orthographicCamera);

@@ -5,9 +5,9 @@
 #include <fstream>
 #include <iostream>
 #include <stdlib.h>
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include "core.h"
 #include "Filesystem.h"
 
 #ifndef ACCESSPERMS
@@ -16,7 +16,7 @@
 
 void io::Init()
 {
-	assert(fatInitDefault());	
+    ASSERT(fatInitDefault());
 }
 
 bool io::CreateDirectory(const std::string& directoryPath)

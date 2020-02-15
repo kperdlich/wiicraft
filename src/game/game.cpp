@@ -35,14 +35,11 @@
 #include "vertexarray.h"
 #include "vertexformat.h"
 #include "mesh.h"
-#include "staticmesh.h"
 #include "frustrum.h"
 #include "wii_displaylist.h"
 #include <array>
 #include <initializer_list>
-#include "ClassicBackgroundSprite_png.h"
 #include "Minecraft_ttf.h"
-#include "Cursor_png.h"
 #include "crosshair_png.h"
 #include "core.h"
 #include "aabb.h"
@@ -60,7 +57,6 @@
 #include "EventDataSpawnPlayer.h"
 #include "networkManager.h"
 #include "WorldLoader.h"
-#include "test_tpl.h"
 #include "iniconfig.h"
 #include "globals.h"
 #include "statistic.h"
@@ -68,17 +64,17 @@
 
 int main(int argc, char** argv)
 {
-    io::Init();
-
-    core::IniConfig config;
-    config.Parse(CONFIG_FILE);
-
     renderer::Renderer renderer(true);
     renderer.LoadFont(Minecraft_ttf, Minecraft_ttf_size, 20);
     renderer.SetLineWidth(12);
     renderer.SetZModeEnabled(true);
     renderer.SetClearColor(renderer::ColorRGBA::BLACK);
-    renderer.SetCullMode(renderer::CullMode::Back);    
+    renderer.SetCullMode(renderer::CullMode::Back);
+
+    io::Init();
+
+    core::IniConfig config;
+    config.Parse(CONFIG_FILE);
 
     core::EventManager eventManager(true);
 

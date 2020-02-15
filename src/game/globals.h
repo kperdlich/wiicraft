@@ -1,7 +1,5 @@
 #pragma once
 
-#define DEBUG
-
 #define GAME_NAME                   "Wiicraft Alpha 1.0"
 #define SERVER_PROTOCOL_VERSION     29
 #define FILE_PATH   "apps/Wiicraft"

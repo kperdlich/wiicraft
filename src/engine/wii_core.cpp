@@ -9,12 +9,12 @@ void core::Assert(const char* expression, const char* file, int32_t line, const 
     renderer::Renderer* renderer = renderer::Renderer::s_Renderer;
     if (!renderer)
     {
-        return;
+        exit(0);
     }
     renderer::RenderData* renderData = renderer->GetRenderData();
     if (!renderData)
     {
-        return;
+        exit(0);
     }
 
     renderer->DisplayBuffer();

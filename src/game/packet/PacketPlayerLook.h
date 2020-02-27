@@ -3,8 +3,6 @@
 #include "Packet.h"
 #include "PacketGlobals.h"
 
-// todo implement
-
 class PacketPlayerLook : public Packet
 {
 public:

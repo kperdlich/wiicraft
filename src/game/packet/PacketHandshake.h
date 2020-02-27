@@ -25,45 +25,20 @@
 #include "PacketLogin.h"
 #include "string_helper.h"
 
+
 class PacketHandshake : public Packet
 {
 public:
-    PacketHandshake() : Packet(PACKET_HANDSHAKE) {}
-    PacketHandshake(const std::string& playerName, const std::string& ip, uint16_t port ) : Packet(PACKET_HANDSHAKE)
-    {
-        m_String.clear();
-        m_String.append(playerName);
-        m_String+= ';';
-        m_String.append(ip);
-        m_String+= ':';
-        m_String.append(ToString<uint16_t>(port));
-    }
-
-    void Read(const net::Socket& socket) override
-    {
-        m_String = socket.ReadString();        
-        //LOG("Got Server Handshake '%s'", m_String.c_str());
-    }
-
-     void Action() override
-     {
-         // todo implement
-         PacketLogin l("DaeFennek");
-         l.Send();
-     }
-
-     Packet* CreateInstance() const override
-     {
-        return new PacketHandshake();
-     }
+    PacketHandshake();
+    PacketHandshake(const std::string& playerName, const std::string& ip, uint16_t port);
+    void Read(const net::Socket& socket) override;
+    void Action() override;
+    Packet* CreateInstance() const override;
 
 protected:
-    void SendContent(const net::Socket& socket) const override
-    {
-        socket.Send<int16_t>((int16_t)m_String.length());
-        socket.SendStringAsUtf16(m_String);
-    }
+    void SendContent(const net::Socket& socket) const override;
 
 private:
+    static std::string s_Playername;
     std::string m_String;
 };

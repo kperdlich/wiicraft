@@ -12,10 +12,11 @@
 make 
 ```
 ## Run Wiicraft
-1. Create new folder ```Wiicraft``` on your SD Card and copy the ```Wiicraft.dol```, ```icon.png``` and ```Game.ini``` into the folder
-2. Create new empty subfolder ```world``` (this is used to cache the chunk data from server)
-3. Open the Game.ini with a Texteditior and change your PlayerName and make sure that the values of "Host" and "Port" are your Minecraft Server IP and Port
-4. Put the SD Card back into your Wii and launch Wiicraft (Make sure your Minecraft 1.2.5 Server is runnig)
+1. On your SD Card create a new folder ```Wiicraft``` under ```apps```  and copy the ```Game.ini``` into the folder and create a new empty subfolder ```world``` (this is used to cache the chunk data from the server)
+2. Open the ```Game.ini``` with a Texteditior and make sure that the values of "Host" and "Port" are your Minecraft Server IP and Port
+3. Replace the ```server.properties``` of your Minecraft Server 1.2.5 with the one from the Wiicraft Release and start the server
+4. Configure ```wiiload``` for your Wii IP and run it by ```wiiload Wiicraft.dol```. You can also try to copy ```Wiicraft.dol``` onto your SD Card and launch it but for me it doesn't work. 
+5. Make sure you put the SD Card back into your Wii
 
 ## Controls
 - ```Wiimote:``` Rotate Player

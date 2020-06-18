@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <string>
 #include "renderer.h"
 #include "eventmanager.h"
 #include "image2d.h"

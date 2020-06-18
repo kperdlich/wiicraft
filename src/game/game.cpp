@@ -97,7 +97,7 @@ int main(int argc, char** argv)
     uint64_t millisecondsLastFrame = 0;
     bool showDebugStatistics = false;
 
-    SYS_SetResetCallback([](){ exit(0); });
+    SYS_SetResetCallback([](uint32_t, void*){ exit(0); });
     SYS_SetPowerCallback([](){ exit(0); });
 
     const bool fogEnabled = config.GetValue<bool>("Graphics", "EnableFog");

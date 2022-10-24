@@ -6,7 +6,7 @@
 ![Wiicraft Icon2](/ingame_wiicraft2.PNG)
 
 ## Compile from Source
-1. Make sure you have installed devkitpro 
+1. Make sure you have installed [devkitpro](https://devkitpro.org/) and [GRRLIB](https://github.com/GRRLIB/GRRLIB)
 2. Open cmd and redirect to your local Wiicraft folder and run
 ```
 make 

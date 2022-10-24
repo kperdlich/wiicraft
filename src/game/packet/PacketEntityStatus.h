@@ -6,9 +6,12 @@
 class PacketEntityStatus : public Packet
 {
 public:
-    PacketEntityStatus() : Packet(PACKET_ENTITY_STATUS) {}
+    PacketEntityStatus()
+        : Packet(PACKET_ENTITY_STATUS)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_EntityStatus = socket.Read<char>();
@@ -24,7 +27,7 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

@@ -1,32 +1,34 @@
 #pragma once
 
-#include "wii_defines.h"
+#include "WiiDefines.h"
 
-namespace utils {
-class Clock
+namespace utils
 {
-public:
-    Clock() = default;
-    ~Clock() = default;
-	Clock(const Clock&) = delete;
-	Clock(Clock&&) = delete;
-    Clock& operator=(const Clock&) = delete;
-    Clock& operator=(Clock&&) = delete;
+    class Clock
+    {
+    public:
+        Clock() = default;
+        ~Clock() = default;
+        Clock(const Clock&) = delete;
+        Clock(Clock&&) = delete;
+        Clock& operator=(const Clock&) = delete;
+        Clock& operator=(Clock&&) = delete;
 
-    inline void Start();
-    inline uint64_t ElapsedMilliseconds() const;
-private:
-    uint64_t mMilliSecs;
-};
+        inline void Start();
+        inline uint64_t ElapsedMilliseconds() const;
 
-inline void Clock::Start()
-{
-    mMilliSecs = ticks_to_millisecs(gettime());
-}
+    private:
+        uint64_t mMilliSecs;
+    };
 
-inline uint64_t Clock::ElapsedMilliseconds() const
-{
-    return ticks_to_millisecs(gettime()) - mMilliSecs;
-}
+    inline void Clock::Start()
+    {
+        mMilliSecs = ticks_to_millisecs(gettime());
+    }
 
-}
+    inline uint64_t Clock::ElapsedMilliseconds() const
+    {
+        return ticks_to_millisecs(gettime()) - mMilliSecs;
+    }
+
+} // namespace utils

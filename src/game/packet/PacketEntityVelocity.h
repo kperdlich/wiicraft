@@ -1,15 +1,18 @@
 #pragma once
 
+#include "Core.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "core.h"
 
 class PacketEntityVelocity : public Packet
 {
 public:
-    PacketEntityVelocity() : Packet(PACKET_ENTITY_VELOCITY) {}
+    PacketEntityVelocity()
+        : Packet(PACKET_ENTITY_VELOCITY)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_VelocityX = socket.Read<int16_t>();
@@ -19,13 +22,13 @@ public:
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketEntityVelocity();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

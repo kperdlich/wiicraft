@@ -15,36 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
-#include <sstream>
-#include <network.h>
-#include "networkManager.h"
-#include "core.h"
-#include "packet/PacketHandshake.h"
-#include "Thread.h"
-#include "SafeQueue.h"
+#include "NetworkManager.h"
+#include "Core.h"
 #include "PacketChatMessage.h"
+#include "SafeQueue.h"
+#include "Thread.h"
+#include "packet/PacketHandshake.h"
+#include <network.h>
+#include <sstream>
 
 void wiicraft::NetworkManager::Init()
 {
-	m_bInitialized = if_config(m_LocalIP, m_Gateway, m_Netmask, true, 5) >= 0;
-	if (m_bInitialized)
-	{
-        //LOG("Network configured, ip: %s, gw: %s, mask %s", m_LocalIP, m_Gateway, m_Netmask);
-		int initStatus = net_init();
+    m_bInitialized = if_config(m_LocalIP, m_Gateway, m_Netmask, true, 5) >= 0;
+    if (m_bInitialized)
+    {
+        // LOG("Network configured, ip: %s, gw: %s, mask %s", m_LocalIP, m_Gateway, m_Netmask);
+        int initStatus = net_init();
         ASSERT(initStatus == 0);
-	}
-	else
-	{
+    }
+    else
+    {
         ASSERT(false);
-        //ERROR("Network configuration failed!");
-	}
+        // ERROR("Network configuration failed!");
+    }
 }
 
 void wiicraft::NetworkManager::Connect(const std::string& ip, uint16_t port)
 {
-	if (m_bInitialized)
+    if (m_bInitialized)
     {
         ASSERT(!m_ServerConnection);
         m_ServerConnection = std::make_unique<wiicraft::ServerConnection>(ip, port);
@@ -54,11 +54,11 @@ void wiicraft::NetworkManager::Connect(const std::string& ip, uint16_t port)
 
 void wiicraft::NetworkManager::Destroy()
 {
-	if (m_bInitialized)
-	{
+    if (m_bInitialized)
+    {
         m_ServerConnection->Destroy();
-		//net_deinit();
-	}
+        // net_deinit();
+    }
 }
 
 void wiicraft::NetworkManager::Update()
@@ -66,13 +66,13 @@ void wiicraft::NetworkManager::Update()
     if (!m_bInitialized || !m_ServerConnection)
         return;
 
-	for (uint16_t i = 0; i < 10; ++i)
-	{
+    for (uint16_t i = 0; i < 10; ++i)
+    {
         Packet* p = m_ServerConnection->PopPacket();
-		if (p)
-		{
-			p->Action();            
-			delete p;
-		}
-	}
+        if (p)
+        {
+            p->Action();
+            delete p;
+        }
+    }
 }

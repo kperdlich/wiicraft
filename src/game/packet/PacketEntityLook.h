@@ -1,16 +1,19 @@
 #pragma once
 
+#include "EventDataEntityRelativeMove.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "eventmanager.h"
-#include "EventDataEntityRelativeMove.h"
 
 class PacketEntityLook : public Packet
 {
 public:
-    PacketEntityLook() : Packet(PACKET_ENTITY_LOOK) {}
+    PacketEntityLook()
+        : Packet(PACKET_ENTITY_LOOK)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_Yaw = socket.Read<int8_t>();
@@ -28,12 +31,10 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
     int32_t m_EID = 0;
     int8_t m_Yaw = 0, m_Pitch = 0;
-
 };
-

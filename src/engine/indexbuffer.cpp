@@ -1,5 +1,4 @@
-#include "indexbuffer.h"
-
+#include "IndexBuffer.h"
 
 renderer::IndexBuffer::IndexBuffer(const std::initializer_list<uint16_t>& indecies)
 {
@@ -7,5 +6,3 @@ renderer::IndexBuffer::IndexBuffer(const std::initializer_list<uint16_t>& indeci
     mBuffer = std::make_unique<uint16_t[]>(mElementCount);
     std::copy(indecies.begin(), indecies.end(), mBuffer.get());
 }
-
-

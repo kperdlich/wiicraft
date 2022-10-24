@@ -15,16 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include <string>
 #include "Packet.h"
 #include "PacketGlobals.h"
 #include "PacketLogin.h"
-#include "string_helper.h"
-
+#include "StringHelper.h"
+#include <string>
 
 class PacketHandshake : public Packet
 {

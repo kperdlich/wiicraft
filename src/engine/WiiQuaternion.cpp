@@ -1,5 +1,5 @@
-#include "quaternion.h"
-#include "wii_defines.h"
+#include "Quaternion.h"
+#include "WiiDefines.h"
 
 renderer::Quaternion::Quaternion(float x, float y, float z, float w)
 {
@@ -12,6 +12,6 @@ renderer::Quaternion::Quaternion(float x, float y, float z, float w)
 math::Matrix3x4 renderer::Quaternion::GetRotationMatrix3x4() const
 {
     math::Matrix3x4 mtx;
-    c_guMtxQuat(mtx.mMtx34, (guQuaternion*) &mQuaternion);
+    c_guMtxQuat(mtx.mMtx34, (guQuaternion*)&mQuaternion);
     return mtx;
 }

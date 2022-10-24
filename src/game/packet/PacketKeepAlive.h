@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
@@ -25,9 +25,13 @@
 class PacketKeepAlive : public Packet
 {
 public:
-    PacketKeepAlive(int32_t id = 0) : Packet(PACKET_KEEP_ALIVE), m_KeepAliveID(id) {}
+    PacketKeepAlive(int32_t id = 0)
+        : Packet(PACKET_KEEP_ALIVE)
+        , m_KeepAliveID(id)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_KeepAliveID = socket.Read<int32_t>();
     }

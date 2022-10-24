@@ -15,62 +15,65 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include <queue>
-#include <ogcsys.h>
-#include <gccore.h>
+#include "Lockguard.h"
 #include "Mutex.h"
-#include "lockguard.h"
+#include <gccore.h>
+#include <ogcsys.h>
+#include <queue>
 
-namespace core {
-template<class T>
-class SafeQueue
+namespace core
 {
-public:
-	SafeQueue() {}
-	SafeQueue(const SafeQueue&) = delete;
-	SafeQueue(SafeQueue&&) = delete;
-	void operator=(const SafeQueue&) = delete;
-	void operator=(SafeQueue&&) = delete;
+    template<class T>
+    class SafeQueue
+    {
+    public:
+        SafeQueue()
+        {
+        }
+        SafeQueue(const SafeQueue&) = delete;
+        SafeQueue(SafeQueue&&) = delete;
+        void operator=(const SafeQueue&) = delete;
+        void operator=(SafeQueue&&) = delete;
 
-	T Pop()
-	{
-		lock_guard guard(m_mutex);
-		T val = m_queue.front();
-		m_queue.pop();
-		return val;
-	}
+        T Pop()
+        {
+            Lockguard guard(m_mutex);
+            T val = m_queue.front();
+            m_queue.pop();
+            return val;
+        }
 
-	void Push(const T& value)
-	{
-		lock_guard guard(m_mutex);
-		m_queue.push(value);
-	}
+        void Push(const T& value)
+        {
+            Lockguard guard(m_mutex);
+            m_queue.push(value);
+        }
 
-	bool IsEmpty()
-	{
-		lock_guard guard(m_mutex);
-		bool bIsEmpty = m_queue.empty();
-		return bIsEmpty;
-	}
+        bool IsEmpty()
+        {
+            Lockguard guard(m_mutex);
+            bool bIsEmpty = m_queue.empty();
+            return bIsEmpty;
+        }
 
-    uint32_t GetCount()
-	{
-		lock_guard guard(m_mutex);
-		uint32_t count = m_queue.size();
-		return count;
-	}
+        uint32_t GetCount()
+        {
+            Lockguard guard(m_mutex);
+            uint32_t count = m_queue.size();
+            return count;
+        }
 
-	Mutex& GetMutex()
-	{
-		return m_mutex;
-	}
+        Mutex& GetMutex()
+        {
+            return m_mutex;
+        }
 
-private:
-	std::queue<T> m_queue;
-	Mutex m_mutex;
-};
-}
+    private:
+        std::queue<T> m_queue;
+        Mutex m_mutex;
+    };
+} // namespace core

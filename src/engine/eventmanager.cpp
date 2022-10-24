@@ -1,6 +1,6 @@
-#include "eventmanager.h"
-#include "core.h"
-#include "time_helper.h"
+#include "EventManager.h"
+#include "Core.h"
+#include "TimeHelper.h"
 
 core::IEventManager* core::IEventManager::sGlobalEventManager = nullptr;
 
@@ -13,14 +13,14 @@ core::IEventManager::IEventManager(bool setAsGlobal)
     }
 }
 
-core::IEventManager *core::IEventManager::Get()
+core::IEventManager* core::IEventManager::Get()
 {
     return sGlobalEventManager;
 }
 
 core::EventManager::EventManager(bool setAsGlobal)
-     : IEventManager(setAsGlobal),
-       mActiveQueue(0)
+    : IEventManager(setAsGlobal)
+    , mActiveQueue(0)
 {
 }
 
@@ -76,16 +76,16 @@ bool core::EventManager::TriggerEvent(const core::IEventDataPtr& event)
 
 bool core::EventManager::QueueEvent(const core::IEventDataPtr& event)
 {
-   ASSERT(mActiveQueue >= 0);
-   ASSERT(mActiveQueue < EVENTMANAGER_NUM_QUEUE);
+    ASSERT(mActiveQueue >= 0);
+    ASSERT(mActiveQueue < EVENTMANAGER_NUM_QUEUE);
 
-   auto findIt = mEventListeners.find(event->GetEventType());
-   if (findIt != mEventListeners.end())
-   {
+    auto findIt = mEventListeners.find(event->GetEventType());
+    if (findIt != mEventListeners.end())
+    {
         mQueues[mActiveQueue].push_back(event);
         return true;
-   }
-   return false;
+    }
+    return false;
 }
 
 bool core::EventManager::AbortEvent(const core::EventType& type, bool allOfType)
@@ -178,7 +178,7 @@ bool core::EventManager::TickUpdate(uint64_t maxMs)
     return queueFlushed;
 }
 
-bool core::EventManager::ThreadSafeQueueEvent(const core::IEventDataPtr &event)
+bool core::EventManager::ThreadSafeQueueEvent(const core::IEventDataPtr& event)
 {
     mRealtimeEventQueue.Push(event);
     return true;

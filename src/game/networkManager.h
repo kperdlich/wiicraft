@@ -15,55 +15,58 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include <memory>
-#include "core.h"
+#include "Core.h"
+#include "ServerConnection.h"
 #include "packet/Packet.h"
-#include "serverConnection.h"
+#include <memory>
 
-namespace wiicraft {
-class NetworkManager
+namespace wiicraft
 {
-private:
-	NetworkManager() {}
-public:
-	void Init();
-	void Connect(const std::string& ip, uint16_t port);
-	void Destroy();
-	void Update();
+    class NetworkManager
+    {
+    private:
+        NetworkManager()
+        {
+        }
 
-	static NetworkManager& Get()
-	{
-		static NetworkManager s_instance;
-		return s_instance;
-	}
+    public:
+        void Init();
+        void Connect(const std::string& ip, uint16_t port);
+        void Destroy();
+        void Update();
 
-	inline bool Initialized() const
-	{
-		return m_bInitialized;
-	}
+        static NetworkManager& Get()
+        {
+            static NetworkManager s_instance;
+            return s_instance;
+        }
 
-    inline const net::Socket& GetSocket() const
-	{
-        ASSERT(m_ServerConnection);
-        return m_ServerConnection->GetSocket();
-	}
+        inline bool Initialized() const
+        {
+            return m_bInitialized;
+        }
 
-	NetworkManager(const NetworkManager&) = delete;
-	NetworkManager(NetworkManager&&) = delete;
-	void operator=(const NetworkManager&) = delete;
-	void operator=(NetworkManager&&) = delete;
+        inline const net::Socket& GetSocket() const
+        {
+            ASSERT(m_ServerConnection);
+            return m_ServerConnection->GetSocket();
+        }
 
-private:
-	char m_LocalIP[16];
-	char m_Gateway[16];
-	char m_Netmask[16];
-	bool m_bInitialized = false;
+        NetworkManager(const NetworkManager&) = delete;
+        NetworkManager(NetworkManager&&) = delete;
+        void operator=(const NetworkManager&) = delete;
+        void operator=(NetworkManager&&) = delete;
 
+    private:
+        char m_LocalIP[16];
+        char m_Gateway[16];
+        char m_Netmask[16];
+        bool m_bInitialized = false;
 
-    std::unique_ptr<ServerConnection> m_ServerConnection;
-};
-}
+        std::unique_ptr<ServerConnection> m_ServerConnection;
+    };
+} // namespace wiicraft

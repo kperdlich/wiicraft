@@ -15,18 +15,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
+#include "CompressedChunkData.h"
 #include "Job.h"
-#include "compressed_chunk_data.h"
 
-namespace wiicraft {
-
-class SerializationJob : public core::Job<CompressedChunkData>
+namespace wiicraft
 {
-protected:
-	void Execute() override;
-};
-}
+
+    class SerializationJob : public core::Job<CompressedChunkData>
+    {
+    protected:
+        void Execute() override;
+    };
+} // namespace wiicraft

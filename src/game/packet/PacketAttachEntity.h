@@ -6,9 +6,12 @@
 class PacketAttachEntity : public Packet
 {
 public:
-    PacketAttachEntity() : Packet(PACKET_ATTACH_ENTITY) {}
+    PacketAttachEntity()
+        : Packet(PACKET_ATTACH_ENTITY)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_VehicleID = socket.Read<int32_t>();
@@ -23,10 +26,9 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
     int32_t m_EID = 0, m_VehicleID = 0;
 };
-

@@ -1,10 +1,10 @@
-#include "core.h"
-#include "wii_defines.h"
-#include "renderer.h"
-#include "renderdata.h"
-#include "vertexarray.h"
+#include "VertexArray.h"
+#include "Core.h"
+#include "Renderdata.h"
+#include "Renderer.h"
+#include "WiiDefines.h"
 
-renderer::VertexArray::VertexArray(VertexFormat *vertexFormat)
+renderer::VertexArray::VertexArray(VertexFormat* vertexFormat)
     : mVertexFormat(vertexFormat)
 {
 }
@@ -21,9 +21,7 @@ void renderer::VertexArray::Bind()
     mVertexFormat->Bind();
 
     for (auto& vertexBuffer : mVertexBufferMap)
-    {        
+    {
         GX_SetArray(vertexBuffer.first, vertexBuffer.second->GetBuffer(), vertexBuffer.second->GetStride());
     }
 }
-
-

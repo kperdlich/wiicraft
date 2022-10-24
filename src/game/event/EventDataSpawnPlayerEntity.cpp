@@ -7,7 +7,7 @@ wiicraft::EventDataSpawnPlayerEntity::EventDataSpawnPlayerEntity(std::shared_ptr
 {
 }
 
-const core::EventType &wiicraft::EventDataSpawnPlayerEntity::GetEventType() const
+const core::EventType& wiicraft::EventDataSpawnPlayerEntity::GetEventType() const
 {
     return EventType;
 }
@@ -17,7 +17,7 @@ core::IEventDataPtr wiicraft::EventDataSpawnPlayerEntity::Copy() const
     return std::make_shared<EventDataSpawnPlayerEntity>(std::make_shared<PlayerEntity>(*mEntity));
 }
 
-const char *wiicraft::EventDataSpawnPlayerEntity::GetName() const
+const char* wiicraft::EventDataSpawnPlayerEntity::GetName() const
 {
     return "EventDataSpawnEntity";
 }

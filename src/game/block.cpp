@@ -1,8 +1,8 @@
-#include "block.h"
+#include "Block.h"
 
 wiicraft::Block::Block(BlockType id, uint32_t textureIndex)
-    : mBlockTextureIndex(textureIndex),
-      mBlockId(id)
+    : mBlockTextureIndex(textureIndex)
+    , mBlockId(id)
 {
 }
 

@@ -6,9 +6,12 @@
 class PacketTimeUpdate : public Packet
 {
 public:
-    PacketTimeUpdate() : Packet(PACKET_TIME_UPDATE) {}
+    PacketTimeUpdate()
+        : Packet(PACKET_TIME_UPDATE)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_time = socket.Read<int64_t>();
     }
@@ -18,12 +21,14 @@ public:
         // todo implement
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketTimeUpdate();
     }
 
 protected:
     int64_t m_time = 0;
-    void SendContent(const net::Socket &socket) const override {}
+    void SendContent(const net::Socket& socket) const override
+    {
+    }
 };

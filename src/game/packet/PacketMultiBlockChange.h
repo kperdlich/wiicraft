@@ -8,15 +8,18 @@
 class PacketMultiBlockChange : public Packet
 {
 public:
-    PacketMultiBlockChange() : Packet(PACKET_MULTI_BLOCK_CHANGE) {}
+    PacketMultiBlockChange()
+        : Packet(PACKET_MULTI_BLOCK_CHANGE)
+    {
+    }
 
     ~PacketMultiBlockChange()
     {
         if (m_Data)
-            delete [] m_Data;
+            delete[] m_Data;
     }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_ChunkX = socket.Read<int32_t>();
         m_ChunkZ = socket.Read<int32_t>();
@@ -29,13 +32,13 @@ public:
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketMultiBlockChange();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

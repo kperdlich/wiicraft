@@ -6,9 +6,12 @@
 class PacketOpenWindow : public Packet
 {
 public:
-    PacketOpenWindow() : Packet(PACKET_OPEN_WINDOW) {}
+    PacketOpenWindow()
+        : Packet(PACKET_OPEN_WINDOW)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_WindowID = socket.Read<char>();
         m_InventoryType = socket.Read<char>();
@@ -20,13 +23,13 @@ public:
     {
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketOpenWindow();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

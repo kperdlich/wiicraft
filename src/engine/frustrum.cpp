@@ -1,10 +1,10 @@
+#include "Frustrum.h"
+#include "Camera.h"
+#include "GeometryData.h"
+#include "Vector4f.h"
 #include <math.h>
-#include "frustrum.h"
-#include "camera.h"
-#include "geometry_data.h"
-#include "vector4f.h"
 
-void renderer::Frustrum::NormalizePlane(math::Vector4f & plane) const
+void renderer::Frustrum::NormalizePlane(math::Vector4f& plane) const
 {
     float mag = plane.Length();
     plane.SetX(plane.X() / mag);
@@ -13,14 +13,14 @@ void renderer::Frustrum::NormalizePlane(math::Vector4f & plane) const
     plane.SetW(plane.W() / mag);
 }
 
-float renderer::Frustrum::DistanceToPoint(const math::Vector4f & plane, const math::Vector3f & point) const
+float renderer::Frustrum::DistanceToPoint(const math::Vector4f& plane, const math::Vector3f& point) const
 {
     return plane.X() * point.X() + plane.Y() * point.Y() + plane.Z() * point.Z() + plane.W();
 }
 
-renderer::Halfspace renderer::Frustrum::ClassifyPoint(const math::Vector4f & plane, const math::Vector3f & point) const
+renderer::Halfspace renderer::Frustrum::ClassifyPoint(const math::Vector4f& plane, const math::Vector3f& point) const
 {
-    float distance = plane.X()*point.X() + plane.Y()*point.Y() + plane.Z()*point.Z() + plane.W();
+    float distance = plane.X() * point.X() + plane.Y() * point.Y() + plane.Z() * point.Z() + plane.W();
     if (distance < 0)
     {
         return Halfspace::NEGATIVE;
@@ -32,7 +32,7 @@ renderer::Halfspace renderer::Frustrum::ClassifyPoint(const math::Vector4f & pla
     return Halfspace::ON_PLANE;
 }
 
-bool renderer::Frustrum::IsVisible(const math::Vector3f &point) const
+bool renderer::Frustrum::IsVisible(const math::Vector3f& point) const
 {
     for (uint8_t i = 0; i < 6; ++i)
     {
@@ -44,7 +44,7 @@ bool renderer::Frustrum::IsVisible(const math::Vector3f &point) const
     return true;
 }
 
-bool renderer::Frustrum::IsVisible(const core::Box &box) const
+bool renderer::Frustrum::IsVisible(const core::Box& box) const
 {
     for (uint8_t i = 0; i < 6; i++)
     {
@@ -73,14 +73,22 @@ bool renderer::Frustrum::IsVisible(const core::AABB& aabb) const
     for (uint8_t i = 0; i < 6; ++i)
     {
         uint8_t verticesOutOfFrustrum = 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMin().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMin().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMax().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMin().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
-        verticesOutOfFrustrum += math::Vector4f(aabb.GetMax().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMin().X(), aabb.GetMin().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMax().X(), aabb.GetMin().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMax().X(), aabb.GetMax().Y(), aabb.GetMin().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMax().X(), aabb.GetMin().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMin().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
+        verticesOutOfFrustrum +=
+            math::Vector4f(aabb.GetMax().X(), aabb.GetMax().Y(), aabb.GetMax().Z(), 1.0f).Dot(mPlanes[i]) < 0.0f ? 1 : 0;
         if (verticesOutOfFrustrum == 8)
         {
             return false;
@@ -89,7 +97,7 @@ bool renderer::Frustrum::IsVisible(const core::AABB& aabb) const
     return true;
 }
 
-void renderer::Frustrum::ExtractPlanes(const renderer::Camera &camera, bool normalize)
+void renderer::Frustrum::ExtractPlanes(const renderer::Camera& camera, bool normalize)
 {
     const math::Matrix4x4& comboMatrix = camera.GetProjectionMatrix4x4() * camera.GetViewMatrix3x4();
 

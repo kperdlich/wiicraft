@@ -8,23 +8,25 @@
 class PacketClickWindow : public Packet
 {
 public:
-    PacketClickWindow() : Packet(PACKET_CLICK_WINDOW) {}
-
-    void Read(const net::Socket &socket) override
+    PacketClickWindow()
+        : Packet(PACKET_CLICK_WINDOW)
     {
+    }
 
+    void Read(const net::Socket& socket) override
+    {
     }
 
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketClickWindow();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
@@ -34,6 +36,4 @@ protected:
     int16_t m_ActionNumber = 0;
     bool m_Shift = false;
     // todo add slot data
-
 };
-

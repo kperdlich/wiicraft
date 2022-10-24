@@ -15,52 +15,49 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
-#include <unordered_map>
-#include <unordered_set>
-#include <sstream>
-#include "renderer.h"
-#include "mathhelper.h"
-#include "clock.h"
-#include "colorrgba.h"
-#include "camera.h"
-#include "vector3f.h"
-#include "vertexformat.h"
-#include "image2d.h"
-#include "texture2d.h"
-#include "wii_sprite.h"
-#include "indexbuffer.h"
-#include "vertexbuffer.h"
-#include "vertexarray.h"
-#include "vertexformat.h"
-#include "mesh.h"
-#include "frustrum.h"
-#include "wii_displaylist.h"
+#include "AABB.h"
+#include "BlockManager.h"
+#include "Camera.h"
+#include "ChunkLoaderMultiplayer.h"
+#include "ChunkManager.h"
+#include "ChunkSection.h"
+#include "Clock.h"
+#include "ColorRGBA.h"
+#include "Core.h"
+#include "EntityManager.h"
+#include "EventDataSpawnPlayer.h"
+#include "Filesystem.h"
+#include "Frustrum.h"
+#include "Globals.h"
+#include "Image2d.h"
+#include "IndexBuffer.h"
+#include "Iniconfig.h"
+#include "MathHelper.h"
+#include "Mesh.h"
+#include "Minecraft_ttf.h"
+#include "NetworkManager.h"
+#include "Player.h"
+#include "Raycast.h"
+#include "Renderer.h"
+#include "SkyBox.h"
+#include "Statistic.h"
+#include "Texture2d.h"
+#include "Vector3f.h"
+#include "VertexArray.h"
+#include "VertexBuffer.h"
+#include "VertexFormat.h"
+#include "WiiDisplayList.h"
+#include "WiiPad.h"
+#include "WiiSprite.h"
+#include "WorldLoader.h"
+#include "crosshair_png.h"
 #include <array>
 #include <initializer_list>
-#include "Minecraft_ttf.h"
-#include "crosshair_png.h"
-#include "core.h"
-#include "aabb.h"
-#include "raycast.h"
-#include "SkyBox.h"
-#include "wii_pad.h"
-#include "filesystem.h"
-#include "game/chunksection.h"
-#include "game/chunkmanager.h"
-#include "game/ChunkLoaderMultiplayer.h"
-#include "game/BlockManager.h"
-#include "game/player.h"
-#include "game/EntityManager.h"
-#include "eventmanager.h"
-#include "EventDataSpawnPlayer.h"
-#include "networkManager.h"
-#include "WorldLoader.h"
-#include "iniconfig.h"
-#include "globals.h"
-#include "statistic.h"
-
+#include <sstream>
+#include <unordered_map>
+#include <unordered_set>
 
 int main(int argc, char** argv)
 {
@@ -81,28 +78,40 @@ int main(int argc, char** argv)
     wiicraft::NetworkManager::Get().Init();
     wiicraft::EntityManager entityManager;
 
-    std::shared_ptr<renderer::Camera> perspectiveCamera = std::make_shared<renderer::Camera>(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, -1.0f}, true);
-    perspectiveCamera->SetFrustrum(0.1f, 200.0f, 70.0f, (float) renderer.GetWidth() / (float)renderer.GetHeight());
+    std::shared_ptr<renderer::Camera> perspectiveCamera = std::make_shared<renderer::Camera>(
+        math::Vector3f{ .0f, .0f, .1f }, math::Vector3f{ .0f, 1.0f, .0f }, math::Vector3f{ .0f, .0f, -1.0f }, true);
+    perspectiveCamera->SetFrustrum(0.1f, 200.0f, 70.0f, (float)renderer.GetWidth() / (float)renderer.GetHeight());
 
-    std::shared_ptr<renderer::Camera> orthographicCamera = std::make_shared<renderer::Camera>(math::Vector3f{.0f, .0f, .1f}, math::Vector3f{.0f, 1.0f, .0f}, math::Vector3f{.0f, .0f, .0f}, false);
-    orthographicCamera->SetFrustrum(0, renderer.GetHeight(), 0, renderer.GetWidth(), 0, 100.0f);     
+    std::shared_ptr<renderer::Camera> orthographicCamera = std::make_shared<renderer::Camera>(
+        math::Vector3f{ .0f, .0f, .1f }, math::Vector3f{ .0f, 1.0f, .0f }, math::Vector3f{ .0f, .0f, .0f }, false);
+    orthographicCamera->SetFrustrum(0, renderer.GetHeight(), 0, renderer.GetWidth(), 0, 100.0f);
 
     std::shared_ptr<core::WiiPad> pad = std::make_shared<core::WiiPad>(WPAD_CHAN_0, renderer.GetWidth(), renderer.GetHeight());
     renderer::SkyBox skybox;
     wiicraft::ChunkManager chunkManager;
     wiicraft::Player player(perspectiveCamera, pad, config.GetValue<std::string>("Default", "PlayerName"));
-    wiicraft::WorldLoader worldLoader(config.GetValue<std::string>("Default", "PlayerName"), config.GetValue<std::string>("MinecraftServer", "Host"),
-                                      config.GetValue<uint16_t>("MinecraftServer", "Port"));
+    wiicraft::WorldLoader worldLoader(
+        config.GetValue<std::string>("Default", "PlayerName"),
+        config.GetValue<std::string>("MinecraftServer", "Host"),
+        config.GetValue<uint16_t>("MinecraftServer", "Port"));
     utils::Clock clock;
     uint64_t millisecondsLastFrame = 0;
     bool showDebugStatistics = false;
 
-    SYS_SetResetCallback([](uint32_t, void*){ exit(0); });
-    SYS_SetPowerCallback([](){ exit(0); });
+    SYS_SetResetCallback(
+        [](uint32_t, void*)
+        {
+            exit(0);
+        });
+    SYS_SetPowerCallback(
+        []()
+        {
+            exit(0);
+        });
 
     const bool fogEnabled = config.GetValue<bool>("Graphics", "EnableFog");
 
-    while(true)
+    while (true)
     {
         clock.Start();
         renderer.PreDraw();
@@ -118,20 +127,19 @@ int main(int argc, char** argv)
 
         renderer.GetCamera()->GenerateFrustrumPlanes(true);
 
-        //renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
-        //renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
-        //renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
+        // renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
+        // renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
+        // renderer.DrawRay(perspectiveCamera->Position(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
 
-        //renderer.DrawRay(player.GetPosition(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
-        //renderer.DrawRay(player.GetPosition(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
-        //renderer.DrawRay(player.GetPosition(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
-
+        // renderer.DrawRay(player.GetPosition(), math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
+        // renderer.DrawRay(player.GetPosition(), math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
+        // renderer.DrawRay(player.GetPosition(), math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
 
         chunkManager.UpdateChunksAround(player.GetPosition());
         chunkManager.Render(renderer);
         entityManager.Render(renderer);
         player.OnRender3D(millisecondsLastFrame / 1000.0f, renderer, chunkManager);
-        //player.DrawAABB(renderer);
+        // player.DrawAABB(renderer);
         eventManager.TickUpdate();
 
         if (fogEnabled)
@@ -146,7 +154,7 @@ int main(int argc, char** argv)
 
         renderer.LoadModelViewMatrix(orthographicCamera->GetViewMatrix3x4() * math::Matrix3x4::Identity());
         worldLoader.Update(renderer, chunkManager);
-        wiicraft::NetworkManager::Get().Update();        
+        wiicraft::NetworkManager::Get().Update();
 
         if (pad->ButtonsDown() & WPAD_BUTTON_UP)
         {

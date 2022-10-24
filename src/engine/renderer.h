@@ -1,110 +1,132 @@
 #pragma once
 
+#include "ColorRGBA.h"
+#include "Freetypegx.h"
+#include "Matrix3x4.h"
 #include <array>
 #include <memory>
-#include "matrix3x4.h"
-#include "freetypegx.h"
-#include "colorrgba.h"
 
-namespace core {
+namespace core
+{
     class AABB;
 }
 
-namespace renderer {
-
-struct Statistics
+namespace renderer
 {
-    uint8_t FPS = 0;
-    uint32_t ChunksInFrustrum = 0;
-    uint32_t CulledChunks = 0;
-    float ChunkDisplayListSizeMB = 0;
-};
 
-enum class CullMode : uint8_t {
-    None = 0,
-    Front = 1,
-    Back = 2,
-    All = 3
-};
+    struct Statistics
+    {
+        uint8_t FPS = 0;
+        uint32_t ChunksInFrustrum = 0;
+        uint32_t CulledChunks = 0;
+        float ChunkDisplayListSizeMB = 0;
+    };
 
-class RenderData;
-class TTFFont;
-class Mesh;
-class StaticMesh;
-class Sprite;
-class Camera;
+    enum class CullMode : uint8_t
+    {
+        None = 0,
+        Front = 1,
+        Back = 2,
+        All = 3
+    };
 
-std::array<float, 8> GetUVTextureCoordinates(uint32_t index, uint32_t width, uint32_t height, uint32_t tileWidth, uint32_t tileHeight);
+    class RenderData;
+    class TTFFont;
+    class Mesh;
+    class StaticMesh;
+    class Sprite;
+    class Camera;
 
-class Renderer {
-public:
-    explicit Renderer(bool useVSync);
-    ~Renderer();
-    Renderer(const Renderer&) = delete;
-    Renderer& operator = (const Renderer&) = delete;
-    Renderer(Renderer&&) = delete;
-    Renderer& operator = (Renderer&&) = delete;
+    std::array<float, 8> GetUVTextureCoordinates(uint32_t index, uint32_t width, uint32_t height, uint32_t tileWidth, uint32_t tileHeight);
 
-    void SetClearColor(const ColorRGBA& clearColor);
-    void PreDraw();
-    void DisplayBuffer();
-    void SetCamera(std::shared_ptr<Camera> camera);
+    class Renderer
+    {
+    public:
+        explicit Renderer(bool useVSync);
+        ~Renderer();
+        Renderer(const Renderer&) = delete;
+        Renderer& operator=(const Renderer&) = delete;
+        Renderer(Renderer&&) = delete;
+        Renderer& operator=(Renderer&&) = delete;
 
-    void SetZModeEnabled(bool isEnabled);
-    void SetCullMode(const CullMode& mode);
-    void EnableFog(const float startZ, const float endZ, const ColorRGBA &color);
-    void DisableFog();
+        void SetClearColor(const ColorRGBA& clearColor);
+        void PreDraw();
+        void DisplayBuffer();
+        void SetCamera(std::shared_ptr<Camera> camera);
 
-    void LoadModelViewMatrix(const math::Matrix3x4& modelView, const uint8_t matrixIndex = 0);
-    void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);
-    void SetLineWidth(uint8_t width);
+        void SetZModeEnabled(bool isEnabled);
+        void SetCullMode(const CullMode& mode);
+        void EnableFog(const float startZ, const float endZ, const ColorRGBA& color);
+        void DisableFog();
 
-    void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA &color, uint16_t textStyle = FTGX_JUSTIFY_LEFT);
-    void DrawSpriteSheet(int32_t x, int32_t y, Sprite &sprite, uint32_t index,  uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight);
-    void DrawSpriteSheet(int32_t x, int32_t y, Sprite &sprite, uint32_t tileX, uint32_t tileY, uint32_t tileWidth, uint32_t tileHeight, uint32_t finalSpriteWidth, uint32_t finalSpriteHeight);
-    void Draw(Mesh& mesh);
-    void Draw(Sprite &sprite);
-    void Draw(StaticMesh& mesh);
-    void DrawLine(const math::Vector3f &from, const math::Vector3f& end, const renderer::ColorRGBA& color);
-    void DrawRay(const math::Vector3f &from, const math::Vector3f &direction, const renderer::ColorRGBA& color);
-    void DrawAABB(const core::AABB& aabb, const renderer::ColorRGBA& color, float scale = 1.0f);
+        void LoadModelViewMatrix(const math::Matrix3x4& modelView, const uint8_t matrixIndex = 0);
+        void LoadFont(const uint8_t* fontData, const int32_t size, const uint32_t fontSize);
+        void SetLineWidth(uint8_t width);
 
-    void ClearStatistics();
-    void UpdateFPS();
+        void DrawText(int32_t x, int32_t y, const std::wstring& text, const ColorRGBA& color, uint16_t textStyle = FTGX_JUSTIFY_LEFT);
+        void DrawSpriteSheet(
+            int32_t x,
+            int32_t y,
+            Sprite& sprite,
+            uint32_t index,
+            uint32_t tileWidth,
+            uint32_t tileHeight,
+            uint32_t finalSpriteWidth,
+            uint32_t finalSpriteHeight);
+        void DrawSpriteSheet(
+            int32_t x,
+            int32_t y,
+            Sprite& sprite,
+            uint32_t tileX,
+            uint32_t tileY,
+            uint32_t tileWidth,
+            uint32_t tileHeight,
+            uint32_t finalSpriteWidth,
+            uint32_t finalSpriteHeight);
+        void Draw(Mesh& mesh);
+        void Draw(Sprite& sprite);
+        void Draw(StaticMesh& mesh);
+        void DrawLine(const math::Vector3f& from, const math::Vector3f& end, const renderer::ColorRGBA& color);
+        void DrawRay(const math::Vector3f& from, const math::Vector3f& direction, const renderer::ColorRGBA& color);
+        void DrawAABB(const core::AABB& aabb, const renderer::ColorRGBA& color, float scale = 1.0f);
 
-    uint32_t GetWidth() const;
-    uint32_t GetHeight() const;
+        void ClearStatistics();
+        void UpdateFPS();
 
-    inline std::shared_ptr<renderer::Camera> GetCamera() const;
-    inline RenderData* GetRenderData();
-    inline Statistics& GetStatistics();
-    inline const Statistics& GetStatistics() const;
+        uint32_t GetWidth() const;
+        uint32_t GetHeight() const;
 
-    static Renderer* s_Renderer;
-private:
-    Statistics mStatistics;
-    RenderData* mRenderData;    
-    std::shared_ptr<renderer::Camera> mCamera;
-};
+        inline std::shared_ptr<renderer::Camera> GetCamera() const;
+        inline RenderData* GetRenderData();
+        inline Statistics& GetStatistics();
+        inline const Statistics& GetStatistics() const;
 
-inline std::shared_ptr<Camera> Renderer::GetCamera() const
-{
-    return mCamera;
-}
+        static Renderer* s_Renderer;
 
-inline RenderData* Renderer::GetRenderData()
-{
-    return mRenderData;
-}
+    private:
+        Statistics mStatistics;
+        RenderData* mRenderData;
+        std::shared_ptr<renderer::Camera> mCamera;
+    };
 
-inline Statistics &Renderer::GetStatistics()
-{
-    return mStatistics;
-}
+    inline std::shared_ptr<Camera> Renderer::GetCamera() const
+    {
+        return mCamera;
+    }
 
-inline const Statistics &Renderer::GetStatistics() const
-{
-    return mStatistics;
-}
+    inline RenderData* Renderer::GetRenderData()
+    {
+        return mRenderData;
+    }
 
-};
+    inline Statistics& Renderer::GetStatistics()
+    {
+        return mStatistics;
+    }
+
+    inline const Statistics& Renderer::GetStatistics() const
+    {
+        return mStatistics;
+    }
+
+}; // namespace renderer

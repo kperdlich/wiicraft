@@ -1,7 +1,7 @@
+#include "Statistic.h"
+#include "Camera.h"
+#include "Globals.h"
 #include <sstream>
-#include "statistic.h"
-#include "camera.h"
-#include "globals.h"
 
 void wiicraft::ShowStatisics(renderer::Renderer& renderer, ChunkManager& world, const wiicraft::Player& player)
 {
@@ -12,14 +12,13 @@ void wiicraft::ShowStatisics(renderer::Renderer& renderer, ChunkManager& world, 
     renderer.DrawText(30, 30, game.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream pingFps;
-    pingFps << "FPS: " << renderer.GetStatistics().FPS << " / Ping: "
-         << player.GetPing() << "ms" << " / " << player.GetName().c_str();
+    pingFps << "FPS: " << renderer.GetStatistics().FPS << " / Ping: " << player.GetPing() << "ms"
+            << " / " << player.GetName().c_str();
     renderer.DrawText(30, 50, pingFps.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream blockPos;
-    blockPos << "Focused Block: XYZ: " << player.GetFocusedBlockPosition().X()
-             << "/" << player.GetFocusedBlockPosition().Y()
-             << "/" << player.GetFocusedBlockPosition().Z();
+    blockPos << "Focused Block: XYZ: " << player.GetFocusedBlockPosition().X() << "/" << player.GetFocusedBlockPosition().Y() << "/"
+             << player.GetFocusedBlockPosition().Z();
     renderer.DrawText(30, 70, blockPos.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream playerAbilities;
@@ -28,7 +27,7 @@ void wiicraft::ShowStatisics(renderer::Renderer& renderer, ChunkManager& world, 
     renderer.DrawText(30, 90, playerAbilities.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream spriteBuffer;
-    spriteBuffer << L"Position XYZ: " << player.GetPosition().X() << L"/"  << player.GetPosition().Y() << L"/" << player.GetPosition().Z();
+    spriteBuffer << L"Position XYZ: " << player.GetPosition().X() << L"/" << player.GetPosition().Y() << L"/" << player.GetPosition().Z();
     renderer.DrawText(30, 110, spriteBuffer.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream chunkPos;
@@ -37,8 +36,7 @@ void wiicraft::ShowStatisics(renderer::Renderer& renderer, ChunkManager& world, 
     renderer.DrawText(30, 130, chunkPos.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream frustrum;
-    frustrum << "Frustrum: " << renderer.GetStatistics().ChunksInFrustrum
-             << " / Culled: " << renderer.GetStatistics().CulledChunks;
+    frustrum << "Frustrum: " << renderer.GetStatistics().ChunksInFrustrum << " / Culled: " << renderer.GetStatistics().CulledChunks;
     renderer.DrawText(30, 150, frustrum.str(), renderer::ColorRGBA::WHITE);
 
     std::wstringstream chunkdisplaylistSize;

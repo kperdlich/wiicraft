@@ -6,9 +6,12 @@
 class PacketEntityEquipment : public Packet
 {
 public:
-    PacketEntityEquipment() : Packet(PACKET_ENTITY_EQUIPMENT) {}
+    PacketEntityEquipment()
+        : Packet(PACKET_ENTITY_EQUIPMENT)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_Slot = socket.Read<int16_t>();
@@ -17,9 +20,8 @@ public:
     }
     void Action() override
     {
-
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketEntityEquipment();
     }
@@ -28,9 +30,7 @@ protected:
     int32_t m_EID = 0;
     int16_t m_Slot = 0, m_ItemID = 0, m_Damage = 0;
 
-
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
-
     }
 };

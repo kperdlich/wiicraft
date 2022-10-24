@@ -15,60 +15,65 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include "Thread.h"
 #include "SafeQueue.h"
+#include "Thread.h"
 
-namespace core {
-
-template<class T>
-class Job : public Thread
+namespace core
 {
-public:
-	Job() {}
-	virtual ~Job() {}
-	Job(const Job&) = delete;
-	Job(Job&&) = delete;
-	void operator=(const Job&) = delete;
-	void operator=(Job&&) = delete;
 
-	void Add(const T& data)
-	{
-		m_queue.Push(data);
-		if (IsSuspended())
-		{
-			Resume();
-		}
-	}
-    uint32_t GetQueueCount()
-	{
-		return m_queue.GetCount();
-	}
+    template<class T>
+    class Job : public Thread
+    {
+    public:
+        Job()
+        {
+        }
+        virtual ~Job()
+        {
+        }
+        Job(const Job&) = delete;
+        Job(Job&&) = delete;
+        void operator=(const Job&) = delete;
+        void operator=(Job&&) = delete;
 
-protected:
-	virtual void PreExecute() override
-	{
-		while (true)
-		{
-			if (IsStopped())
-				break;
+        void Add(const T& data)
+        {
+            m_queue.Push(data);
+            if (IsSuspended())
+            {
+                Resume();
+            }
+        }
+        uint32_t GetQueueCount()
+        {
+            return m_queue.GetCount();
+        }
 
-			if (m_queue.IsEmpty())
-			{
-				Suspend();
-			}
-			else
-			{
-				Execute();
-			}
-		}
-	}
+    protected:
+        virtual void PreExecute() override
+        {
+            while (true)
+            {
+                if (IsStopped())
+                    break;
 
-protected:
-	SafeQueue<T> m_queue;
-};
+                if (m_queue.IsEmpty())
+                {
+                    Suspend();
+                }
+                else
+                {
+                    Execute();
+                }
+            }
+        }
 
-}
+    protected:
+        SafeQueue<T> m_queue;
+    };
+
+} // namespace core

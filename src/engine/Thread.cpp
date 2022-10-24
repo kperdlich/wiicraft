@@ -15,65 +15,64 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #include "Thread.h"
-#include "lockguard.h"
-#include "core.h"
+#include "Core.h"
+#include "Lockguard.h"
 
 int core::Thread::Create(ThreadEntryCallback entryCallback, void* stackbase, u32 stack_size, u8 prio)
 {
-	int32_t ret = LWP_CreateThread(&m_threadID, entryCallback, this, stackbase, stack_size, prio);
+    int32_t ret = LWP_CreateThread(&m_threadID, entryCallback, this, stackbase, stack_size, prio);
     ASSERT(ret >= 0);
-	return ret;
+    return ret;
 }
 
 void* core::Thread::ThreadEntry(void* args)
 {
-	static_cast<Thread*>(args)->PreExecute();
-	return nullptr;
+    static_cast<Thread*>(args)->PreExecute();
+    return nullptr;
 }
-
 
 int core::Thread::Start()
 {
-	return Create(Thread::ThreadEntry, nullptr, 0, 128);
+    return Create(Thread::ThreadEntry, nullptr, 0, 128);
 }
 
 bool core::Thread::IsStopped()
 {
-	lock_guard guard(m_mutex);
-	bool val = m_bStop;
-	return val;
+    Lockguard guard(m_mutex);
+    bool val = m_bStop;
+    return val;
 }
 
 void core::Thread::Stop()
 {
-	lock_guard guard(m_mutex);
-	m_bStop = true;
-	guard.Release();
+    Lockguard guard(m_mutex);
+    m_bStop = true;
+    guard.Release();
 
-	if (IsSuspended())
-	{
-		Resume();
-	}
-	LWP_JoinThread(m_threadID, nullptr);
+    if (IsSuspended())
+    {
+        Resume();
+    }
+    LWP_JoinThread(m_threadID, nullptr);
 
-	guard.Lock();
-	m_bStop = false;
+    guard.Lock();
+    m_bStop = false;
 }
 
 bool core::Thread::IsSuspended()
 {
-	return LWP_ThreadIsSuspended(m_threadID);
+    return LWP_ThreadIsSuspended(m_threadID);
 }
 
 void core::Thread::Resume()
 {
-	LWP_ResumeThread(m_threadID);
+    LWP_ResumeThread(m_threadID);
 }
 
 void core::Thread::Suspend()
 {
-	LWP_SuspendThread(m_threadID);
+    LWP_SuspendThread(m_threadID);
 }

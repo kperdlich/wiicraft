@@ -1,59 +1,60 @@
 #pragma once
 
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
-namespace renderer {
-
-enum class ImageFormat : char
+namespace renderer
 {
-    PNG = 0,
-    TPL = 1
-};
 
-class Image2D
-{
-public:
-    explicit Image2D(const uint8_t *data, size_t imageSize = 0);
-    ~Image2D();
-    Image2D(const Image2D&) = delete;
-    Image2D(Image2D&&) = delete;
-    Image2D& operator=(const Image2D&) = delete;
-    Image2D& operator=(Image2D&&) = delete;
+    enum class ImageFormat : char
+    {
+        PNG = 0,
+        TPL = 1
+    };
 
-    int Width() const;
-    int Height() const;
+    class Image2D
+    {
+    public:
+        explicit Image2D(const uint8_t* data, size_t imageSize = 0);
+        ~Image2D();
+        Image2D(const Image2D&) = delete;
+        Image2D(Image2D&&) = delete;
+        Image2D& operator=(const Image2D&) = delete;
+        Image2D& operator=(Image2D&&) = delete;
 
-    ImageFormat Format() const;
+        int Width() const;
+        int Height() const;
 
-    const uint8_t *Data() const;
+        ImageFormat Format() const;
 
-private:
-    int mWidth;
-    int mHeight;
-    ImageFormat mFormat;
-    uint8_t* mData;
-    size_t mDataSize;
-};
+        const uint8_t* Data() const;
 
-inline int Image2D::Width() const
-{
-    return mWidth;
-}
+    private:
+        int mWidth;
+        int mHeight;
+        ImageFormat mFormat;
+        uint8_t* mData;
+        size_t mDataSize;
+    };
 
-inline int Image2D::Height() const
-{
-    return mHeight;
-}
+    inline int Image2D::Width() const
+    {
+        return mWidth;
+    }
 
-inline ImageFormat Image2D::Format() const
-{
-    return mFormat;
-}
+    inline int Image2D::Height() const
+    {
+        return mHeight;
+    }
 
-inline const uint8_t* Image2D::Data() const
-{
-    return mData;
-}
+    inline ImageFormat Image2D::Format() const
+    {
+        return mFormat;
+    }
 
-}
+    inline const uint8_t* Image2D::Data() const
+    {
+        return mData;
+    }
+
+} // namespace renderer

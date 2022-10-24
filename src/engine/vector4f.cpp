@@ -1,6 +1,5 @@
+#include "Vector4f.h"
 #include <math.h>
-#include "vector4f.h"
-
 
 math::Vector4f::Vector4f()
 {
@@ -18,18 +17,12 @@ math::Vector4f::Vector4f(float x, float y, float z, float w)
     mVec.mW = w;
 }
 
-float math::Vector4f::Dot(const math::Vector4f &other) const
+float math::Vector4f::Dot(const math::Vector4f& other) const
 {
-    return mVec.mX * other.mVec.mX +
-            mVec.mY * other.mVec.mY +
-            mVec.mZ * other.mVec.mZ +
-            mVec.mW * other.mVec.mW;
+    return mVec.mX * other.mVec.mX + mVec.mY * other.mVec.mY + mVec.mZ * other.mVec.mZ + mVec.mW * other.mVec.mW;
 }
 
 float math::Vector4f::Length() const
 {
-    return sqrt(mVec.mX * mVec.mX +
-                mVec.mY * mVec.mY +
-                mVec.mZ * mVec.mZ +
-                mVec.mW * mVec.mW);
+    return sqrt(mVec.mX * mVec.mX + mVec.mY * mVec.mY + mVec.mZ * mVec.mZ + mVec.mW * mVec.mW);
 }

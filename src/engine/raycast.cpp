@@ -1,21 +1,29 @@
+#include "Raycast.h"
+#include "MathHelper.h"
+#include <algorithm>
+#include <cmath>
 #include <float.h>
 #include <limits>
-#include "raycast.h"
-#include <cmath>
-#include "mathhelper.h"
 #include <sstream>
-#include <algorithm>
 
-bool core::Raycast(std::vector<core::AABB>& entites, const math::Vector3f& origin, math::Vector3f direction, const float maxDistance, RayHitResult& hitResult)
-{    
+bool core::Raycast(
+    std::vector<core::AABB>& entites,
+    const math::Vector3f& origin,
+    math::Vector3f direction,
+    const float maxDistance,
+    RayHitResult& hitResult)
+{
     direction.Normalize();
 
-    std::sort(entites.begin(), entites.end(), [&origin](const core::AABB& a, const core::AABB& b)
-    {
-        const float aDistance  = (a.GetCenter() - origin).Length();
-        const float bDistance  = (b.GetCenter() - origin).Length();
-        return aDistance < bDistance;
-    });
+    std::sort(
+        entites.begin(),
+        entites.end(),
+        [&origin](const core::AABB& a, const core::AABB& b)
+        {
+            const float aDistance = (a.GetCenter() - origin).Length();
+            const float bDistance = (b.GetCenter() - origin).Length();
+            return aDistance < bDistance;
+        });
 
     for (auto& entity : entites)
     {
@@ -36,12 +44,12 @@ bool core::Raycast(std::vector<core::AABB>& entites, const math::Vector3f& origi
 
         if (tmax < 0)
         {
-            continue; //return false;
+            continue; // return false;
         }
 
         if (tmin > tmax)
         {
-            continue; //return false;
+            continue; // return false;
         }
 
         hitResult.Entity = entity;
@@ -54,8 +62,12 @@ bool core::Raycast(std::vector<core::AABB>& entites, const math::Vector3f& origi
     return false;
 }
 
-bool core::Raycast(const std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection> > &chunkMap, const math::Vector3f &origin,
-                   math::Vector3f direction, const float maxDistance, core::RayHitResult &hitResult)
+bool core::Raycast(
+    const std::map<std::pair<int32_t, int32_t>, std::shared_ptr<wiicraft::ChunkSection>>& chunkMap,
+    const math::Vector3f& origin,
+    math::Vector3f direction,
+    const float maxDistance,
+    core::RayHitResult& hitResult)
 {
     direction.Normalize();
 
@@ -66,13 +78,13 @@ bool core::Raycast(const std::map<std::pair<int32_t, int32_t>, std::shared_ptr<w
         const math::Vector3f& currentBlockPos = wiicraft::ChunkSection::WorldPositionToBlockPosition(currentStepPos, currentStepChunkPos);
         const wiicraft::ChunkPosition& currentBlockChunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(currentBlockPos);
         const auto& chunkIt = chunkMap.find(currentBlockChunkPos);
-        if (chunkIt != chunkMap.end())        {
-
+        if (chunkIt != chunkMap.end())
+        {
             const std::pair<math::Vector3f, wiicraft::BlockType> block = chunkIt->second->GetBlockTypeByWorldPosition(currentBlockPos);
             if (block.second == wiicraft::BlockType::AIR)
                 continue;
 
-            const core::AABB entity(block.first, {0.5f, 0.5f, 0.5f});
+            const core::AABB entity(block.first, { 0.5f, 0.5f, 0.5f });
             const float t1 = (entity.GetMin().X() - origin.X()) / direction.X();
             const float t2 = (entity.GetMax().X() - origin.X()) / direction.X();
             const float t3 = (entity.GetMin().Y() - origin.Y()) / direction.Y();
@@ -90,12 +102,12 @@ bool core::Raycast(const std::map<std::pair<int32_t, int32_t>, std::shared_ptr<w
 
             if (tmax < 0)
             {
-                continue; //return false;
+                continue; // return false;
             }
 
             if (tmin > tmax)
             {
-                continue; //return false;
+                continue; // return false;
             }
 
             hitResult.Entity = entity;
@@ -109,12 +121,12 @@ bool core::Raycast(const std::map<std::pair<int32_t, int32_t>, std::shared_ptr<w
     return false;
 }
 
-math::Vector3f core::GetAABBIntersectionPointSurfaceNormal(const math::Vector3f &intersectionPoint, const core::AABB &aabb)
+math::Vector3f core::GetAABBIntersectionPointSurfaceNormal(const math::Vector3f& intersectionPoint, const core::AABB& aabb)
 {
     const math::Vector3f relativeInternPoint = intersectionPoint - aabb.GetCenter();
-    const math::Vector3f distance = {std::abs(aabb.GetHalfWidth().X() - std::abs(relativeInternPoint.X())),
-                                    std::abs(aabb.GetHalfWidth().Y() -  std::abs(relativeInternPoint.Y())),
-                                    std::abs(aabb.GetHalfWidth().Z() - std::abs(relativeInternPoint.Z()))};
+    const math::Vector3f distance = { std::abs(aabb.GetHalfWidth().X() - std::abs(relativeInternPoint.X())),
+                                      std::abs(aabb.GetHalfWidth().Y() - std::abs(relativeInternPoint.Y())),
+                                      std::abs(aabb.GetHalfWidth().Z() - std::abs(relativeInternPoint.Z())) };
     math::Vector3f normal;
     float min = std::numeric_limits<float>::max();
     if (distance.X() < min)

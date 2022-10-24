@@ -1,7 +1,10 @@
-#include "vertexformat.h"
-#include "wii_defines.h"
+#include "VertexFormat.h"
+#include "WiiDefines.h"
 
-renderer::VertexFormat::VertexFormat(uint32_t formatIndex) : mFormatIndex(formatIndex) {}
+renderer::VertexFormat::VertexFormat(uint32_t formatIndex)
+    : mFormatIndex(formatIndex)
+{
+}
 
 void renderer::VertexFormat::Bind()
 {

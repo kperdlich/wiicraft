@@ -15,20 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #include "packet/Packet.h"
-#include "networkManager.h"
+#include "NetworkManager.h"
 
 void Packet::Send() const
 {
     const net::Socket& socket = wiicraft::NetworkManager::Get().GetSocket();
-	if (socket.IsConnected())
-	{
-		//LOG("Send Packet: %d", m_ID);
-		socket.Send<char>(m_ID);
-		SendContent(socket);
-	}
+    if (socket.IsConnected())
+    {
+        // LOG("Send Packet: %d", m_ID);
+        socket.Send<char>(m_ID);
+        SendContent(socket);
+    }
     else
     {
         ASSERT(false);

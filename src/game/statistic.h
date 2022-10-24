@@ -1,10 +1,11 @@
 #pragma once
 
-#include "renderer.h"
-#include "player.h"
+#include "Player.h"
+#include "Renderer.h"
 
-namespace wiicraft {
+namespace wiicraft
+{
 
-    void ShowStatisics(renderer::Renderer& renderer, ChunkManager &world, const Player& player);
+    void ShowStatisics(renderer::Renderer& renderer, ChunkManager& world, const Player& player);
 
 }

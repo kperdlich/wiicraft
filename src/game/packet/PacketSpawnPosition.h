@@ -1,18 +1,21 @@
 #pragma once
 
+#include "Core.h"
+#include "EventDataSpawnPlayer.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "PacketPlayerPosition.h"
 #include "PacketPlayer.h"
-#include "core.h"
-#include "eventmanager.h"
-#include "EventDataSpawnPlayer.h"
-#include "vector3f.h"
+#include "PacketPlayerPosition.h"
+#include "Vector3f.h"
 
 class PacketSpawnPosition : public Packet
 {
 public:
-    PacketSpawnPosition() : Packet(PACKET_SPAWN_POSITION) {}
+    PacketSpawnPosition()
+        : Packet(PACKET_SPAWN_POSITION)
+    {
+    }
 
     void Read(const net::Socket& socket) override
     {
@@ -32,6 +35,8 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override {}
+    void SendContent(const net::Socket& socket) const override
+    {
+    }
     int32_t m_x = 0, m_y = 0, m_z = 0;
 };

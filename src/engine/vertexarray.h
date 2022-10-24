@@ -1,59 +1,60 @@
 #pragma once
 
-#include <memory>
-#include "core.h"
+#include "Core.h"
+#include "IndexBuffer.h"
+#include "VertexBuffer.h"
+#include "VertexFormat.h"
 #include <map>
-#include "vertexbuffer.h"
-#include "vertexformat.h"
-#include "indexbuffer.h"
+#include <memory>
 
-namespace renderer {
-
-using VertexBufferMap = std::map<uint32_t, VertexBuffer*>;
-
-class Renderer;
-
-class VertexArray
+namespace renderer
 {
-    friend class Renderer;
 
-public:
-    VertexArray() = default;
-    explicit VertexArray(VertexFormat* vertexFormat);
-    ~VertexArray() = default;
-    VertexArray(const VertexArray&) = delete;
-    VertexArray(VertexBuffer&&) = delete;
-    VertexArray& operator=(const VertexArray&) = delete;
-    VertexArray& operator=(VertexArray&&) = delete;
+    using VertexBufferMap = std::map<uint32_t, VertexBuffer*>;
 
-    void AddVertexBuffer(uint32_t vertexAttribute, VertexBuffer *vertexBuffer);
+    class Renderer;
 
-    inline void SetVertexFormat(VertexFormat *vertexFormat);
-    inline uint8_t GetVertexFormatIndex() const;
+    class VertexArray
+    {
+        friend class Renderer;
 
-    inline const VertexBufferMap& GetVertexBufferMap() const;
+    public:
+        VertexArray() = default;
+        explicit VertexArray(VertexFormat* vertexFormat);
+        ~VertexArray() = default;
+        VertexArray(const VertexArray&) = delete;
+        VertexArray(VertexBuffer&&) = delete;
+        VertexArray& operator=(const VertexArray&) = delete;
+        VertexArray& operator=(VertexArray&&) = delete;
 
-private:
-    void Bind();
+        void AddVertexBuffer(uint32_t vertexAttribute, VertexBuffer* vertexBuffer);
 
-    VertexFormat* mVertexFormat;
-    std::map<uint32_t, VertexBuffer*> mVertexBufferMap;
-};
+        inline void SetVertexFormat(VertexFormat* vertexFormat);
+        inline uint8_t GetVertexFormatIndex() const;
 
-inline void VertexArray::SetVertexFormat(VertexFormat* vertexFormat)
-{
-    mVertexFormat = vertexFormat;
-}
+        inline const VertexBufferMap& GetVertexBufferMap() const;
 
-inline uint8_t VertexArray::GetVertexFormatIndex() const
-{
-    ASSERT(mVertexFormat != nullptr);
-    return mVertexFormat->GetFormatIndex();
-}
+    private:
+        void Bind();
 
-inline const VertexBufferMap &VertexArray::GetVertexBufferMap() const
-{
-    return mVertexBufferMap;
-}
+        VertexFormat* mVertexFormat;
+        std::map<uint32_t, VertexBuffer*> mVertexBufferMap;
+    };
 
-}
+    inline void VertexArray::SetVertexFormat(VertexFormat* vertexFormat)
+    {
+        mVertexFormat = vertexFormat;
+    }
+
+    inline uint8_t VertexArray::GetVertexFormatIndex() const
+    {
+        ASSERT(mVertexFormat != nullptr);
+        return mVertexFormat->GetFormatIndex();
+    }
+
+    inline const VertexBufferMap& VertexArray::GetVertexBufferMap() const
+    {
+        return mVertexBufferMap;
+    }
+
+} // namespace renderer

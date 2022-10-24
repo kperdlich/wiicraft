@@ -6,9 +6,12 @@
 class PacketEntityHeadLook : public Packet
 {
 public:
-    PacketEntityHeadLook() : Packet(PACKET_ENTITY_HEAD_LOOK) {}
+    PacketEntityHeadLook()
+        : Packet(PACKET_ENTITY_HEAD_LOOK)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_HeadYaw = socket.Read<char>();
@@ -18,13 +21,13 @@ public:
     {
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketEntityHeadLook();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

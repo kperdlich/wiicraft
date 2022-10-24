@@ -15,34 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
 #include <gccore.h>
 
-namespace core {
-class Mutex
+namespace core
 {
-public:
-	Mutex(const Mutex&) = delete;
-	Mutex(Mutex&&) = delete;
-	void operator=(const Mutex&) = delete;
-	void operator=(Mutex&&) = delete;
+    class Mutex
+    {
+    public:
+        Mutex(const Mutex&) = delete;
+        Mutex(Mutex&&) = delete;
+        void operator=(const Mutex&) = delete;
+        void operator=(Mutex&&) = delete;
 
-	Mutex()
-	{
-		LWP_MutexInit(&m_mutex, true);
-	}
+        Mutex()
+        {
+            LWP_MutexInit(&m_mutex, true);
+        }
 
-	~Mutex()
-	{
-		LWP_MutexDestroy(m_mutex);
-	}
+        ~Mutex()
+        {
+            LWP_MutexDestroy(m_mutex);
+        }
 
-	friend class lock_guard;
+        friend class Lockguard;
 
-private:
-	mutex_t m_mutex;
-};
-}
+    private:
+        mutex_t m_mutex;
+    };
+} // namespace core

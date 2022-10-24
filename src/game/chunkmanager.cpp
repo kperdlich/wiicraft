@@ -1,10 +1,10 @@
-#include "chunkmanager.h"
-#include "camera.h"
-#include "player.h"
-#include "core.h"
-#include "EventDataSerializeChunk.h"
-#include "EventDataChangeBlock.h"
+#include "ChunkManager.h"
+#include "Camera.h"
+#include "Core.h"
 #include "EventDataAllChunksInQueueSerialized.h"
+#include "EventDataChangeBlock.h"
+#include "EventDataSerializeChunk.h"
+#include "Player.h"
 
 wiicraft::ChunkManager::ChunkManager()
     : mIsEnabled(false)
@@ -14,9 +14,9 @@ wiicraft::ChunkManager::ChunkManager()
         for (int8_t y = 0; y < CHUNK_CACHE_Y; ++y)
         {
             std::shared_ptr<wiicraft::ChunkSection> chunkSection = std::make_shared<wiicraft::ChunkSection>();
-            chunkSection->SetPosition({x, y});
+            chunkSection->SetPosition({ x, y });
             chunkSection->SetTo(wiicraft::BlockType::AIR);
-            //chunkSection->SetLoaded(true);
+            // chunkSection->SetLoaded(true);
             mChunkCache[chunkSection->GetPosition()] = chunkSection;
         }
     }
@@ -27,16 +27,22 @@ wiicraft::ChunkManager::ChunkManager()
     mChunkLoaderJob.Start();
     mChunkSerializationJob.Start();
 
-   core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
-   core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
-   core::IEventManager::Get()->AddListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
+    core::IEventManager::Get()->AddListener(
+        fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
+    core::IEventManager::Get()->AddListener(
+        fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
+    core::IEventManager::Get()->AddListener(
+        fastdelegate::MakeDelegate(this, &ChunkManager::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
 }
 
 wiicraft::ChunkManager::~ChunkManager()
 {
-    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
-    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
-    core::IEventManager::Get()->RemoveListener(fastdelegate::MakeDelegate(this, &ChunkManager::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
+    core::IEventManager::Get()->RemoveListener(
+        fastdelegate::MakeDelegate(this, &ChunkManager::OnSerializeChunk), EventDataSerializeChunk::EventType);
+    core::IEventManager::Get()->RemoveListener(
+        fastdelegate::MakeDelegate(this, &ChunkManager::OnBlockChange), EventDataChangeBlock::EventType);
+    core::IEventManager::Get()->RemoveListener(
+        fastdelegate::MakeDelegate(this, &ChunkManager::OnWorldLoaded), EventDataAllChunksInQueueSerialized::EventType);
 
     mChunkLoaderJob.Stop();
     mChunkSerializationJob.Stop();
@@ -59,7 +65,7 @@ void wiicraft::ChunkManager::UpdateChunksAround(const math::Vector3f& position)
         {
             ++chunkIt;
         }
-    }   
+    }
 
     ASSERT(mChunkCache.size() + mChunksInLoadingProgress.size() == CHUNK_CACHE_X * CHUNK_CACHE_Y);
     if ((mPreviousPlayerPos - position).Length() >= 5.0f)
@@ -102,34 +108,46 @@ void wiicraft::ChunkManager::UpdateChunksAround(const math::Vector3f& position)
             chunkIt = mChunkCache.erase(chunkIt);
         }
 
-        for(auto& cs : loadingList)
+        for (auto& cs : loadingList)
         {
             mChunksInLoadingProgress[cs->GetPosition()] = cs;
         }
-        for(auto& cs : newChunkCache)
+        for (auto& cs : newChunkCache)
         {
             mChunkCache[cs->GetPosition()] = cs;
         }
         ASSERT(mChunkCache.size() + mChunksInLoadingProgress.size() == CHUNK_CACHE_X * CHUNK_CACHE_Y);
         mPreviousPlayerPos = position;
     }
-
 }
 
-void wiicraft::ChunkManager::Render(renderer::Renderer &renderer)
+void wiicraft::ChunkManager::Render(renderer::Renderer& renderer)
 {
     for (auto& c : mChunkCache)
     {
         auto cs = c.second;
         renderer.LoadModelViewMatrix(renderer.GetCamera()->GetViewMatrix3x4() * math::Matrix3x4::Identity());
-        renderer.DrawRay(cs->GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f -8.0f,wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Left * 10.0f, renderer::ColorRGBA::RED);
-        renderer.DrawRay(cs->GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Up * 10.0f, renderer::ColorRGBA::GREEN);
-        renderer.DrawRay(cs->GetWorldPosition() + math::Vector3f{wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f-8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f}, math::Vector3f::Forward * 10.0f, renderer::ColorRGBA::BLUE);
+        renderer.DrawRay(
+            cs->GetWorldPosition() +
+                math::Vector3f{ wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f - 8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f },
+            math::Vector3f::Left * 10.0f,
+            renderer::ColorRGBA::RED);
+        renderer.DrawRay(
+            cs->GetWorldPosition() +
+                math::Vector3f{ wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f - 8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f },
+            math::Vector3f::Up * 10.0f,
+            renderer::ColorRGBA::GREEN);
+        renderer.DrawRay(
+            cs->GetWorldPosition() +
+                math::Vector3f{ wiicraft::ChunkSection::CHUNK_SIZE * 0.5f, 256.0f - 8.0f, wiicraft::ChunkSection::CHUNK_SIZE * 0.5f },
+            math::Vector3f::Forward * 10.0f,
+            renderer::ColorRGBA::BLUE);
         cs->Render(renderer, mBlockManager);
     }
 }
 
-bool wiicraft::ChunkManager::Raycast(const math::Vector3f &origin, math::Vector3f direction, const float maxDistance, core::RayHitResult &hitResult) const
+bool wiicraft::ChunkManager::Raycast(
+    const math::Vector3f& origin, math::Vector3f direction, const float maxDistance, core::RayHitResult& hitResult) const
 {
     return core::Raycast(mChunkCache, origin, direction, maxDistance, hitResult);
 }
@@ -144,18 +162,21 @@ std::shared_ptr<wiicraft::ChunkSection> wiicraft::ChunkManager::GetChunk(const C
     return nullptr;
 }
 
-std::vector<core::AABB> wiicraft::ChunkManager::GetCollidableBlockAABBsAround(const math::Vector3f &position) const
+std::vector<core::AABB> wiicraft::ChunkManager::GetCollidableBlockAABBsAround(const math::Vector3f& position) const
 {
     std::vector<core::AABB> aabbs;
-    math::Vector3f blockPosition = wiicraft::ChunkSection::WorldPositionToBlockPosition(position, wiicraft::ChunkSection::WorldPositionToChunkPosition(position));
-    math::Vector3f start = {blockPosition.X() - 1.0f, blockPosition.Y() - 1.0f, blockPosition.Z() - 1.0f};
+    math::Vector3f blockPosition =
+        wiicraft::ChunkSection::WorldPositionToBlockPosition(position, wiicraft::ChunkSection::WorldPositionToChunkPosition(position));
+    math::Vector3f start = { blockPosition.X() - 1.0f, blockPosition.Y() - 1.0f, blockPosition.Z() - 1.0f };
     for (uint8_t x = 0; x < 3; ++x)
     {
         for (uint8_t y = 0; y < 3; ++y)
         {
             for (uint8_t z = 0; z < 3; ++z)
             {
-                const math::Vector3f& pos = {start.X() +(x*BlockManager::BLOCK_HALF_SIZE*2.0f), start.Y() +(y*BlockManager::BLOCK_HALF_SIZE*2.0f), start.Z() +(z*BlockManager::BLOCK_HALF_SIZE*2.0f)};
+                const math::Vector3f& pos = { start.X() + (x * BlockManager::BLOCK_HALF_SIZE * 2.0f),
+                                              start.Y() + (y * BlockManager::BLOCK_HALF_SIZE * 2.0f),
+                                              start.Z() + (z * BlockManager::BLOCK_HALF_SIZE * 2.0f) };
                 const wiicraft::ChunkPosition& chunkPos = wiicraft::ChunkSection::WorldPositionToChunkPosition(pos);
                 auto csIt = mChunkCache.find(chunkPos);
                 if (csIt != mChunkCache.end())
@@ -163,7 +184,9 @@ std::vector<core::AABB> wiicraft::ChunkManager::GetCollidableBlockAABBsAround(co
                     const auto& blockPositionType = csIt->second->GetBlockTypeByWorldPosition(pos);
                     if (blockPositionType.second != wiicraft::BlockType::AIR)
                     {
-                        aabbs.push_back({blockPositionType.first, {BlockManager::BLOCK_HALF_SIZE, BlockManager::BLOCK_HALF_SIZE, BlockManager::BLOCK_HALF_SIZE}});
+                        aabbs.push_back(
+                            { blockPositionType.first,
+                              { BlockManager::BLOCK_HALF_SIZE, BlockManager::BLOCK_HALF_SIZE, BlockManager::BLOCK_HALF_SIZE } });
                     }
                 }
             }
@@ -172,19 +195,19 @@ std::vector<core::AABB> wiicraft::ChunkManager::GetCollidableBlockAABBsAround(co
     return aabbs;
 }
 
-std::vector<wiicraft::ChunkPosition> wiicraft::ChunkManager::GenerateChunkMap(const math::Vector3f &worldPosition) const
+std::vector<wiicraft::ChunkPosition> wiicraft::ChunkManager::GenerateChunkMap(const math::Vector3f& worldPosition) const
 {
     const ChunkPosition& chunkPosition = wiicraft::ChunkSection::WorldPositionToChunkPosition(worldPosition);
     std::vector<ChunkPosition> chunkList;
 
-    int32_t x = chunkPosition.first - (CHUNK_CACHE_X/ 2);
+    int32_t x = chunkPosition.first - (CHUNK_CACHE_X / 2);
     int32_t z = chunkPosition.second + (CHUNK_CACHE_Y / 2);
 
     for (int32_t i = 0; i < CHUNK_CACHE_X; i++)
     {
         for (int32_t j = 0; j < CHUNK_CACHE_Y; j++)
         {
-            chunkList.push_back({x + i, z - j});
+            chunkList.push_back({ x + i, z - j });
         }
     }
 
@@ -203,14 +226,13 @@ void wiicraft::ChunkManager::OnBlockChange(core::IEventDataPtr eventData)
     math::Vector3f worldPos = math::Vector3f(blockData->GetX(), blockData->GetY(), blockData->GetZ());
     wiicraft::ChunkPosition cp = wiicraft::ChunkSection::WorldPositionToChunkPosition(worldPos);
     auto chunkSection = GetChunk(cp);
-    //ASSERT(chunkSection);
+    // ASSERT(chunkSection);
     if (chunkSection)
     {
-        chunkSection->SetBlock(wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(
-                               chunkSection->WorldPositionToBlockPosition(worldPos)),
-                               static_cast<BlockType>(blockData->GetBlockType()));
+        chunkSection->SetBlock(
+            wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(chunkSection->WorldPositionToBlockPosition(worldPos)),
+            static_cast<BlockType>(blockData->GetBlockType()));
     }
-
 }
 
 void wiicraft::ChunkManager::OnWorldLoaded(core::IEventDataPtr eventData)

@@ -6,9 +6,12 @@
 class PacketSetExperience : public Packet
 {
 public:
-    PacketSetExperience() : Packet(PACKET_SET_EXPERIENCE) {}
+    PacketSetExperience()
+        : Packet(PACKET_SET_EXPERIENCE)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_ExperienceBar = socket.Read<float>();
         m_Level = socket.Read<uint16_t>();
@@ -23,12 +26,10 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
     float m_ExperienceBar = 0.0f;
     uint16_t m_Level = 0, m_TotalExperience = 0;
-
 };
-

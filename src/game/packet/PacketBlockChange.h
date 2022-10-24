@@ -1,16 +1,19 @@
 #pragma once
 
+#include "EventDataChangeBlock.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "eventmanager.h"
-#include "EventDataChangeBlock.h"
 
 class PacketBlockChange : public Packet
 {
 public:
-    PacketBlockChange() : Packet(PACKET_BLOCK_CHANGE) {}
+    PacketBlockChange()
+        : Packet(PACKET_BLOCK_CHANGE)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_X = socket.Read<int32_t>();
         m_Y = socket.Read<int8_t>();
@@ -30,11 +33,10 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
     int32_t m_X = 0, m_Z = 0;
     int8_t m_Y = 0, m_BlockType = 0, m_BlockMetadata = 0;
 };
-

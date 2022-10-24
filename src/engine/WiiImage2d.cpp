@@ -1,11 +1,11 @@
-#include "image2d.h"
-#include "core.h"
-#include "tpl_loader.h"
-#include "wii_defines.h"
+#include "Core.h"
+#include "Image2d.h"
+#include "TplLoader.h"
+#include "WiiDefines.h"
 
 constexpr uint8_t BytesPerPixelRGBA8 = 4;
 
-renderer::Image2D::Image2D(const uint8_t *data, size_t imageSize)
+renderer::Image2D::Image2D(const uint8_t* data, size_t imageSize)
     : mData(nullptr)
 {
     ASSERT(data != nullptr);
@@ -32,7 +32,7 @@ renderer::Image2D::Image2D(const uint8_t *data, size_t imageSize)
         mHeight = tplTexture->height;
         mFormat = ImageFormat::TPL;
         mDataSize = imageSize;
-        mData = (uint8_t*) memalign(32, mDataSize);
+        mData = (uint8_t*)memalign(32, mDataSize);
         memcpy(mData, (void*)data, mDataSize);
         const size_t tplDataSize = GetTPLTextureSize(imageSize);
         DCFlushRange(mData, tplDataSize);

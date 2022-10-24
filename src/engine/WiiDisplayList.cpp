@@ -1,20 +1,22 @@
-#include "wii_displaylist.h"
-#include "core.h"
+#include "WiiDisplayList.h"
+#include "Core.h"
 
 renderer::DisplayList::DisplayList()
-    : mDispList(nullptr),
-      mBufferSize(0) {}
+    : mDispList(nullptr)
+    , mBufferSize(0)
+{
+}
 
 renderer::DisplayList::DisplayList(const size_t bufferSize)
-    : mDispList(nullptr),
-      mBufferSize(0)
+    : mDispList(nullptr)
+    , mBufferSize(0)
 {
     Begin(bufferSize);
 }
 
 renderer::DisplayList::~DisplayList()
 {
-	Clear();
+    Clear();
 }
 
 void renderer::DisplayList::Render()
@@ -22,7 +24,7 @@ void renderer::DisplayList::Render()
     if (mDispList)
     {
         GX_CallDispList(mDispList, mBufferSize);
-    }    
+    }
 }
 
 void renderer::DisplayList::Begin(const size_t bufferSize)
@@ -34,7 +36,6 @@ void renderer::DisplayList::Begin(const size_t bufferSize)
     DCInvalidateRange(mDispList, bufferSize);
     GX_BeginDispList(mDispList, bufferSize);
 }
-
 
 void renderer::DisplayList::End()
 {

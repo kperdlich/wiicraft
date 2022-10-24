@@ -15,46 +15,52 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include <string>
+#include "Core.h"
+#include "EventDataServerConnected.h"
+#include "EventManager.h"
+#include "Globals.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "globals.h"
-#include "eventmanager.h"
-#include "EventDataServerConnected.h"
-#include "core.h"
-
+#include <string>
 
 class PacketLogin : public Packet
 {
 public:
-    PacketLogin() : Packet(PACKET_LOGIN) {}
+    PacketLogin()
+        : Packet(PACKET_LOGIN)
+    {
+    }
     PacketLogin(const std::string playerName)
-        : Packet(PACKET_LOGIN), m_ProtocolVersion(SERVER_PROTOCOL_VERSION), m_PlayerName(playerName) {}
+        : Packet(PACKET_LOGIN)
+        , m_ProtocolVersion(SERVER_PROTOCOL_VERSION)
+        , m_PlayerName(playerName)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
-    {        
+    void Read(const net::Socket& socket) override
+    {
         m_ProtocolVersion = socket.Read<int32_t>();
         socket.Read<int16_t>(); // read unused empty string
-        m_LevelType     = socket.ReadString();
-        m_ServerMode    = socket.Read<int32_t>();
-        m_Dimension     = socket.Read<int32_t>();
-        m_Difficulty    = socket.Read<char>();
-        m_Vanilla       = socket.Read<unsigned char>();
-        m_MaxPlayers    = socket.Read<unsigned char>();
+        m_LevelType = socket.ReadString();
+        m_ServerMode = socket.Read<int32_t>();
+        m_Dimension = socket.Read<int32_t>();
+        m_Difficulty = socket.Read<char>();
+        m_Vanilla = socket.Read<unsigned char>();
+        m_MaxPlayers = socket.Read<unsigned char>();
     }
 
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataServerConnected>());        
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataServerConnected>());
     }
 
     Packet* CreateInstance() const override
     {
-       return new PacketLogin();
+        return new PacketLogin();
     }
 
 protected:
@@ -63,13 +69,14 @@ protected:
         socket.Send<int32_t>(m_ProtocolVersion);
         socket.Send<int16_t>((int16_t)m_PlayerName.length());
         socket.SendStringAsUtf16(m_PlayerName);
-        for(uint32_t i = 0; i < 13; ++i)
-             socket.Send<char>(0x00);
+        for (uint32_t i = 0; i < 13; ++i)
+            socket.Send<char>(0x00);
     }
+
 private:
     std::string m_PlayerName;
     std::string m_LevelType;
-    int32_t m_ProtocolVersion;    
+    int32_t m_ProtocolVersion;
     int32_t m_ServerMode;
     int32_t m_Dimension;
     char m_Difficulty;

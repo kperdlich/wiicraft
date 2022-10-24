@@ -6,9 +6,12 @@
 class PacketSpawnExperienceOrb : public Packet
 {
 public:
-    PacketSpawnExperienceOrb() : Packet(PACKET_SPAWN_EXPERIENCE_ORB) {}
+    PacketSpawnExperienceOrb()
+        : Packet(PACKET_SPAWN_EXPERIENCE_ORB)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_X = socket.Read<int32_t>();
@@ -18,18 +21,16 @@ public:
     }
     void Action() override
     {
-
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketSpawnExperienceOrb();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
-
     }
 
     int32_t m_EID = 0, m_X = 0, m_Y = 0, m_Z = 0;

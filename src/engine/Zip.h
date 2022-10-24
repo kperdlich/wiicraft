@@ -1,12 +1,14 @@
 #pragma once
 
-#include <zlib.h>
+#include "Core.h"
 #include <cstdlib>
 #include <cstring>
-#include "core.h"
+#include <zlib.h>
 
-namespace core {
-    namespace Zip {
+namespace core
+{
+    namespace Zip
+    {
         size_t Decompress(unsigned char* inputData, size_t compressedSize, unsigned char* outputData, size_t decompressedSize)
         {
             z_stream infstream;
@@ -48,10 +50,10 @@ namespace core {
 
                 ASSERT(false);
             }
-            //ASSERT(status == Z_STREAM_END);
+            // ASSERT(status == Z_STREAM_END);
 
             inflateEnd(&infstream);
             return infstream.total_out;
         }
-    }
-}
+    } // namespace Zip
+} // namespace core

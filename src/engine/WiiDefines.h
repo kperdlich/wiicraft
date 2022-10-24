@@ -1,0 +1,19 @@
+#pragma once
+
+#include "Freetypegx.h"
+#include "Metaphrasis.h"
+#include <cstring>
+#include <dirent.h>
+#include <fat.h>
+#include <gccore.h>
+#include <gctypes.h>
+#include <malloc.h>
+#include <ogc/conf.h>
+#include <ogc/gu.h>
+#include <ogc/lwp_watchdog.h>
+#include <ogc/machine/processor.h>
+#include <pngu.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <wiiuse/wpad.h>

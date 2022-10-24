@@ -2,7 +2,8 @@
 
 #include <stdint.h>
 
-namespace core {
+namespace core
+{
 
     uint64_t GetMsCount();
 }

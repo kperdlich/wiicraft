@@ -1,16 +1,19 @@
 #pragma once
 
+#include "EventDataEntityRelativeMove.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "eventmanager.h"
-#include "EventDataEntityRelativeMove.h"
 
 class PacketEntityRelativeMove : public Packet
 {
 public:
-    PacketEntityRelativeMove() : Packet(PACKET_ENTITY_RELATIVE_MOVE) {}
+    PacketEntityRelativeMove()
+        : Packet(PACKET_ENTITY_RELATIVE_MOVE)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_DX = socket.Read<int8_t>();
@@ -23,13 +26,13 @@ public:
         core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataEntityRelativeMove>(m_EID, 0, 0, m_DX, m_DY, m_DZ));
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketEntityRelativeMove();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

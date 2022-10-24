@@ -1,42 +1,45 @@
 #pragma once
 
-#include <vector>
+#include "Core.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "slotdata.h"
-#include "core.h"
+#include "SlotData.h"
+#include <vector>
 
 class PacketSetWindowItems : public Packet
 {
 public:
-     PacketSetWindowItems() : Packet(PACKET_SET_WINDOW_ITEMS) {}
+    PacketSetWindowItems()
+        : Packet(PACKET_SET_WINDOW_ITEMS)
+    {
+    }
 
-     ~PacketSetWindowItems()
-     {
-         m_SlotData.clear();
-     }
+    ~PacketSetWindowItems()
+    {
+        m_SlotData.clear();
+    }
 
-     void Read(const net::Socket &socket) override
-     {
-         m_WindowID = socket.Read<int8_t>();
-         m_Count = socket.Read<int16_t>();
-         ReadSlotData(m_SlotData, m_Count, socket);         
-     }
+    void Read(const net::Socket& socket) override
+    {
+        m_WindowID = socket.Read<int8_t>();
+        m_Count = socket.Read<int16_t>();
+        ReadSlotData(m_SlotData, m_Count, socket);
+    }
 
-     void Action() override
-     {
-     }
-     Packet *CreateInstance() const override
-     {
-         return new PacketSetWindowItems();
-     }
+    void Action() override
+    {
+    }
+    Packet* CreateInstance() const override
+    {
+        return new PacketSetWindowItems();
+    }
 
 protected:
-     void SendContent(const net::Socket &socket) const override
-     {
-     }
+    void SendContent(const net::Socket& socket) const override
+    {
+    }
 
-     int8_t m_WindowID = 0;
-     int16_t m_Count = 0;
-     std::vector<wiicraft::SlotData> m_SlotData;
+    int8_t m_WindowID = 0;
+    int16_t m_Count = 0;
+    std::vector<wiicraft::SlotData> m_SlotData;
 };

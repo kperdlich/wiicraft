@@ -6,15 +6,18 @@
 class PacketItemData : public Packet
 {
 public:
-    PacketItemData() : Packet(PACKET_ITEM_DATA) {}
+    PacketItemData()
+        : Packet(PACKET_ITEM_DATA)
+    {
+    }
 
     ~PacketItemData()
     {
         if (m_Text)
-            delete [] m_Text;
+            delete[] m_Text;
     }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_ItemType = socket.Read<int16_t>();
         m_ItemID = socket.Read<int16_t>();
@@ -26,13 +29,13 @@ public:
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketItemData();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
@@ -40,4 +43,3 @@ protected:
     unsigned char m_TextLength = 0;
     char* m_Text = nullptr;
 };
-

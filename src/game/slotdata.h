@@ -2,13 +2,14 @@
 
 #include <stdint.h>
 
-namespace wiicraft {
-
-struct SlotData
+namespace wiicraft
 {
-    int16_t ItemID = -1;
-    int16_t ItemDamage = 0;
-    int8_t ItemCount = 0;
-};
 
-}
+    struct SlotData
+    {
+        int16_t ItemID = -1;
+        int16_t ItemDamage = 0;
+        int8_t ItemCount = 0;
+    };
+
+} // namespace wiicraft

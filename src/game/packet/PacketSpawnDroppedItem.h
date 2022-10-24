@@ -1,16 +1,19 @@
 #pragma once
 
+#include "EventDataSpawnItemEntity.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "eventmanager.h"
-#include "EventDataSpawnItemEntity.h"
 
 class PacketSpawnDroppedItem : public Packet
 {
 public:
-    PacketSpawnDroppedItem() : Packet(PACKET_SPAWN_DROPPED_ITEM) {}
+    PacketSpawnDroppedItem()
+        : Packet(PACKET_SPAWN_DROPPED_ITEM)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_Item = socket.Read<int16_t>();
@@ -26,16 +29,19 @@ public:
 
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnItemEntity>(m_EID, m_X, m_Y, m_Z, m_Rotation, m_Pitch));
+        core::IEventManager::Get()->TriggerEvent(
+            std::make_shared<wiicraft::EventDataSpawnItemEntity>(m_EID, m_X, m_Y, m_Z, m_Rotation, m_Pitch));
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketSpawnDroppedItem();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override {}
+    void SendContent(const net::Socket& socket) const override
+    {
+    }
 
     int32_t m_EID = 0;
     int16_t m_Item = 0;
@@ -45,6 +51,4 @@ protected:
     int8_t m_Rotation = 0;
     int8_t m_Pitch = 0;
     int8_t m_Roll = 0;
-
 };
-

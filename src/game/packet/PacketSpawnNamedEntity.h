@@ -1,16 +1,19 @@
 #pragma once
 
+#include "EventDataSpawnPlayerEntity.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "eventmanager.h"
-#include "EventDataSpawnPlayerEntity.h"
 
 class PacketSpawnNamedEntity : public Packet
 {
 public:
-    PacketSpawnNamedEntity() : Packet(PACKET_SPAWN_NAMED_ENTITY) {}
+    PacketSpawnNamedEntity()
+        : Packet(PACKET_SPAWN_NAMED_ENTITY)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_PlayerName = socket.ReadString();
@@ -24,18 +27,16 @@ public:
     void Action() override
     {
         core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSpawnPlayerEntity>(
-                                                     std::make_shared<wiicraft::PlayerEntity>(
-                                                         m_EID, m_PlayerName,m_X, m_Y, m_Z, m_CurrentItem, m_Yaw, m_Pitch)));
+            std::make_shared<wiicraft::PlayerEntity>(m_EID, m_PlayerName, m_X, m_Y, m_Z, m_CurrentItem, m_Yaw, m_Pitch)));
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketSpawnNamedEntity();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
-
     }
     std::string m_PlayerName;
     int32_t m_EID = 0;

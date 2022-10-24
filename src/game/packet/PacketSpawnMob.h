@@ -6,9 +6,12 @@
 class PacketSpawnMob : public Packet
 {
 public:
-    PacketSpawnMob() : Packet(PACKET_SPAWN_MOB) {}
+    PacketSpawnMob()
+        : Packet(PACKET_SPAWN_MOB)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_Type = socket.Read<char>();
@@ -22,7 +25,6 @@ public:
     }
     void Action() override
     {
-
     }
     Packet* CreateInstance() const override
     {
@@ -30,14 +32,12 @@ public:
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
-
     }
 
     int32_t m_EID = 0;
     char m_Type = 0;
     int32_t m_X = 0, m_Y = 0, m_Z = 0;
     char m_Yaw = 0, m_Pitch = 0, m_HeadYaw;
-
 };

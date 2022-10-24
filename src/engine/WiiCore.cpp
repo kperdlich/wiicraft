@@ -1,7 +1,7 @@
-#include "core.h"
-#include "wii_defines.h"
-#include "renderer.h"
-#include "renderdata.h"
+#include "Core.h"
+#include "Renderdata.h"
+#include "Renderer.h"
+#include "WiiDefines.h"
 #include <stdarg.h>
 
 void core::Assert(const char* expression, const char* file, int32_t line, const char* format, ...)
@@ -21,8 +21,7 @@ void core::Assert(const char* expression, const char* file, int32_t line, const 
     void* pFrameBuffer = renderData->mFrameBuffers[renderData->mFrameBufferIndex];
     GXRModeObj* pRMode = renderData->mRmode;
 
-    console_init(pFrameBuffer, 20, 20, pRMode->fbWidth, pRMode->xfbHeight,
-        pRMode->fbWidth * VI_DISPLAY_PIX_SZ);
+    console_init(pFrameBuffer, 20, 20, pRMode->fbWidth, pRMode->xfbHeight, pRMode->fbWidth * VI_DISPLAY_PIX_SZ);
 
     WPAD_Init();
     WPAD_SetVRes(WPAD_CHAN_0, pRMode->fbWidth, pRMode->xfbHeight);
@@ -44,7 +43,6 @@ void core::Assert(const char* expression, const char* file, int32_t line, const 
     do
     {
         WPAD_ScanPads();
-    }
-    while(!(WPAD_ButtonsUp(0) & WPAD_BUTTON_A || WPAD_ButtonsHeld(0) & WPAD_BUTTON_A));
+    } while (!(WPAD_ButtonsUp(0) & WPAD_BUTTON_A || WPAD_ButtonsHeld(0) & WPAD_BUTTON_A));
     exit(0);
 }

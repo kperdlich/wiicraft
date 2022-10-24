@@ -1,15 +1,18 @@
 #pragma once
 
+#include "Core.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "core.h"
 
 class PacketUpdateWindowProperty : public Packet
 {
 public:
-    PacketUpdateWindowProperty() : Packet(PACKET_UPDATE_WINDOW_PROPERTY) {}
+    PacketUpdateWindowProperty()
+        : Packet(PACKET_UPDATE_WINDOW_PROPERTY)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         ASSERT(false);
         m_WindowID = socket.Read<char>();
@@ -19,17 +22,16 @@ public:
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketUpdateWindowProperty();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 
     char m_WindowID = 0;
     int16_t m_Property = 0, m_Value = 0;
-
 };

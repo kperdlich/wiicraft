@@ -1,16 +1,19 @@
 #pragma once
 
+#include "EventDataUpdatePlayerAbilities.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "eventmanager.h"
-#include "EventDataUpdatePlayerAbilities.h"
 
 class PacketPlayerAbilites : public Packet
 {
 public:
-    PacketPlayerAbilites() : Packet(PACKET_PLAYER_ABILITIES) {}
+    PacketPlayerAbilites()
+        : Packet(PACKET_PLAYER_ABILITIES)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_bInvulnerability = socket.Read<bool>();
         m_bIsflying = socket.Read<bool>();
@@ -20,22 +23,20 @@ public:
 
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataUpdatePlayerAbilities>(m_bInvulnerability, m_bIsflying, m_bCanfly, m_bInstantDestroy));
+        core::IEventManager::Get()->TriggerEvent(
+            std::make_shared<wiicraft::EventDataUpdatePlayerAbilities>(m_bInvulnerability, m_bIsflying, m_bCanfly, m_bInstantDestroy));
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketPlayerAbilites();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
         // todo implement
     }
 
-    bool m_bInvulnerability = false,
-    m_bIsflying = false,
-    m_bCanfly = false,
-    m_bInstantDestroy = false;
+    bool m_bInvulnerability = false, m_bIsflying = false, m_bCanfly = false, m_bInstantDestroy = false;
 };

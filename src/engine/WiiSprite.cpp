@@ -1,15 +1,19 @@
-#include "image2d.h"
-#include "wii_sprite.h"
-#include "renderer.h"
-
+#include "WiiSprite.h"
+#include "Image2d.h"
+#include "Renderer.h"
 
 renderer::Sprite::Sprite(const Image2D& image)
-    : mPosX(0), mPosY(0), mPosZ(0), mScaleX(1.0f), mScaleY(1.0f), mRotationDeg(0.0f)
+    : mPosX(0)
+    , mPosY(0)
+    , mPosZ(0)
+    , mScaleX(1.0f)
+    , mScaleY(1.0f)
+    , mRotationDeg(0.0f)
 {
-    mWidth = (uint32_t) image.Width();
-    mHeight = (uint32_t) image.Height();       
+    mWidth = (uint32_t)image.Width();
+    mHeight = (uint32_t)image.Height();
 
-    GX_InitTexObj(&mTexObj, (void*) image.Data(), (uint16_t) mWidth, (uint16_t) mHeight, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
+    GX_InitTexObj(&mTexObj, (void*)image.Data(), (uint16_t)mWidth, (uint16_t)mHeight, GX_TF_RGBA8, GX_CLAMP, GX_CLAMP, GX_FALSE);
     GX_InitTexObjLOD(&mTexObj, GX_NEAR, GX_NEAR, 0.0f, 0.0f, 0.0f, 0, 0, GX_ANISO_4);
 }
 

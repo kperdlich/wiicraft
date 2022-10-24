@@ -15,53 +15,56 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include <map>
-#include "socket.h"
-#include "Thread.h"
 #include "SafeQueue.h"
+#include "Socket.h"
+#include "Thread.h"
+#include <map>
 
 class Packet;
-namespace wiicraft {
-
-class ServerConnection : public core::Thread
+namespace wiicraft
 {
-public:
-    ServerConnection(const std::string& ip, uint16_t port);
-	ServerConnection(const ServerConnection&) = delete;
-	ServerConnection(ServerConnection&&) = delete;
-	void operator=(const ServerConnection&) = delete;
-	void operator=(ServerConnection&&) = delete;
 
-    bool Connect();
-	void Destroy();
+    class ServerConnection : public core::Thread
+    {
+    public:
+        ServerConnection(const std::string& ip, uint16_t port);
+        ServerConnection(const ServerConnection&) = delete;
+        ServerConnection(ServerConnection&&) = delete;
+        void operator=(const ServerConnection&) = delete;
+        void operator=(ServerConnection&&) = delete;
 
-    inline const net::Socket& GetSocket() const
-	{
-		return m_socket;
-	}
+        bool Connect();
+        void Destroy();
 
-	inline class Packet* PopPacket()
-	{
-		if (!m_queue.IsEmpty())
-			return m_queue.Pop();
-		return nullptr;
-	}
+        inline const net::Socket& GetSocket() const
+        {
+            return m_socket;
+        }
 
-private:
-	static void DestroyPacketMap();
-	static void InitPacketMap();
-	static class Packet* CreatePacketByID(char id);
-	void DestroyQueue();
-protected:
-	void Execute() override;
-	void PreExecute() override;
-private:
-    net::Socket m_socket;
-    core::SafeQueue<Packet*> m_queue;
-    static std::map<unsigned char, Packet*> s_PacketMap;
-};
-}
+        inline class Packet* PopPacket()
+        {
+            if (!m_queue.IsEmpty())
+                return m_queue.Pop();
+            return nullptr;
+        }
+
+    private:
+        static void DestroyPacketMap();
+        static void InitPacketMap();
+        static class Packet* CreatePacketByID(char id);
+        void DestroyQueue();
+
+    protected:
+        void Execute() override;
+        void PreExecute() override;
+
+    private:
+        net::Socket m_socket;
+        core::SafeQueue<Packet*> m_queue;
+        static std::map<unsigned char, Packet*> s_PacketMap;
+    };
+} // namespace wiicraft

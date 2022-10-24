@@ -6,9 +6,12 @@
 class PacketThunderbolt : public Packet
 {
 public:
-    PacketThunderbolt() : Packet(PACKET_THUNDERBOLT) {}
+    PacketThunderbolt()
+        : Packet(PACKET_THUNDERBOLT)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_EID = socket.Read<int32_t>();
         m_Unkown = socket.Read<char>();
@@ -19,13 +22,13 @@ public:
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketThunderbolt();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
 

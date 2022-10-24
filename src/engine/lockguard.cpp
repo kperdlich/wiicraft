@@ -1,30 +1,32 @@
+#include "Lockguard.h"
 #include <gccore.h>
-#include "lockguard.h"
 
-core::lock_guard::lock_guard(Mutex& mutex) : m_mutex(mutex), m_bReleased(true)
+core::Lockguard::Lockguard(Mutex& mutex)
+    : m_mutex(mutex)
+    , m_bReleased(true)
 {
-	Lock();
+    Lock();
 }
 
-core::lock_guard::~lock_guard()
+core::Lockguard::~Lockguard()
 {
-	Release();
+    Release();
 }
 
-void core::lock_guard::Release()
+void core::Lockguard::Release()
 {
-	if (!m_bReleased)
-	{
-		LWP_MutexUnlock(m_mutex.m_mutex);
-		m_bReleased = true;
-	}
+    if (!m_bReleased)
+    {
+        LWP_MutexUnlock(m_mutex.m_mutex);
+        m_bReleased = true;
+    }
 }
 
-void core::lock_guard::Lock()
+void core::Lockguard::Lock()
 {
-	if (m_bReleased)
-	{
-		LWP_MutexLock(m_mutex.m_mutex);
-		m_bReleased = false;
-	}
+    if (m_bReleased)
+    {
+        LWP_MutexLock(m_mutex.m_mutex);
+        m_bReleased = false;
+    }
 }

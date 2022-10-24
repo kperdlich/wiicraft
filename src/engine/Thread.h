@@ -15,45 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
-***/
+ ***/
 
 #pragma once
 
-#include <functional>
-#include <ogcsys.h>
-#include <gccore.h>
 #include "Mutex.h"
+#include <functional>
+#include <gccore.h>
+#include <ogcsys.h>
 
-namespace core {
-class Thread
+namespace core
 {
-	using ThreadEntryCallback = void* (*)(void*);
-public:
-    Thread() = default;
-    virtual ~Thread() = default;
-	Thread(const Thread&) = delete;
-	Thread(Thread&&) = delete;
-	void operator=(const Thread&) = delete;
-	void operator=(Thread&&) = delete;
+    class Thread
+    {
+        using ThreadEntryCallback = void* (*)(void*);
 
-	int Start();
-	bool IsStopped();
-	void Stop();
-	bool IsSuspended();
-	void Resume();
-	void Suspend();
+    public:
+        Thread() = default;
+        virtual ~Thread() = default;
+        Thread(const Thread&) = delete;
+        Thread(Thread&&) = delete;
+        void operator=(const Thread&) = delete;
+        void operator=(Thread&&) = delete;
 
-private:
-	int Create(ThreadEntryCallback entryCallback, void* stackbase, u32 stack_size, u8 prio);
-	static void* ThreadEntry(void* args);
+        int Start();
+        bool IsStopped();
+        void Stop();
+        bool IsSuspended();
+        void Resume();
+        void Suspend();
 
-protected:
-	virtual void PreExecute() = 0;
-	virtual void Execute() = 0;
+    private:
+        int Create(ThreadEntryCallback entryCallback, void* stackbase, u32 stack_size, u8 prio);
+        static void* ThreadEntry(void* args);
 
-private:
-    Mutex m_mutex;
-	lwp_t m_threadID;
-	bool m_bStop = false;
-};
-}
+    protected:
+        virtual void PreExecute() = 0;
+        virtual void Execute() = 0;
+
+    private:
+        Mutex m_mutex;
+        lwp_t m_threadID;
+        bool m_bStop = false;
+    };
+} // namespace core

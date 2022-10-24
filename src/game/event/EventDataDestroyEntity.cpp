@@ -7,7 +7,7 @@ wiicraft::EventDataDestroyEntity::EventDataDestroyEntity(int32_t entityId)
 {
 }
 
-const core::EventType &wiicraft::EventDataDestroyEntity::GetEventType() const
+const core::EventType& wiicraft::EventDataDestroyEntity::GetEventType() const
 {
     return EventType;
 }
@@ -17,7 +17,7 @@ core::IEventDataPtr wiicraft::EventDataDestroyEntity::Copy() const
     return std::make_shared<EventDataDestroyEntity>(mEntityId);
 }
 
-const char *wiicraft::EventDataDestroyEntity::GetName() const
+const char* wiicraft::EventDataDestroyEntity::GetName() const
 {
     return "EventDataDestroyEntity";
 }

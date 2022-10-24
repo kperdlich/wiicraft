@@ -6,15 +6,18 @@
 class PacketPluginMessage : public Packet
 {
 public:
-    PacketPluginMessage() : Packet(PACKET_PLUGIN_MESSAGE) {}
+    PacketPluginMessage()
+        : Packet(PACKET_PLUGIN_MESSAGE)
+    {
+    }
 
     ~PacketPluginMessage()
     {
-        if(m_Data)
-            delete [] m_Data;
+        if (m_Data)
+            delete[] m_Data;
     }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_Channel = socket.ReadString();
         m_Length = socket.Read<int16_t>();
@@ -24,17 +27,16 @@ public:
     void Action() override
     {
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketPluginMessage();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
     }
     std::string m_Channel;
     char* m_Data = nullptr;
     int16_t m_Length = 0;
 };
-

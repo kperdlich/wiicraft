@@ -2,21 +2,23 @@
 
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "vector3f.h"
-#include "slotdata.h"
+#include "SlotData.h"
+#include "Vector3f.h"
 
 class PacketPlayerBlockPlacement : public Packet
 {
 public:
-    PacketPlayerBlockPlacement() : Packet(PACKET_PLAYER_BLOCK_PLACEMENT) {}
-    PacketPlayerBlockPlacement(int32_t x, uint8_t y, int32_t z, const math::Vector3f& faceNormal, const wiicraft::SlotData& slotData)
-        : Packet(PACKET_PLAYER_BLOCK_PLACEMENT),
-          mSlotData(slotData),
-          mX(x),
-          mZ(z),
-          mY(y)
+    PacketPlayerBlockPlacement()
+        : Packet(PACKET_PLAYER_BLOCK_PLACEMENT)
     {
-
+    }
+    PacketPlayerBlockPlacement(int32_t x, uint8_t y, int32_t z, const math::Vector3f& faceNormal, const wiicraft::SlotData& slotData)
+        : Packet(PACKET_PLAYER_BLOCK_PLACEMENT)
+        , mSlotData(slotData)
+        , mX(x)
+        , mZ(z)
+        , mY(y)
+    {
         if (faceNormal.Y() < 0)
         {
             mDirection = 0;
@@ -25,7 +27,7 @@ public:
         {
             mDirection = 1;
         }
-        else if(faceNormal.Z() < 0)
+        else if (faceNormal.Z() < 0)
         {
             mDirection = 2;
         }
@@ -37,28 +39,25 @@ public:
         {
             mDirection = 4;
         }
-        else if(faceNormal.X() > 0)
+        else if (faceNormal.X() > 0)
         {
             mDirection = 5;
         }
-
     }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
-
     }
     void Action() override
     {
-
     }
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketPlayerBlockPlacement();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
         socket.Send<int32_t>(mX);
         socket.Send<uint8_t>(mY);
@@ -70,7 +69,7 @@ protected:
             socket.Send<int8_t>(mSlotData.ItemCount);
             socket.Send<int16_t>(mSlotData.ItemDamage);
         }
-    }    
+    }
 
     wiicraft::SlotData mSlotData;
     int32_t mX, mZ;

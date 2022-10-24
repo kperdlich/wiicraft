@@ -1,6 +1,5 @@
-#include "staticmesh.h"
-#include "mesh.h"
-#include "wii_displaylist.h"
+#include "StaticMesh.h"
+#include "WiiDisplayList.h"
 
 renderer::StaticMesh::StaticMesh(std::shared_ptr<IndexBuffer> indexBuffer, std::shared_ptr<VertexArray> vertexArray, uint8_t primitiveType)
     : mIsDirty(true)

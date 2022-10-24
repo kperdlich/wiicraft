@@ -1,29 +1,32 @@
 #pragma once
 
+#include "Core.h"
+#include "EventDataSetPlayerPositionAndLook.h"
+#include "EventManager.h"
 #include "Packet.h"
 #include "PacketGlobals.h"
-#include "core.h"
-#include "eventmanager.h"
-#include "vector3f.h"
-#include "EventDataSetPlayerPositionAndLook.h"
+#include "Vector3f.h"
 
 class PacketPlayerPositionAndLook : public Packet
 {
 public:
-    PacketPlayerPositionAndLook() : Packet(PACKET_PLAYER_POSITION_AND_LOOK) {}
+    PacketPlayerPositionAndLook()
+        : Packet(PACKET_PLAYER_POSITION_AND_LOOK)
+    {
+    }
     PacketPlayerPositionAndLook(double x, double y, double z, float yaw, float pitch, double stance, bool onGround)
-        : Packet(PACKET_PLAYER_POSITION_AND_LOOK),
-            m_X(x),
-            m_Stance(stance),
-            m_Y(y),
-            m_Z(z),
-            m_Yaw(yaw),
-            m_Pitch(pitch),
-            m_bOnGround(onGround)
+        : Packet(PACKET_PLAYER_POSITION_AND_LOOK)
+        , m_X(x)
+        , m_Stance(stance)
+        , m_Y(y)
+        , m_Z(z)
+        , m_Yaw(yaw)
+        , m_Pitch(pitch)
+        , m_bOnGround(onGround)
     {
     }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
         m_X = socket.Read<double>();
         m_Stance = socket.Read<double>();
@@ -35,19 +38,18 @@ public:
     }
     void Action() override
     {
-        core::IEventManager::Get()->TriggerEvent(
-                    std::make_shared<wiicraft::EventDataSetPlayerPositionAndLook>(
-                        math::Vector3f(m_X, m_Y, m_Z), m_Yaw, m_Pitch, m_Stance, m_bOnGround));
+        core::IEventManager::Get()->TriggerEvent(std::make_shared<wiicraft::EventDataSetPlayerPositionAndLook>(
+            math::Vector3f(m_X, m_Y, m_Z), m_Yaw, m_Pitch, m_Stance, m_bOnGround));
         Send(); // answer server
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketPlayerPositionAndLook();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
         socket.Send<double>(m_X);
         socket.Send<double>(m_Y);
@@ -61,5 +63,4 @@ protected:
     double m_X = 0, m_Stance = 0, m_Y = 0, m_Z = 0;
     float m_Yaw = 0.0f, m_Pitch = 0.0f;
     bool m_bOnGround = false;
-
 };

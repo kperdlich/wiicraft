@@ -1,18 +1,18 @@
-#include <math.h>
-#include "chunksection.h"
-#include "mathhelper.h"
-#include "renderer.h"
-#include "camera.h"
-#include "vertexformat.h"
+#include "ChunkSection.h"
 #include "BlockManager.h"
+#include "Camera.h"
+#include "MathHelper.h"
+#include "Renderer.h"
+#include "VertexFormat.h"
+#include <math.h>
 
 wiicraft::ChunkSection::ChunkSection()
-    : mLoaded(false),
-    mDirty(false)
+    : mLoaded(false)
+    , mDirty(false)
 {
     for (uint32_t i = 0; i < CHUNK_SIZE; ++i)
     {
-         mChunkDisplayList.emplace_back(std::make_unique<renderer::DisplayList>());
+        mChunkDisplayList.emplace_back(std::make_unique<renderer::DisplayList>());
     }
 
     mBlocks = new BlockType**[CHUNK_SECTION_SIZE_X];
@@ -63,23 +63,19 @@ void wiicraft::ChunkSection::Render(renderer::Renderer& renderer, wiicraft::Bloc
     {
         const math::Vector3f& worldPosition = GetWorldPosition();
         const core::AABB chunkAABB(
-        {
-           worldPosition.X() + (CHUNK_SIZE * 0.5f),
-           worldPosition.Y() + (i * CHUNK_SIZE) + (CHUNK_SIZE * 0.5f),
-           worldPosition.Z() + (CHUNK_SIZE * 0.5f)
-        },
-        {
-            CHUNK_SIZE * 0.5f, CHUNK_SIZE * 0.5f, CHUNK_SIZE * 0.5f
-        });
+            { worldPosition.X() + (CHUNK_SIZE * 0.5f),
+              worldPosition.Y() + (i * CHUNK_SIZE) + (CHUNK_SIZE * 0.5f),
+              worldPosition.Z() + (CHUNK_SIZE * 0.5f) },
+            { CHUNK_SIZE * 0.5f, CHUNK_SIZE * 0.5f, CHUNK_SIZE * 0.5f });
 
         if (renderer.GetCamera()->IsVisible(chunkAABB))
         {
             ++renderer.GetStatistics().ChunksInFrustrum;
             if (mChunkDisplayList[i]->GetBufferSize() == 0 || mDirty)
-            {                
+            {
                 GenerateChunk(i, renderer, blockmanager);
             }
-            ASSERT(i <= mChunkDisplayList.size() -1);
+            ASSERT(i <= mChunkDisplayList.size() - 1);
             math::Matrix3x4 chunkModelMatrix;
             chunkModelMatrix.SetIdentity();
             chunkModelMatrix.Translate(worldPosition.X(), worldPosition.Y(), worldPosition.Z());
@@ -96,9 +92,11 @@ void wiicraft::ChunkSection::Render(renderer::Renderer& renderer, wiicraft::Bloc
     mDirty = false;
 }
 
-void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t chunkFaceAmmount,
-    const std::unordered_map<wiicraft::BlockType, std::vector<wiicraft::BlockRenderData> > &chunkBlockList,
-    renderer::Renderer &renderer,
+void wiicraft::ChunkSection::UpdateChunkDisplayList(
+    uint32_t chunkIndex,
+    size_t chunkFaceAmmount,
+    const std::unordered_map<wiicraft::BlockType, std::vector<wiicraft::BlockRenderData>>& chunkBlockList,
+    renderer::Renderer& renderer,
     wiicraft::BlockManager& blockmanager)
 {
     if (mChunkDisplayList.size() == 0 || chunkIndex > mChunkDisplayList.size() - 1)
@@ -126,9 +124,9 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
     blockmanager.BindTextureSheet();
 
     renderer::VertexFormat chunkBlock(GX_VTXFMT0);
-    chunkBlock.AddAttribute({GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32});
-    chunkBlock.AddAttribute({GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8});
-    chunkBlock.AddAttribute({GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32});
+    chunkBlock.AddAttribute({ GX_DIRECT, GX_VA_POS, GX_POS_XYZ, GX_F32 });
+    chunkBlock.AddAttribute({ GX_DIRECT, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8 });
+    chunkBlock.AddAttribute({ GX_DIRECT, GX_VA_TEX0, GX_TEX_ST, GX_F32 });
     chunkBlock.Bind();
 
     for (const auto& blockType : chunkBlockList)
@@ -137,16 +135,31 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
         const std::vector<BlockRenderData>& blockRenderData = blockType.second;
         for (const auto& blockToRender : blockRenderData)
         {
-            math::Vector3f vertices[8] =
-            {
-                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE},// v1
-                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v2
-                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, //v3
-                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE}, // v4
-                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, //v5
-                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v6
-                    { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE}, // v7
-                    { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE, (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE} // v8
+            math::Vector3f vertices[8] = {
+                { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE }, // v1
+                { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE }, // v2
+                { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE }, // v3
+                { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z + BlockManager::BLOCK_HALF_SIZE }, // v4
+                { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE }, // v5
+                { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE }, // v6
+                { (float)blockToRender.BlockPosition.x + BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE }, // v7
+                { (float)blockToRender.BlockPosition.x - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.y - BlockManager::BLOCK_HALF_SIZE,
+                  (float)blockToRender.BlockPosition.z - BlockManager::BLOCK_HALF_SIZE } // v8
 
             };
 
@@ -160,132 +173,132 @@ void wiicraft::ChunkSection::UpdateChunkDisplayList(uint32_t chunkIndex, size_t 
                 if ((blockToRender.FaceMask & BLOCK_FRONT_FACE) && currentFace == BlockFace::Front)
                 {
                     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // front side
-                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[0], uvs[1]);
+                    // front side
+                    GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[2], uvs[3]);
+                    GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[4], uvs[5]);
+                    GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
                     GX_End();
                 }
 
                 if ((blockToRender.FaceMask & BLOCK_BACK_FACE) && currentFace == BlockFace::Front)
                 {
                     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // back side
-                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[0], uvs[1]);
+                    // back side
+                    GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[2], uvs[3]);
+                    GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[4], uvs[5]);
+                    GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
                     GX_End();
                 }
 
                 if ((blockToRender.FaceMask & BLOCK_RIGHT_FACE) && currentFace == BlockFace::Right)
                 {
                     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // right side
-                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[0], uvs[1]);
+                    // right side
+                    GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[2], uvs[3]);
+                    GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[4], uvs[5]);
+                    GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
                     GX_End();
                 }
 
                 if ((blockToRender.FaceMask & BLOCK_LEFT_FACE) && currentFace == BlockFace::Left)
                 {
                     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // left side
-                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[0], uvs[1]);
+                    // left side
+                    GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[2], uvs[3]);
+                    GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[4], uvs[5]);
+                    GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
                     GX_End();
                 }
 
                 if ((blockToRender.FaceMask & BLOCK_TOP_FACE) && currentFace == BlockFace::Top)
                 {
                     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // top side
-                        GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[0], uvs[1]);
+                    // top side
+                    GX_Position3f32(vertices[4].X(), vertices[4].Y(), vertices[4].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[2], uvs[3]);
+                    GX_Position3f32(vertices[5].X(), vertices[5].Y(), vertices[5].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[4], uvs[5]);
+                    GX_Position3f32(vertices[3].X(), vertices[3].Y(), vertices[3].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                        GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_Position3f32(vertices[0].X(), vertices[0].Y(), vertices[0].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
                     GX_End();
                 }
 
                 if ((blockToRender.FaceMask & BLOCK_BOTTOM_FACE) && currentFace == BlockFace::Bottom)
                 {
                     GX_Begin(GX_QUADS, GX_VTXFMT0, 4);
-                        // bottom side
-                        GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[0], uvs[1]);
+                    // bottom side
+                    GX_Position3f32(vertices[6].X(), vertices[6].Y(), vertices[6].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[0], uvs[1]);
 
-                        GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[2], uvs[3]);
+                    GX_Position3f32(vertices[7].X(), vertices[7].Y(), vertices[7].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[2], uvs[3]);
 
-                        GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[4], uvs[5]);
+                    GX_Position3f32(vertices[1].X(), vertices[1].Y(), vertices[1].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[4], uvs[5]);
 
-                        GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
-                        GX_Color1u32(color.Color());
-                        GX_TexCoord2f32(uvs[6], uvs[7]);
+                    GX_Position3f32(vertices[2].X(), vertices[2].Y(), vertices[2].Z());
+                    GX_Color1u32(color.Color());
+                    GX_TexCoord2f32(uvs[6], uvs[7]);
                     GX_End();
                 }
             }
@@ -314,7 +327,7 @@ void wiicraft::ChunkSection::GenerateChunk(uint32_t chunkIndex, renderer::Render
                     const auto& blockRenderMapIterator = chunkBlockRenderMap.find(blockType);
                     if (blockRenderMapIterator == chunkBlockRenderMap.end())
                     {
-                        chunkBlockRenderMap.insert(std::pair<BlockType, std::vector<BlockRenderData>>(blockType, {blockData}));
+                        chunkBlockRenderMap.insert(std::pair<BlockType, std::vector<BlockRenderData>>(blockType, { blockData }));
                     }
                     else
                     {
@@ -327,7 +340,7 @@ void wiicraft::ChunkSection::GenerateChunk(uint32_t chunkIndex, renderer::Render
     UpdateChunkDisplayList(chunkIndex, chunkFaceAmount, chunkBlockRenderMap, renderer, blockmanager);
 }
 
-bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, wiicraft::BlockRenderData &blockRenderVO) const
+bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, wiicraft::BlockRenderData& blockRenderVO) const
 {
     bool bIsAir = mBlocks[x][y][z] == BlockType::AIR;
 
@@ -336,7 +349,7 @@ bool wiicraft::ChunkSection::IsBlockVisible(uint32_t x, uint32_t y, uint32_t z, 
         return false;
     }
 
-    BlockType top = ((y+1) % CHUNK_SIZE) == 0 ? BlockType::AIR : mBlocks[x][y + 1][z];
+    BlockType top = ((y + 1) % CHUNK_SIZE) == 0 ? BlockType::AIR : mBlocks[x][y + 1][z];
     BlockType bottom = (y % CHUNK_SIZE) == 0 ? BlockType::AIR : mBlocks[x][y - 1][z];
     BlockType north = z == CHUNK_SIZE - 1 ? BlockType::AIR : mBlocks[x][y][z + 1];
     BlockType south = z == 0 ? BlockType::AIR : mBlocks[x][y][z - 1];
@@ -391,23 +404,25 @@ wiicraft::ChunkPosition wiicraft::ChunkSection::WorldPositionToChunkPosition(con
     return pos;
 }
 
-math::Vector3f wiicraft::ChunkSection::ChunkPositionToWorldPosition(const wiicraft::ChunkPosition &chunkPosition)
+math::Vector3f wiicraft::ChunkSection::ChunkPositionToWorldPosition(const wiicraft::ChunkPosition& chunkPosition)
 {
-    return {static_cast<float>(chunkPosition.first * static_cast<int32_t>(CHUNK_SIZE)), 0.0f,
-                static_cast<float>(chunkPosition.second * static_cast<int32_t>(CHUNK_SIZE))};
+    return { static_cast<float>(chunkPosition.first * static_cast<int32_t>(CHUNK_SIZE)),
+             0.0f,
+             static_cast<float>(chunkPosition.second * static_cast<int32_t>(CHUNK_SIZE)) };
 }
 
-math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(const math::Vector3f &worldPosition, const wiicraft::ChunkPosition &chunkPosition)
+math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(
+    const math::Vector3f& worldPosition, const wiicraft::ChunkPosition& chunkPosition)
 {
     const math::Vector3f& chunkWorldPos = ChunkSection::ChunkPositionToWorldPosition(chunkPosition);
     BlockPosition blockPosition;
     blockPosition.x = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.X(), CHUNK_SECTION_SIZE_X)));
     blockPosition.y = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.Y(), CHUNK_SECTION_SIZE_Y)));
     blockPosition.z = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.Z(), CHUNK_SECTION_SIZE_Z)));
-    return {chunkWorldPos.X() + blockPosition.x, static_cast<float>(blockPosition.y), chunkWorldPos.Z() + blockPosition.z};
+    return { chunkWorldPos.X() + blockPosition.x, static_cast<float>(blockPosition.y), chunkWorldPos.Z() + blockPosition.z };
 }
 
-wiicraft::BlockPosition wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(const math::Vector3f &worldPosition)
+wiicraft::BlockPosition wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPosition(const math::Vector3f& worldPosition)
 {
     BlockPosition blockPosition;
     blockPosition.x = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.X(), CHUNK_SECTION_SIZE_X)));
@@ -416,29 +431,27 @@ wiicraft::BlockPosition wiicraft::ChunkSection::BlockWorldPositionToLocalChunkPo
     return blockPosition;
 }
 
-math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(const math::Vector3f &worldPosition) const
+math::Vector3f wiicraft::ChunkSection::WorldPositionToBlockPosition(const math::Vector3f& worldPosition) const
 {
     BlockPosition blockPosition;
     blockPosition.x = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.X(), CHUNK_SECTION_SIZE_X)));
     blockPosition.y = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.Y(), CHUNK_SECTION_SIZE_Y)));
     blockPosition.z = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.Z(), CHUNK_SECTION_SIZE_Z)));
-    return {GetWorldPosition().X() + blockPosition.x, static_cast<float>(blockPosition.y), GetWorldPosition().Z() + blockPosition.z};
+    return { GetWorldPosition().X() + blockPosition.x, static_cast<float>(blockPosition.y), GetWorldPosition().Z() + blockPosition.z };
 }
 
-std::pair<math::Vector3f, wiicraft::BlockType> wiicraft::ChunkSection::GetBlockTypeByWorldPosition(const math::Vector3f &worldPosition) const
+std::pair<math::Vector3f, wiicraft::BlockType> wiicraft::ChunkSection::GetBlockTypeByWorldPosition(
+    const math::Vector3f& worldPosition) const
 {
     BlockPosition blockPosition;
     blockPosition.x = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.X(), CHUNK_SECTION_SIZE_X)));
     blockPosition.y = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.Y(), CHUNK_SECTION_SIZE_Y)));
     blockPosition.z = static_cast<uint32_t>(std::round(math::Mod<float>(worldPosition.Z(), CHUNK_SECTION_SIZE_Z)));
-    return std::make_pair(WorldPositionToBlockPosition(worldPosition),
-                          mBlocks[blockPosition.x][blockPosition.y][blockPosition.z]);
+    return std::make_pair(WorldPositionToBlockPosition(worldPosition), mBlocks[blockPosition.x][blockPosition.y][blockPosition.z]);
 }
 
-void wiicraft::ChunkSection::SetBlock(const BlockPosition& position, const wiicraft::BlockType &blockType)
+void wiicraft::ChunkSection::SetBlock(const BlockPosition& position, const wiicraft::BlockType& blockType)
 {
     mBlocks[position.x][position.y][position.z] = blockType;
     mChunkDisplayList[position.y / CHUNK_SIZE]->Clear();
 }
-
-

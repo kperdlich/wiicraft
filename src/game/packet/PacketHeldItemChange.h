@@ -6,11 +6,17 @@
 class PacketHeldItemChange : public Packet
 {
 public:
-    PacketHeldItemChange() : Packet(PACKET_HELD_ITEM_CHANGE) {}
+    PacketHeldItemChange()
+        : Packet(PACKET_HELD_ITEM_CHANGE)
+    {
+    }
     PacketHeldItemChange(int16_t slot)
-        : Packet(PACKET_HELD_ITEM_CHANGE), mSlot(slot) {}
+        : Packet(PACKET_HELD_ITEM_CHANGE)
+        , mSlot(slot)
+    {
+    }
 
-    void Read(const net::Socket &socket) override
+    void Read(const net::Socket& socket) override
     {
     }
 
@@ -18,13 +24,13 @@ public:
     {
     }
 
-    Packet *CreateInstance() const override
+    Packet* CreateInstance() const override
     {
         return new PacketHeldItemChange();
     }
 
 protected:
-    void SendContent(const net::Socket &socket) const override
+    void SendContent(const net::Socket& socket) const override
     {
         socket.Send<int16_t>(mSlot);
     }

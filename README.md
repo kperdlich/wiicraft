@@ -28,3 +28,5 @@ make
 - ```Button Right:``` Inventory Right Scroll 
 - ```Button Up:``` Toggle Debug Infos
 
+## Questions:
+Join the Discord server: [Wiicraft Discord](https://discord.gg/9duw9K7M8h)

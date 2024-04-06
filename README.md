@@ -5,6 +5,9 @@
 
 ![Wiicraft Icon2](/ingame_wiicraft2.PNG)
 
+## Demo
+[![Demo](https://img.youtube.com/vi/lv3MmPLz3wI/default.jpg)](https://youtu.be/lv3MmPLz3wI)
+
 ## Compile from Source
 1. Make sure you have installed [devkitpro](https://devkitpro.org/) and [GRRLIB](https://github.com/GRRLIB/GRRLIB)
 2. Open cmd and redirect to your local Wiicraft folder and run
@@ -27,6 +30,3 @@ make
 - ```Button Left:``` Inventory Left Scroll
 - ```Button Right:``` Inventory Right Scroll 
 - ```Button Up:``` Toggle Debug Infos
-
-## Questions:
-Join the Discord server: [Wiicraft Discord](https://discord.gg/9duw9K7M8h)
